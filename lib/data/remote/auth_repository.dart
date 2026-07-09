@@ -1,18 +1,19 @@
+import 'dart:async';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../local/database.dart';
-import '../local/models/user_business_model.dart';
+import 'supabase_service.dart';
 import '../local/models/user_model.dart';
 
-/// Repository handling all Supabase Auth operations + local user caching.
+/// Repository handling all Supabase Auth operations — cloud only.
+/// No LocalDatabase/Hive writes. All data fetched from Supabase on demand.
 class AuthRepository {
   final SupabaseClient _supabase;
-  final LocalDatabase _localDb;
+  final SupabaseService _supaService;
 
   AuthRepository({
-    required SupabaseClient supabase,
-    required LocalDatabase localDb,
-  })  : _supabase = supabase,
-        _localDb = localDb;
+    required this._supabase,
+    required this._supaService,
+  });
 
   /// Current authenticated user (from Supabase)
   User? get currentSupabaseUser => _supabase.auth.currentUser;
@@ -24,69 +25,64 @@ class AuthRepository {
   bool get isAuthenticated => _supabase.auth.currentUser != null;
 
   /// Sign in with email and password.
-  /// Returns the authenticated User on success.
+  /// Returns the authenticated UserModel on success.
   Future<UserModel> signIn({
     required String email,
     required String password,
   }) async {
-    final response = await _supabase.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+    // Step 1: Try standard Supabase Auth sign in
+    try {
+      final response = await _supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
 
-    final user = response.user;
-    if (user == null) {
-      throw Exception('Login gagal: Tidak ada data user');
+      final user = response.user;
+      if (user != null) {
+        // Fetch user profile from public.users table
+        final profileData = await _supabase
+            .from('users')
+            .select()
+            .eq('id', user.id)
+            .single();
+
+        return UserModel(
+          userId: user.id,
+          username: profileData['username'] as String? ?? user.email ?? 'User',
+          role: profileData['role'] as String? ?? 'staff',
+        );
+      }
+    } on AuthException catch (e) {
+      if (!e.message.toLowerCase().contains('invalid login credentials') &&
+          !e.message.toLowerCase().contains('invalid_credentials')) {
+        rethrow;
+      }
     }
 
-    // Fetch user profile from public.users table
-    final profileData = await _supabase
-        .from('users')
-        .select()
-        .eq('id', user.id)
-        .single();
+    // Step 2 (Fallback): Verify against public.users.password_hash via RPC
+    try {
+      final rpc = await _supabase.rpc('verify_public_password', params: {
+        'p_email': email,
+        'p_password': password,
+      }).single();
 
-    final userModel = UserModel(
-      userId: user.id,
-      username: profileData['username'] as String? ?? user.email ?? 'User',
-      role: profileData['role'] as String? ?? 'staff',
-    );
+      final userId = rpc as String;
+      final profileData = await _supabase
+          .from('users')
+          .select()
+          .eq('id', userId)
+          .single();
 
-    // Cache locally
-    await _localDb.saveUser(userModel);
-
-    return userModel;
-  }
-
-  /// Sign up a new user (Owner-only operation, typically via Supabase Dashboard)
-  Future<UserModel> signUp({
-    required String email,
-    required String password,
-    required String username,
-    required String role,
-  }) async {
-    final response = await _supabase.auth.signUp(
-      email: email,
-      password: password,
-      data: {
-        'username': username,
-        'role': role,
-      },
-    );
-
-    final user = response.user;
-    if (user == null) {
-      throw Exception('Registrasi gagal');
+      return UserModel(
+        userId: userId,
+        username: profileData['username'] as String? ?? email.split('@').first,
+        role: profileData['role'] as String? ?? 'staff',
+      );
+    } catch (_) {
+      // RPC might not exist — ignore
     }
 
-    final userModel = UserModel(
-      userId: user.id,
-      username: username,
-      role: role,
-    );
-
-    await _localDb.saveUser(userModel);
-    return userModel;
+    throw AuthException('invalid login credentials');
   }
 
   /// Sign out the current user.
@@ -95,7 +91,6 @@ class AuthRepository {
   }
 
   /// Try to restore session from stored credentials.
-  /// Returns the cached UserModel if session is valid.
   Future<UserModel?> tryRestoreSession() async {
     try {
       final session = _supabase.auth.currentSession;
@@ -104,25 +99,18 @@ class AuthRepository {
       final user = _supabase.auth.currentUser;
       if (user == null) return null;
 
-      // Try to get from local cache first
-      final cached = _localDb.getUserByAuthId(user.id);
-      if (cached != null) return cached;
-
-      // Fetch from server if not cached
+      // Fetch fresh profile from Supabase
       final profileData = await _supabase
           .from('users')
           .select()
           .eq('id', user.id)
           .single();
 
-      final userModel = UserModel(
+      return UserModel(
         userId: user.id,
         username: profileData['username'] as String? ?? user.email ?? 'User',
         role: profileData['role'] as String? ?? 'staff',
       );
-
-      await _localDb.saveUser(userModel);
-      return userModel;
     } catch (e) {
       return null;
     }
@@ -134,43 +122,11 @@ class AuthRepository {
     required String newRole,
   }) async {
     await _supabase.from('users').update({'role': newRole}).eq('id', userId);
-
-    // Update local cache
-    final cached = _localDb.getUserByAuthId(userId);
-    if (cached != null) {
-      final updated = UserModel(
-        userId: cached.userId,
-        username: cached.username,
-        role: newRole,
-        lastSyncedAt: cached.lastSyncedAt,
-        createdAt: cached.createdAt,
-      );
-      await _localDb.saveUser(updated);
-    }
   }
 
-  /// Get all users (Owner operation)
+  /// Get all users (Owner operation) — cloud only
   Future<List<UserModel>> getAllUsers() async {
-    try {
-      final data = await _supabase.from('users').select();
-      final users = (data as List)
-          .map((json) => UserModel(
-                userId: json['id'] as String,
-                username: json['username'] as String,
-                role: json['role'] as String,
-              ))
-          .toList();
-
-      // Cache locally
-      for (final user in users) {
-        await _localDb.saveUser(user);
-      }
-
-      return users;
-    } catch (e) {
-      // Fallback to local cache
-      return _localDb.getAllUsers();
-    }
+    return _supaService.getAllUsers();
   }
 
   /// Assign a user to a business (create user_businesses record)
@@ -186,13 +142,6 @@ class AuthRepository {
     } catch (_) {
       // If already exists (duplicate), ignore
     }
-
-    // Save locally
-    final ub = UserBusinessModel(
-      userId: userId,
-      businessId: businessId,
-    );
-    await _localDb.saveUserBusiness(ub);
   }
 
   /// Unassign a user from a business (delete user_businesses record)
@@ -205,9 +154,6 @@ class AuthRepository {
         .delete()
         .eq('user_id', userId)
         .eq('business_id', businessId);
-
-    // Remove locally
-    await _localDb.deleteUserBusiness(userId, businessId);
   }
 
   /// Sync user-business assignments in batch
@@ -215,18 +161,18 @@ class AuthRepository {
     required String userId,
     required List<int> assignedBusinessIds,
   }) async {
-    // Get current assignments
-    final current = _localDb.getBusinessesForUser(userId);
-    final currentIds = current.map((e) => e.businessId).toSet();
-    final targetIds = assignedBusinessIds.toSet();
+    // Get current assignments from cloud
+    final currentIds = await _supaService.getBusinessIdsForUser(userId);
+    final currentSet = currentIds.toSet();
+    final targetSet = assignedBusinessIds.toSet();
 
     // Add new assignments
-    for (final id in targetIds.difference(currentIds)) {
+    for (final id in targetSet.difference(currentSet)) {
       await assignUserToBusiness(userId: userId, businessId: id);
     }
 
     // Remove removed assignments
-    for (final id in currentIds.difference(targetIds)) {
+    for (final id in currentSet.difference(targetSet)) {
       await unassignUserFromBusiness(userId: userId, businessId: id);
     }
   }

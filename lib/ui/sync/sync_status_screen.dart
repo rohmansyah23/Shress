@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../data/local/database.dart';
 
+/// Sync status screen — V1 cloud-only, offline sync deferred to V2.
 class SyncStatusScreen extends StatelessWidget {
   const SyncStatusScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final unsynced = LocalDatabase.instance.getUnsyncedTransactions();
     return Scaffold(
       appBar: AppBar(title: const Text('Status Sinkronisasi')),
       body: Padding(
@@ -15,11 +14,41 @@ class SyncStatusScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Pending items', style: AppTheme.heading3),
+            Text('Status', style: AppTheme.heading3),
             const SizedBox(height: 12),
-            Text('Transaksi belum disinkron: ${unsynced.length}', style: AppTheme.bodyText),
-            const SizedBox(height: 12),
-            ElevatedButton(onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sync sekarang - coming soon'))), child: const Text('Sinkronisasi Manual')),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.cloud_done_rounded,
+                        color: AppTheme.profitColor, size: 32),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Cloud Mode Aktif',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Semua data tersimpan langsung ke cloud.',
+                            style: AppTheme.caption,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Mode offline akan tersedia di V2.',
+              style: AppTheme.caption,
+            ),
           ],
         ),
       ),

@@ -1,25 +1,32 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/constants/constants.dart';
-import '../data/local/database.dart';
+import '../data/local/models/business_model.dart';
 import '../data/local/models/user_model.dart';
 import '../data/remote/auth_repository.dart';
+import '../data/remote/supabase_service.dart';
 
-// ==================== Auth Repository Provider ====================
+// ==================== Providers ====================
+
+final supabaseServiceProvider = Provider<SupabaseService>((ref) {
+  return SupabaseService.instance;
+});
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     supabase: Supabase.instance.client,
-    localDb: LocalDatabase.instance,
+    supaService: SupabaseService.instance,
   );
 });
 
 // ==================== Auth State ====================
 
 enum AuthStatus {
-  unknown, // Initial loading
-  authenticated, // Logged in
-  unauthenticated, // Not logged in
+  unknown,
+  authenticated,
+  unauthenticated,
 }
 
 class AuthState {
@@ -59,7 +66,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _tryRestoreSession();
   }
 
-  /// Try to restore session on app start
   Future<void> _tryRestoreSession() async {
     try {
       final user = await _authRepo.tryRestoreSession();
@@ -76,8 +82,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Login with email and password
-  Future<void> login({
+  Future<bool> login({
     required String email,
     required String password,
   }) async {
@@ -93,29 +98,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
         status: AuthStatus.authenticated,
         user: user,
       );
+
+      return true;
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.unauthenticated,
         errorMessage: _mapAuthError(e),
       );
+      return false;
     }
   }
 
-  /// Logout
   Future<void> logout() async {
     await _authRepo.signOut();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  /// Get all users (Owner operation)
   Future<List<UserModel>> getAllUsers() async {
     return _authRepo.getAllUsers();
   }
 
-  /// Update user role
   Future<void> updateUserRole(String userId, String newRole) async {
     await _authRepo.updateUserRole(userId: userId, newRole: newRole);
-    // Refresh local state if the updated user is the current user
     if (state.user?.userId == userId) {
       state = state.copyWith(
         user: UserModel(
@@ -127,10 +131,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Map auth errors to user-friendly messages in Bahasa Indonesia
   String _mapAuthError(Object error) {
     final message = error.toString().toLowerCase();
-    if (message.contains('invalid login credentials')) {
+    if (message.contains('invalid login credentials') ||
+        message.contains('email atau password') ||
+        message.contains('login gagal') ||
+        message.contains('invalid_credentials')) {
       return 'Email atau password salah';
     }
     if (message.contains('user not found')) {
@@ -158,17 +164,30 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
 
 // ==================== Derived Providers ====================
 
-/// Check if the current user is authenticated
 final isAuthenticatedProvider = Provider<bool>((ref) {
   return ref.watch(authProvider).status == AuthStatus.authenticated;
 });
 
-/// Get current user model
 final currentUserProvider = Provider<UserModel?>((ref) {
   return ref.watch(authProvider).user;
 });
 
-/// Get current user role
 final currentUserRoleProvider = Provider<String?>((ref) {
   return ref.watch(authProvider).user?.role;
+});
+
+// ==================== Data Providers ====================
+
+/// All businesses (owner sees all, manager/staff filtered)
+final allBusinessesProvider = FutureProvider<List<BusinessModel>>((ref) async {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return [];
+  return SupabaseService.instance.getAccessibleBusinesses(user.userId, user.role);
+});
+
+/// Businesses accessible by a specific user
+final accessibleBusinessesProvider = FutureProvider<List<BusinessModel>>((ref) async {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return [];
+  return SupabaseService.instance.getAccessibleBusinesses(user.userId, user.role);
 });

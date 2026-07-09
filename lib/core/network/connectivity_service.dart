@@ -24,14 +24,26 @@ class ConnectivityService {
   /// Current connectivity status
   bool get isOnline => _isOnline;
 
-  /// Initialize and start listening to connectivity changes
+  /// Initialize and start listening to connectivity changes.
+  /// Safe to call multiple times — previous subscription is cancelled first.
   Future<void> initialize() async {
+    // Cancel any previous subscription to avoid leaks
+    await _subscription?.cancel();
+    _subscription = null;
+
     // Get initial status
     final results = await _connectivity.checkConnectivity();
     _updateStatus(results);
 
     // Listen for changes
     _subscription = _connectivity.onConnectivityChanged.listen(_updateStatus);
+  }
+
+  /// Re-check connectivity without re-subscribing to the stream.
+  /// Useful for manual retry buttons — it's lighter than [initialize].
+  Future<void> retry() async {
+    final results = await _connectivity.checkConnectivity();
+    _updateStatus(results);
   }
 
   void _updateStatus(List<ConnectivityResult> results) {

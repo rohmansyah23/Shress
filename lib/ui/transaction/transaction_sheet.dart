@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
-import '../../data/local/database.dart';
+import '../../core/utils/error_handler.dart';
+import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/category_model.dart';
+import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
 
-/// Smart Transaction Sheet — dual-tab Income/Expense form with dynamic COGS input.
+/// Smart Transaction Sheet with real-time IDR currency formatting.
 class TransactionSheet extends ConsumerStatefulWidget {
   final BusinessModel business;
+  final bool startAsIncome; // optional: pre-select tab
 
-  const TransactionSheet({super.key, required this.business});
+  const TransactionSheet({
+    super.key,
+    required this.business,
+    this.startAsIncome = true,
+  });
 
-  /// Open the transaction sheet as a modal bottom sheet
   static Future<void> show(BuildContext context, BusinessModel business) {
     return showModalBottomSheet(
       context: context,
@@ -32,34 +39,40 @@ class TransactionSheet extends ConsumerStatefulWidget {
 }
 
 class _TransactionSheetState extends ConsumerState<TransactionSheet> {
-  // Tab state
-  int _selectedTabIndex = 0; // 0 = Income, 1 = Expense
+  int _selectedTabIndex = 0;
 
-  // Form state
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _cogsController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  // Data
   List<CategoryModel> _categories = [];
   CategoryModel? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
   String _paymentMethod = 'cash';
   bool _isSaving = false;
 
-  // Controllers for date & payment picker
   final _dateTextController = TextEditingController();
+
+  // Currency formatting state
+  bool _isFormattingAmount = false;
+  bool _isFormattingCogs = false;
 
   @override
   void initState() {
     super.initState();
     _dateTextController.text = _formatDate(_selectedDate);
     _loadCategories();
+
+    // Add listeners for IDR formatting
+    _amountController.addListener(_onAmountChanged);
+    _cogsController.addListener(_onCogsChanged);
   }
 
   @override
   void dispose() {
+    _amountController.removeListener(_onAmountChanged);
+    _cogsController.removeListener(_onCogsChanged);
     _amountController.dispose();
     _cogsController.dispose();
     _descriptionController.dispose();
@@ -67,22 +80,90 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
     super.dispose();
   }
 
+  /// Real-time IDR formatting for amount field
+  void _onAmountChanged() {
+    if (_isFormattingAmount) return;
+    _isFormattingAmount = true;
+
+    final text = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (text.isNotEmpty) {
+      final value = int.tryParse(text) ?? 0;
+      final formatted = _formatRupiah(value);
+      if (_amountController.text != formatted) {
+        _amountController.value = TextEditingValue(
+          text: formatted,
+          selection: TextSelection.collapsed(offset: formatted.length),
+        );
+      }
+    }
+
+    _isFormattingAmount = false;
+  }
+
+  /// Real-time IDR formatting for COGS field
+  void _onCogsChanged() {
+    if (_isFormattingCogs) return;
+    _isFormattingCogs = true;
+
+    final text = _cogsController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (text.isNotEmpty) {
+      final value = int.tryParse(text) ?? 0;
+      final formatted = _formatRupiah(value);
+      if (_cogsController.text != formatted) {
+        _cogsController.value = TextEditingValue(
+          text: formatted,
+          selection: TextSelection.collapsed(offset: formatted.length),
+        );
+      }
+    }
+
+    _isFormattingCogs = false;
+  }
+
+  String _formatRupiah(int value) {
+    final s = value.toString();
+    final result = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) {
+        result.write('.');
+      }
+      result.write(s[i]);
+    }
+    return result.toString();
+  }
+
   String get _selectedType =>
-      _selectedTabIndex == 0 ? AppConstants.typeIncome : AppConstants.typeExpense;
+      _selectedTabIndex == 0
+          ? AppConstants.typeIncome
+          : AppConstants.typeExpense;
 
   bool get _isIncome => _selectedTabIndex == 0;
 
-  void _loadCategories() {
-    _categories = LocalDatabase.instance
-        .getCategoriesByType(widget.business.businessId, _selectedType);
-    if (_categories.isNotEmpty && _selectedCategory == null) {
-      _selectedCategory = _categories.first;
-    } else if (_selectedCategory != null) {
-      // Verify selected category still valid for this tab
-      final stillValid =
-          _categories.any((c) => c.categoryId == _selectedCategory!.categoryId);
-      if (!stillValid) {
-        _selectedCategory = _categories.isNotEmpty ? _categories.first : null;
+  Future<void> _loadCategories() async {
+    try {
+      final categories = await SupabaseService.instance.getCategoriesByType(
+        widget.business.businessId,
+        _selectedType,
+      );
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+          if (_categories.isNotEmpty && _selectedCategory == null) {
+            _selectedCategory = _categories.first;
+          } else if (_selectedCategory != null) {
+            final stillValid =
+                _categories.any((c) => c.categoryId == _selectedCategory!.categoryId);
+            if (!stillValid) {
+              _selectedCategory =
+                  _categories.isNotEmpty ? _categories.first : null;
+            }
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        final error = ErrorHandler.classify(e);
+        ErrorSnackbar.show(context, error);
       }
     }
   }
@@ -92,8 +173,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
       _selectedTabIndex = index;
       _selectedCategory = null;
       _cogsController.clear();
-      _loadCategories();
     });
+    _loadCategories();
   }
 
   Future<void> _pickDate() async {
@@ -146,9 +227,11 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
       return;
     }
 
-    final amount = double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0;
+    final amountStr = _amountController.text.replaceAll('.', '');
+    final amount = double.tryParse(amountStr) ?? 0;
+    final cogsStr = _cogsController.text.replaceAll('.', '');
     final cogs = _isIncome
-        ? (double.tryParse(_cogsController.text.replaceAll(',', '')) ?? 0)
+        ? (double.tryParse(cogsStr) ?? 0)
         : 0.0;
 
     final result = await saveTransaction(
@@ -170,7 +253,6 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
     if (!mounted) return;
 
     if (result.success) {
-      // Trigger dashboard refresh
       triggerTransactionRefresh(ref);
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -221,10 +303,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Row(
                 children: [
-                  Text(
-                    'Tambah Transaksi',
-                    style: AppTheme.heading2,
-                  ),
+                  Text('Tambah Transaksi', style: AppTheme.heading2),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
@@ -234,7 +313,6 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
               ),
             ),
 
-            // Business name
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
@@ -245,7 +323,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
 
             const SizedBox(height: 16),
 
-            // Segmented tab: Income / Expense
+            // Segmented tab
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: SizedBox(
@@ -264,21 +342,21 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                     ),
                   ],
                   selected: {_selectedTabIndex},
-                  onSelectionChanged: (selected) => _onTabChanged(selected.first),
+                  onSelectionChanged: (selected) =>
+                      _onTabChanged(selected.first),
                 ),
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // Scrollable form content
+            // Scrollable form
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(20, 0, 20, bottomInset + 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ===== Category Dropdown =====
                     _FormLabel('Kategori'),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<CategoryModel>(
@@ -300,7 +378,6 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
 
                     const SizedBox(height: 20),
 
-                    // ===== Date Picker =====
                     _FormLabel('Tanggal Transaksi'),
                     const SizedBox(height: 8),
                     TextFormField(
@@ -317,7 +394,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
 
                     const SizedBox(height: 20),
 
-                    // ===== Amount =====
+                    // Amount with IDR formatting
                     _FormLabel(
                       'Jumlah (Rp)',
                       subtitle: _selectedType == AppConstants.typeIncome
@@ -328,15 +405,20 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                     TextFormField(
                       controller: _amountController,
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.monetization_on_outlined),
                         hintText: '0',
+                        prefixText: 'Rp ',
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Masukkan jumlah';
                         }
-                        final amount = double.tryParse(value.replaceAll(',', ''));
+                        final numeric = value.replaceAll('.', '');
+                        final amount = double.tryParse(numeric);
                         if (amount == null || amount <= 0) {
                           return 'Jumlah harus lebih dari 0';
                         }
@@ -344,7 +426,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       },
                     ),
 
-                    // ===== COGS (Income only - dynamic) =====
+                    // COGS (Income only)
                     AnimatedSize(
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
@@ -361,9 +443,14 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                                 TextFormField(
                                   controller: _cogsController,
                                   keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
                                   decoration: const InputDecoration(
-                                    prefixIcon: Icon(Icons.inventory_2_outlined),
+                                    prefixIcon:
+                                        Icon(Icons.inventory_2_outlined),
                                     hintText: '0',
+                                    prefixText: 'Rp ',
                                   ),
                                 ),
                               ],
@@ -373,7 +460,6 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
 
                     const SizedBox(height: 20),
 
-                    // ===== Payment Method =====
                     _FormLabel('Metode Pembayaran'),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
@@ -432,7 +518,6 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
 
                     const SizedBox(height: 20),
 
-                    // ===== Description =====
                     _FormLabel('Deskripsi (opsional)'),
                     const SizedBox(height: 8),
                     TextFormField(
@@ -451,7 +536,6 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
 
                     const SizedBox(height: 28),
 
-                    // ===== Save Button =====
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -495,7 +579,6 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
   }
 }
 
-/// Small form label widget
 class _FormLabel extends StatelessWidget {
   final String label;
   final String? subtitle;

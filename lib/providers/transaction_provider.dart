@@ -1,11 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/constants/constants.dart';
-import '../data/local/database.dart';
-import '../data/local/models/transaction_model.dart';
+import '../data/remote/supabase_service.dart';
 
 // ==================== Transaction Save ====================
 
-/// Result of saving a transaction
 class TransactionSaveResult {
   final bool success;
   final String? message;
@@ -13,7 +11,7 @@ class TransactionSaveResult {
   const TransactionSaveResult({required this.success, this.message});
 }
 
-/// Save a new transaction locally (offline-first)
+/// Create a new transaction directly on Supabase (cloud-only)
 Future<TransactionSaveResult> saveTransaction({
   required int businessId,
   required int categoryId,
@@ -26,7 +24,6 @@ Future<TransactionSaveResult> saveTransaction({
   String paymentMethod = 'cash',
 }) async {
   try {
-    // Validate
     if (amount <= 0) {
       return const TransactionSaveResult(
         success: false,
@@ -40,7 +37,7 @@ Future<TransactionSaveResult> saveTransaction({
       );
     }
 
-    final transaction = TransactionModel(
+    await SupabaseService.instance.createTransaction(
       businessId: businessId,
       categoryId: categoryId,
       userId: userId,
@@ -50,10 +47,7 @@ Future<TransactionSaveResult> saveTransaction({
       paymentMethod: paymentMethod,
       description: description,
       transactionDate: transactionDate,
-      statusSync: false, // Offline-first: pending sync
     );
-
-    await LocalDatabase.instance.saveTransaction(transaction);
 
     return const TransactionSaveResult(
       success: true,
@@ -67,12 +61,63 @@ Future<TransactionSaveResult> saveTransaction({
   }
 }
 
+/// Update an existing transaction on Supabase (cloud-only)
+Future<TransactionSaveResult> updateTransaction({
+  required int transactionId,
+  int? categoryId,
+  String? type,
+  double? amount,
+  double? cogs,
+  String? paymentMethod,
+  String? description,
+  String? transactionDate,
+}) async {
+  try {
+    await SupabaseService.instance.updateTransaction(
+      transactionId: transactionId,
+      categoryId: categoryId,
+      type: type,
+      amount: amount,
+      cogs: cogs,
+      paymentMethod: paymentMethod,
+      description: description,
+      transactionDate: transactionDate,
+    );
+
+    return const TransactionSaveResult(
+      success: true,
+      message: 'Transaksi berhasil diperbarui',
+    );
+  } catch (e) {
+    return TransactionSaveResult(
+      success: false,
+      message: 'Gagal memperbarui: $e',
+    );
+  }
+}
+
+/// Delete a transaction from Supabase (cloud-only)
+Future<TransactionSaveResult> deleteTransaction({
+  required int transactionId,
+}) async {
+  try {
+    await SupabaseService.instance.deleteTransaction(transactionId);
+    return const TransactionSaveResult(
+      success: true,
+      message: 'Transaksi berhasil dihapus',
+    );
+  } catch (e) {
+    return TransactionSaveResult(
+      success: false,
+      message: 'Gagal menghapus: $e',
+    );
+  }
+}
+
 // ==================== Refresh Provider ====================
 
-/// Provider that invalidates when transaction is saved (for auto-refresh)
 final transactionRefreshProvider = StateProvider<int>((ref) => 0);
 
-/// Trigger a refresh of transaction data (call after saving a transaction)
 void triggerTransactionRefresh(WidgetRef ref) {
   ref.read(transactionRefreshProvider.notifier).state++;
 }

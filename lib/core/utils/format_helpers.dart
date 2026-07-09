@@ -30,7 +30,7 @@ class FormatHelpers {
   /// Format period string (YYYY-MM) to display format (MMMM yyyy)
   static String displayPeriod(String periodStr) {
     try {
-      final date = DateTime.parse('${periodStr}-01');
+      final date = DateTime.parse('$periodStr-01');
       return DateFormat('MMMM yyyy', 'id_ID').format(date);
     } catch (_) {
       return periodStr;

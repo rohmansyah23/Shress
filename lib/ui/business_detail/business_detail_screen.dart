@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
-import '../../data/local/database.dart';
+import '../../core/utils/error_handler.dart';
+import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../transaction/transaction_history_screen.dart';
 
@@ -11,9 +13,6 @@ class BusinessDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final db = LocalDatabase.instance;
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(title: Text(business.name)),
       body: SingleChildScrollView(
@@ -31,10 +30,12 @@ class BusinessDetailScreen extends StatelessWidget {
                   children: [
                     Text(business.name, style: AppTheme.heading2),
                     const SizedBox(height: 8),
-                    if (business.description != null && business.description!.isNotEmpty)
+                    if (business.description != null &&
+                        business.description!.isNotEmpty)
                       Text(business.description!, style: AppTheme.bodyText),
                     const SizedBox(height: 8),
-                    Text('ID: ${business.businessId}', style: AppTheme.caption),
+                    Text('ID: ${business.businessId}',
+                        style: AppTheme.caption),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -42,48 +43,14 @@ class BusinessDetailScreen extends StatelessWidget {
                           icon: const Icon(Icons.edit_rounded),
                           label: const Text('Edit'),
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Edit bisnis - coming soon')),
-                            );
+                            _showEditDialog(context);
                           },
                         ),
                         const SizedBox(width: 12),
                         OutlinedButton.icon(
                           icon: const Icon(Icons.qr_code_2_rounded),
                           label: const Text('Upload QRIS'),
-                          onPressed: () async {
-                            final ctrl = TextEditingController(text: business.qrisImageUrl ?? '');
-                            final ok = await showDialog<bool>(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                title: const Text('Upload QRIS'),
-                                content: TextField(
-                                  controller: ctrl,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Image URL atau path lokal',
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Batal')),
-                                  ElevatedButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Simpan')),
-                                ],
-                              ),
-                            );
-                            if (!context.mounted) return;
-                            if (ok == true) {
-                              final updated = BusinessModel(
-                                businessId: business.businessId,
-                                name: business.name,
-                                description: business.description,
-                                qrisImageUrl: ctrl.text.trim().isEmpty ? null : ctrl.text.trim(),
-                                lastSyncedAt: business.lastSyncedAt,
-                                createdAt: business.createdAt,
-                              );
-                              await LocalDatabase.instance.saveBusiness(updated);
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('QRIS disimpan')));
-                              if (context.mounted) Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => BusinessDetailScreen(business: updated)));
-                            }
-                          },
+                          onPressed: () => _showQrisDialog(context),
                         ),
                       ],
                     ),
@@ -93,7 +60,7 @@ class BusinessDetailScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 24),
-            Text('Ringkasan Transaksi', style: AppTheme.heading3),
+            Text('Riwayat Transaksi', style: AppTheme.heading3),
             const SizedBox(height: 12),
             Card(
               child: Padding(
@@ -101,19 +68,24 @@ class BusinessDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Total transaksi: ${db.getTransactionsByBusiness(business.businessId).length}', style: AppTheme.bodyText),
-                    const SizedBox(height: 8),
-                    Text('Last sync: -', style: AppTheme.caption),
+                    Text(
+                      'Lihat semua transaksi bisnis ini',
+                      style: AppTheme.bodyText,
+                    ),
                     const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => TransactionHistoryScreen(business: business),
-                        ));
-                      },
-                      child: const Text('Lihat Riwayat Transaksi'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => TransactionHistoryScreen(
+                                  business: business,
+                                  isOwnerView: true),
+                            ),
+                          );
+                        },
+                        child: const Text('Lihat Riwayat Transaksi'),
                       ),
                     ),
                   ],
@@ -122,6 +94,108 @@ class BusinessDetailScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context) {
+    final nameCtrl = TextEditingController(text: business.name);
+    final descCtrl =
+        TextEditingController(text: business.description ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Bisnis'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(labelText: 'Nama Bisnis'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: descCtrl,
+              maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Deskripsi'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final name = nameCtrl.text.trim();
+              if (name.isEmpty) return;
+              try {
+                await Supabase.instance.client
+                    .from('businesses')
+                    .update({
+                      'name': name,
+                      'description': descCtrl.text.trim(),
+                    })
+                    .eq('id', business.businessId);
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Bisnis berhasil diperbarui')),
+                );
+              } catch (e) {
+                ErrorSnackbar.show(context, ErrorHandler.classify(e));
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showQrisDialog(BuildContext context) {
+    final ctrl =
+        TextEditingController(text: business.qrisImageUrl ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Upload QRIS'),
+        content: TextField(
+          controller: ctrl,
+          decoration: const InputDecoration(
+            labelText: 'Image URL',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final url = ctrl.text.trim();
+              try {
+                await Supabase.instance.client
+                    .from('businesses')
+                    .update({
+                      'qris_image_url': url.isEmpty ? null : url,
+                    })
+                    .eq('id', business.businessId);
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('QRIS berhasil disimpan')),
+                );
+              } catch (e) {
+                ErrorSnackbar.show(context, ErrorHandler.classify(e));
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
       ),
     );
   }

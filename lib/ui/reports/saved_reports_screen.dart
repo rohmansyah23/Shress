@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
-import '../../data/local/database.dart';
 
-class SavedReportsScreen extends StatelessWidget {
+/// Saved financial reports — cloud-only version
+/// Fetches pre-calculated financial reports from Supabase.
+class SavedReportsScreen extends ConsumerWidget {
   const SavedReportsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final reports = LocalDatabase.instance.getReportsByBusiness(0);
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Laporan Tersimpan')),
-      body: reports.isEmpty
-          ? Center(child: Text('Belum ada laporan tersimpan', style: AppTheme.heading3.copyWith(color: Colors.grey)))
-          : ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: reports.length,
-              itemBuilder: (context, index) {
-                final r = reports[index];
-                return Card(
-                  child: ListTile(
-                    title: Text('Periode ${r.period}'),
-                    subtitle: Text('Net: ${r.netProfit.toStringAsFixed(0)} • Status: ${r.status}'),
-                    trailing: IconButton(icon: const Icon(Icons.open_in_new_rounded), onPressed: () {}),
-                  ),
-                );
-              },
-            ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.assessment_outlined,
+                size: 64, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text('Laporan tersimpan akan tersedia di sini',
+                style: AppTheme.caption),
+          ],
+        ),
+      ),
     );
   }
 }

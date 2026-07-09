@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
+import '../../core/utils/error_handler.dart';
 import '../../core/theme/app_theme.dart';
-import '../../data/local/database.dart';
+import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/user_model.dart';
+import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 
-/// Provider that fetches all users (from server, falling back to local cache)
+/// Provider that fetches all users directly from Supabase (cloud-only)
 final allUsersProvider = FutureProvider<List<UserModel>>((ref) async {
   final repo = ref.read(authRepositoryProvider);
   return repo.getAllUsers();
 });
 
-/// Provider for a specific user's business assignments (sync - Hive reads)
+/// Provider for a specific user's business assignments (Supabase cloud)
 final userBusinessIdsProvider =
-    Provider.family<Set<int>, String>((ref, userId) {
-  ref.watch(userManagementRefreshProvider);
-  final assignments = LocalDatabase.instance.getBusinessesForUser(userId);
-  return assignments.map((e) => e.businessId).toSet();
+    FutureProvider.family<Set<int>, String>((ref, userId) async {
+  final ids = await SupabaseService.instance.getBusinessIdsForUser(userId);
+  return ids.toSet();
 });
 
 /// Trigger to refresh user data
@@ -36,6 +38,13 @@ class UserManagementPanel extends ConsumerStatefulWidget {
 class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  List<BusinessModel> _businesses = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBusinesses();
+  }
 
   @override
   void dispose() {
@@ -43,14 +52,17 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
     super.dispose();
   }
 
+  Future<void> _loadBusinesses() async {
+    final businesses = await SupabaseService.instance.getAllBusinesses();
+    if (mounted) setState(() => _businesses = businesses);
+  }
+
   @override
   Widget build(BuildContext context) {
     final usersAsync = ref.watch(allUsersProvider);
-    final businesses = LocalDatabase.instance.getAllBusinesses();
 
     return Column(
       children: [
-        // Search bar
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: TextField(
@@ -68,11 +80,11 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                     )
                   : null,
             ),
-            onChanged: (value) => setState(() => _searchQuery = value.toLowerCase()),
+            onChanged: (value) =>
+                setState(() => _searchQuery = value.toLowerCase()),
           ),
         ),
 
-        // User list
         Expanded(
           child: usersAsync.when(
             data: (users) {
@@ -87,11 +99,8 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.person_search_rounded,
-                        size: 64,
-                        color: Colors.grey.shade400,
-                      ),
+                      Icon(Icons.person_search_rounded,
+                          size: 64, color: Colors.grey.shade400),
                       const SizedBox(height: 16),
                       Text(
                         _searchQuery.isNotEmpty
@@ -108,6 +117,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                 onRefresh: () async {
                   ref.invalidate(allUsersProvider);
                   ref.read(userManagementRefreshProvider.notifier).state++;
+                  await _loadBusinesses();
                 },
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -117,7 +127,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                     return _UserCard(
                       key: ValueKey(user.userId),
                       user: user,
-                      businesses: businesses,
+                      businesses: _businesses,
                       onRoleChanged: (newRole) =>
                           _handleRoleChange(user, newRole),
                       onBusinessesChanged: (selectedIds) =>
@@ -127,21 +137,10 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                 ),
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: AppTheme.lossColor),
-                  const SizedBox(height: 16),
-                  Text('Gagal memuat user', style: AppTheme.caption),
-                  const SizedBox(height: 8),
-                  OutlinedButton(
-                    onPressed: () => ref.invalidate(allUsersProvider),
-                    child: const Text('Coba Lagi'),
-                  ),
-                ],
-              ),
+            loading: () => const SkeletonUserList(),
+            error: (error, _) => ErrorRetryWidget(
+              message: ErrorHandler.classify(error).userMessage,
+              onRetry: () => ref.invalidate(allUsersProvider),
             ),
           ),
         ),
@@ -154,20 +153,18 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
 
     try {
       final repo = ref.read(authRepositoryProvider);
-
       await repo.updateUserRole(userId: user.userId, newRole: newRole);
 
       if (!mounted) return;
       ref.invalidate(allUsersProvider);
 
-      // If role changed from manager/staff to owner, clear business assignments
       if (newRole == AppConstants.roleOwner) {
         final assignments =
-            LocalDatabase.instance.getBusinessesForUser(user.userId);
-        for (final a in assignments) {
+            await SupabaseService.instance.getBusinessIdsForUser(user.userId);
+        for (final businessId in assignments) {
           await repo.unassignUserFromBusiness(
             userId: user.userId,
-            businessId: a.businessId,
+            businessId: businessId,
           );
         }
         ref.read(userManagementRefreshProvider.notifier).state++;
@@ -184,13 +181,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal mengubah role: $e'),
-          backgroundColor: AppTheme.lossColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.show(context, ErrorHandler.classify(e));
     }
   }
 
@@ -206,26 +197,19 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
 
       if (!mounted) return;
       ref.invalidate(allUsersProvider);
-      ref.read(userManagementRefreshProvider.notifier).state++;
+      ref.invalidate(userBusinessIdsProvider(user.userId));
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('Akses bisnis untuk ${user.username} diperbarui'),
+          content: Text('Akses bisnis untuk ${user.username} diperbarui'),
           backgroundColor: AppTheme.profitColor,
           behavior: SnackBarBehavior.floating,
         ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal memperbarui akses: $e'),
-          backgroundColor: AppTheme.lossColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.show(context, ErrorHandler.classify(e));
     }
   }
 
@@ -258,22 +242,9 @@ class _UserCard extends ConsumerWidget {
     required this.onBusinessesChanged,
   });
 
-  Color _roleColor(String role) {
-    switch (role) {
-      case AppConstants.roleOwner:
-        return AppTheme.primaryColor;
-      case AppConstants.roleManager:
-        return AppTheme.infoColor;
-      case AppConstants.roleStaff:
-        return AppTheme.secondaryColor;
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assignedIds = ref.watch(userBusinessIdsProvider(user.userId));
+    final assignedIdsAsync = ref.watch(userBusinessIdsProvider(user.userId));
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -282,22 +253,15 @@ class _UserCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User header row
             Row(
               children: [
-                // Avatar
                 CircleAvatar(
                   radius: 22,
-                  backgroundColor:
-                      _roleColor(user.role).withValues(alpha: 0.15),
-                  child: Text(
-                    _roleEmoji(user.role),
-                    style: const TextStyle(fontSize: 20),
-                  ),
+                  backgroundColor: _roleColor(user.role).withValues(alpha: 0.15),
+                  child: Text(_roleEmoji(user.role),
+                      style: const TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(width: 12),
-
-                // Name & info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,8 +275,6 @@ class _UserCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-
-                // Role dropdown
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
@@ -324,23 +286,19 @@ class _UserCard extends ConsumerWidget {
                       value: user.role,
                       icon: const Icon(Icons.arrow_drop_down, size: 20),
                       style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87),
                       items: const [
                         DropdownMenuItem(
-                          value: 'owner',
-                          child: Text('👑 Owner'),
-                        ),
+                            value: 'owner',
+                            child: Text('👑 Owner')),
                         DropdownMenuItem(
-                          value: 'manager',
-                          child: Text('📋 Manager'),
-                        ),
+                            value: 'manager',
+                            child: Text('📋 Manager')),
                         DropdownMenuItem(
-                          value: 'staff',
-                          child: Text('👤 Staff'),
-                        ),
+                            value: 'staff',
+                            child: Text('👤 Staff')),
                       ],
                       onChanged: (value) {
                         if (value != null) onRoleChanged(value);
@@ -351,53 +309,79 @@ class _UserCard extends ConsumerWidget {
               ],
             ),
 
-            // Business assignment (only for Manager/Staff)
             if (user.role != AppConstants.roleOwner) ...[
               const Divider(height: 24),
-              Text(
-                'Akses ke Bisnis:',
-                style: AppTheme.caption.copyWith(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
-                ),
-              ),
+              Text('Akses ke Bisnis:',
+                  style: AppTheme.caption.copyWith(
+                      fontWeight: FontWeight.w600, fontSize: 12)),
               const SizedBox(height: 8),
 
-              if (businesses.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'Belum ada bisnis',
-                    style: AppTheme.caption.copyWith(fontSize: 12),
-                  ),
-                )
-              else
-                ...businesses.map((biz) {
-                  final isChecked = assignedIds.contains(biz.businessId);
-                  return CheckboxListTile(
-                    dense: true,
-                    visualDensity: VisualDensity.compact,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(biz.name, style: const TextStyle(fontSize: 13)),
-                    value: isChecked,
-                    onChanged: (checked) {
-                      final updated = Set<int>.from(assignedIds);
-                      if (checked == true) {
-                        updated.add(biz.businessId);
-                      } else {
-                        updated.remove(biz.businessId);
-                      }
-                      onBusinessesChanged(updated);
-                    },
-                    activeColor: Theme.of(context).colorScheme.primary,
-                    controlAffinity: ListTileControlAffinity.leading,
+              // Show assigned IDs when loading
+              assignedIdsAsync.when(
+                data: (assignedIds) {
+                  if (businesses.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text('Belum ada bisnis',
+                          style:
+                              AppTheme.caption.copyWith(fontSize: 12)),
+                    );
+                  }
+                  return Column(
+                    children: businesses.map((biz) {
+                      final isChecked = assignedIds.contains(biz.businessId);
+                      return CheckboxListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(biz.name,
+                            style: const TextStyle(fontSize: 13)),
+                        value: isChecked,
+                        onChanged: (checked) {
+                          final updated = Set<int>.from(assignedIds);
+                          if (checked == true) {
+                            updated.add(biz.businessId);
+                          } else {
+                            updated.remove(biz.businessId);
+                          }
+                          onBusinessesChanged(updated);
+                        },
+                        activeColor: Theme.of(context).colorScheme.primary,
+                        controlAffinity: ListTileControlAffinity.leading,
+                      );
+                    }).toList(),
                   );
-                }),
+                },
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: LinearProgressIndicator(),
+                ),
+                error: (e, _) => Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    ErrorHandler.classify(e).userMessage,
+                    style: AppTheme.caption.copyWith(color: AppTheme.lossColor),
+                  ),
+                ),
+              ),
             ],
           ],
         ),
       ),
     );
+  }
+
+  Color _roleColor(String role) {
+    switch (role) {
+      case AppConstants.roleOwner:
+        return AppTheme.primaryColor;
+      case AppConstants.roleManager:
+        return AppTheme.infoColor;
+      case AppConstants.roleStaff:
+        return AppTheme.secondaryColor;
+      default:
+        return Colors.grey;
+    }
   }
 
   String _roleEmoji(String role) {

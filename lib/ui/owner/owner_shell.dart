@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
-import '../auth/login_screen.dart';
 import 'owner_dashboard_tab.dart';
 import 'user_management_panel.dart';
+import '../reports/owner_report_screen.dart';
+import '../profile/profile_screen.dart';
 
-/// Owner Consolidated Panel
-/// Shows multi-business dashboard and user management
+/// Owner Shell with Bottom Navigation.
+/// Tabs: Dashboard, Users, Laporan Keuangan, Profil
 class OwnerShell extends ConsumerStatefulWidget {
   const OwnerShell({super.key});
 
@@ -20,55 +21,41 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     if (user == null) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Memuat profil...'),
+            ],
+          ),
+        ),
       );
     }
 
     final pages = <Widget>[
       OwnerDashboardTab(user: user),
       const UserManagementPanel(),
+      const OwnerReportScreen(),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _selectedIndex == 0 ? 'SSRS Finance' : 'Manajemen User',
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Keluar',
-            onPressed: () async {
-              await ref.read(authProvider.notifier).logout();
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              }
-            },
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: Container(
-            color: colorScheme.primary.withValues(alpha: 0.1),
-            height: 1,
-          ),
-        ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: pages,
       ),
-      body: pages[_selectedIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) =>
             setState(() => _selectedIndex = index),
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.dashboard_rounded),
+            icon: Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(Icons.dashboard_rounded),
             label: 'Dashboard',
           ),
@@ -76,6 +63,16 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
             icon: Icon(Icons.people_outline_rounded),
             selectedIcon: Icon(Icons.people_rounded),
             label: 'Users',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.assessment_outlined),
+            selectedIcon: Icon(Icons.assessment_rounded),
+            label: 'Laporan',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Profil',
           ),
         ],
       ),

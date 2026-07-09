@@ -136,7 +136,13 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data ->> 'username', split_part(NEW.email, '@', 1)),
     COALESCE(NEW.raw_user_meta_data ->> 'display_name', split_part(NEW.email, '@', 1)),
     COALESCE(NEW.raw_user_meta_data ->> 'role', 'staff')
-  );
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    username = EXCLUDED.username,
+    display_name = EXCLUDED.display_name,
+    role = EXCLUDED.role,
+    updated_at = now();
   RETURN NEW;
 END;
 $$;

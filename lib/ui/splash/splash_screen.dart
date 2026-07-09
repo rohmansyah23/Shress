@@ -5,10 +5,9 @@ import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../owner/owner_shell.dart';
-import '../business_switcher/business_switcher_screen.dart';
+import '../manager/manager_shell.dart';
 
 /// Splash screen with reactive route guard logic.
-/// Listens to auth state changes and redirects accordingly.
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -18,24 +17,7 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
   bool _navigated = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Listen for auth state changes and navigate reactively
-    ref.listen(authProvider, (_, next) {
-      if (_navigated) return;
-
-      if (next.status == AuthStatus.authenticated && next.user != null) {
-        _navigated = true;
-        _navigateToDashboard(next.user!.role);
-      } else if (next.status == AuthStatus.unauthenticated) {
-        _navigated = true;
-        _navigateToLogin();
-      }
-    });
-  }
+  bool _subscribed = false;
 
   void _navigateToDashboard(String role) {
     Widget destination;
@@ -44,7 +26,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         destination = const OwnerShell();
       case AppConstants.roleManager:
       case AppConstants.roleStaff:
-        destination = const BusinessSwitcherScreen();
+        destination = const ManagerShell();
       default:
         destination = const LoginScreen();
     }
@@ -62,6 +44,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_subscribed) {
+      _subscribed = true;
+      ref.listen(authProvider, (_, next) {
+        if (_navigated) return;
+
+        if (next.status == AuthStatus.authenticated && next.user != null) {
+          _navigated = true;
+          _navigateToDashboard(next.user!.role);
+        } else if (next.status == AuthStatus.unauthenticated) {
+          _navigated = true;
+          _navigateToLogin();
+        }
+      });
+    }
     final authState = ref.watch(authProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -70,7 +66,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // App Logo
             Container(
               width: 96,
               height: 96,
@@ -98,7 +93,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ),
             const SizedBox(height: 48),
 
-            // Status indicator
             if (authState.status == AuthStatus.unknown)
               const Column(
                 children: [

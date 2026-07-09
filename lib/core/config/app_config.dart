@@ -56,4 +56,9 @@ class AppConfig {
 
   static int get qrisCacheDays =>
       int.tryParse(dotenv.env['QRIS_CACHE_DAYS'] ?? '') ?? 30;
+
+  /// Sentry DSN for crash reporting.
+  /// Obtain from https://sentry.io/settings/projects/ → select project → Client Keys (DSN).
+  static String get sentryDsn =>
+      dotenv.env['SENTRY_DSN'] ?? '';
 }

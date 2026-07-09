@@ -20,16 +20,11 @@ dependencies:
   # Supabase Backend
   supabase_flutter: ^2.16.0
 
-  # Local Database (Hive - Offline First)
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
-
   # Environment Variables
   flutter_dotenv: ^5.2.1
 
   # Networking & Connectivity
   connectivity_plus: ^6.1.1
-  flutter_secure_storage: ^9.2.4
 
   # Image Caching (QRIS)
   cached_network_image: ^3.4.1
@@ -50,7 +45,7 @@ dependencies:
   intl: ^0.20.2
   path_provider: ^2.1.5
   uuid: ^4.5.1
-
+  sentry: ^9.24.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

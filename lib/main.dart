@@ -5,29 +5,66 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config/app_config.dart';
 import 'core/constants/constants.dart';
 import 'core/network/connectivity_service.dart';
-import 'core/sync/sync_service.dart';
+import 'core/services/sentry_service.dart';
+import 'core/widgets/global_error_boundary.dart';
+import 'core/widgets/offline_overlay.dart';
+import 'data/remote/supabase_service.dart';
 import 'core/theme/app_theme.dart';
-import 'data/local/database.dart';
+import 'ui/splash/splash_screen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  try {
+    await _runApp();
+  } catch (e, stack) {
+    // ignore: avoid_print
+    print('[Fatal] Unhandled error during app startup: $e');
+    SentryService.instance.captureException(
+      e,
+      stackTrace: stack,
+      category: 'startup',
+      extras: {'source': 'main'},
+    );
+
+    runApp(
+      const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(
+            child: Text('Gagal memulai aplikasi. Silakan coba lagi.'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _runApp() async {
   // Load environment variables
   await AppConfig.load();
+
+  // Initialize Sentry for crash reporting (before any error handlers)
+  final sentryDsn = AppConfig.sentryDsn;
+  if (sentryDsn.isNotEmpty) {
+    await SentryService.instance.init(dsn: sentryDsn);
+  } else {
+    // ignore: avoid_print
+    print('⚠️  SENTRY_DSN tidak dikonfigurasi — crash reporting dinonaktifkan.\n'
+        '   Untuk mengaktifkan, tambahkan SENTRY_DSN ke file .env');
+  }
+
+  // Set up global error handlers before app initializes
+  final errorObserver = initGlobalErrorHandlers();
 
   // Validate .env configuration
   final configError = AppConfig.validate();
   if (configError != null) {
-    // Print error to console and still allow app to run with limited features
     // ignore: avoid_print
-    print('\n⚠️  KONFIGURASI .env ERROR:');
-    // ignore: avoid_print
-    print(configError);
-    // ignore: avoid_print
-    print('Aplikasi akan berjalan dalam mode terbatas (offline-only).\n');
+    print('⚠️  $configError');
   }
 
-  // Initialize Supabase (will fail gracefully if .env is misconfigured)
+  // Initialize Supabase
   try {
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,
@@ -35,25 +72,26 @@ void main() async {
     );
   } catch (e) {
     // ignore: avoid_print
-    print('⚠️  Supabase initialization skipped: .env not configured.');
+    print('⚠️  Supabase initialization failed: $e');
+    SentryService.instance.captureException(
+      e,
+      category: 'startup',
+      extras: {'source': 'supabase_init'},
+    );
   }
 
-  // Initialize Local Database (Hive)
-  await LocalDatabase.instance.initialize();
+  // Initialize SupabaseService singleton
+  SupabaseService.instance.init(Supabase.instance.client);
 
-  // Initialize Connectivity Service (singleton)
+  // Initialize ConnectivityService for offline detection
   await ConnectivityService.instance.initialize();
 
-  // Initialize Sync Service (singleton)
-  await SyncService.instance.initialize(
-    localDb: LocalDatabase.instance,
-    supabase: Supabase.instance.client,
-    connectivityService: ConnectivityService.instance,
-  );
-
   runApp(
-    const ProviderScope(
-      child: SSRSFinanceApp(),
+    ProviderScope(
+      observers: [
+        errorObserver,
+      ],
+      child: const SSRSFinanceApp(),
     ),
   );
 }
@@ -67,43 +105,11 @@ class SSRSFinanceApp extends StatelessWidget {
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const SplashScreen(),
-    );
-  }
-}
-
-/// Temporary placeholder splash screen
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.account_balance_rounded,
-              size: 80,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppConstants.appName,
-              style: AppTheme.heading1.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Multi-tenant Financial Reports',
-              style: AppTheme.caption,
-            ),
-            const SizedBox(height: 32),
-            const CircularProgressIndicator(),
-          ],
-        ),
+      home: Stack(
+        children: [
+          const SplashScreen(),
+          const OfflineOverlay(),
+        ],
       ),
     );
   }

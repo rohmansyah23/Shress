@@ -5,10 +5,13 @@ import 'package:intl/intl.dart';
 import '../../core/constants/constants.dart';
 import '../../core/export/export_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
-import '../../data/local/database.dart';
+import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
+import '../../data/remote/supabase_service.dart';
 import '../../providers/transaction_provider.dart';
 
 // ==================== Data Models ====================
@@ -67,12 +70,12 @@ enum PeriodFilter {
 final profitLossProvider =
     FutureProvider.family<ProfitLossData, _PnLParams>((ref, params) async {
   ref.watch(transactionRefreshProvider);
-  final db = LocalDatabase.instance;
+  final supa = SupabaseService.instance;
 
   // Get transactions for the period
   List<TransactionModel> transactions;
   if (params.startDate != null && params.endDate != null) {
-    transactions = db.getTransactionsByDateRange(
+    transactions = await supa.getTransactionsByDateRange(
       params.businessId,
       params.startDate!,
       params.endDate!,
@@ -82,11 +85,11 @@ final profitLossProvider =
     final now = DateTime.now();
     final start = '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
     final end = '${now.year}-${now.month.toString().padLeft(2, '0')}-${_daysInMonth(now.year, now.month)}';
-    transactions = db.getTransactionsByDateRange(params.businessId, start, end);
+    transactions = await supa.getTransactionsByDateRange(params.businessId, start, end);
   }
 
   // Get categories for names
-  final categories = db.getCategoriesByBusiness(params.businessId);
+  final categories = await supa.getCategoriesByBusiness(params.businessId);
   final categoryMap = {for (final c in categories) c.categoryId: c};
 
   // Aggregate
@@ -353,23 +356,10 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
         data: (pl) => _showTransactionDetail
             ? _buildTransactionList(pl, colorScheme)
             : _buildAccountingLayout(pl, colorScheme),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: AppTheme.lossColor),
-              const SizedBox(height: 16),
-              Text('Gagal memuat laporan', style: AppTheme.caption),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                onPressed: () =>
-                    ref.invalidate(profitLossProvider(params)),
-                child: const Text('Coba Lagi'),
-              ),
-            ],
-          ),
+        loading: () => const SkeletonReport(),
+        error: (error, _) => ErrorRetryWidget.fromAppError(
+          ErrorHandler.classify(error),
+          onRetry: () => ref.invalidate(profitLossProvider(params)),
         ),
       ),
     );
@@ -1200,10 +1190,11 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
     );
   }
 
-  void _showTransactionDetailDialog(TransactionModel tx) {
+  Future<void> _showTransactionDetailDialog(TransactionModel tx) async {
     final isIncome = tx.type == AppConstants.typeIncome;
-    final catName = _getCategoryName(tx.categoryId);
+    final catName = await _getCategoryName(tx.categoryId);
 
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1247,12 +1238,9 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
     );
   }
 
-  String _getCategoryName(int categoryId) {
-    final cats = LocalDatabase.instance.getCategoriesByBusiness(
-      widget.business.businessId,
-    );
-    final cat = cats.where((c) => c.categoryId == categoryId).firstOrNull;
-    return cat?.name ?? 'Kategori #$categoryId';
+  Future<String> _getCategoryName(int categoryId) async {
+    return SupabaseService.instance
+        .getCategoryName(widget.business.businessId, categoryId);
   }
 
   String _paymentLabel(String method) {

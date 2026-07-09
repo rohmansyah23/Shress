@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../owner/owner_shell.dart';
+import '../manager/manager_shell.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _navigated = false;
 
   @override
   void dispose() {
@@ -24,17 +28,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
+  void _navigateToDashboard(String role) {
+    if (_navigated) return;
+    _navigated = true;
+
+    Widget destination;
+    switch (role) {
+      case AppConstants.roleOwner:
+        destination = const OwnerShell();
+      case AppConstants.roleManager:
+      case AppConstants.roleStaff:
+        destination = const ManagerShell();
+      default:
+        destination = const LoginScreen();
+    }
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => destination),
+      (route) => false,
+    );
+  }
+
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    await ref.read(authProvider.notifier).login(
+    final success = await ref.read(authProvider.notifier).login(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
 
-    if (mounted) setState(() => _isLoading = false);
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success && !_navigated) {
+      final role = ref.read(authProvider).user?.role;
+      if (role != null) {
+        _navigateToDashboard(role);
+      }
+    }
   }
 
   @override
@@ -53,7 +87,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo & Title
                   Icon(
                     Icons.account_balance_rounded,
                     size: 72,
@@ -75,7 +108,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 48),
 
-                  // Error Message
                   if (authState.errorMessage != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -88,19 +120,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: AppTheme.lossColor,
-                            size: 20,
-                          ),
+                          Icon(Icons.error_outline,
+                              color: AppTheme.lossColor, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               authState.errorMessage!,
                               style: TextStyle(
-                                color: AppTheme.lossColor,
-                                fontSize: 13,
-                              ),
+                                  color: AppTheme.lossColor, fontSize: 13),
                             ),
                           ),
                         ],
@@ -109,7 +136,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 16),
                   ],
 
-                  // Email Field
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -130,7 +156,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Password Field
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
@@ -161,7 +186,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Login Button
                   SizedBox(
                     height: 52,
                     child: FilledButton(
