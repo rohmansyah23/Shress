@@ -1,0 +1,83 @@
+name: ssrs_finance
+description: "SSRS Finance - Multi-tenant financial reporting application"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Supabase Backend
+  supabase_flutter: ^2.8.1
+
+  # Local Database (Hive - Offline First)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Environment Variables
+  flutter_dotenv: ^5.2.1
+
+  # Networking & Connectivity
+  connectivity_plus: ^6.1.1
+  flutter_secure_storage: ^9.2.4
+
+  # Image Caching (QRIS)
+  cached_network_image: ^3.4.1
+
+  # SVG Rendering (for QRIS images)
+  flutter_svg: ^2.0.17
+
+  # Charts & Visualization
+  fl_chart: ^0.69.2
+
+  # PDF Generation
+  pdf: ^3.11.1
+
+  # File Sharing
+  share_plus: ^10.1.4
+
+  # Utilities
+  intl: ^0.20.2
+  path_provider: ^2.1.5
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+  # Code Generation
+  build_runner: ^2.4.14
+
+  # Launcher Icons Generator
+  flutter_launcher_icons: ^0.14.3
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
+    - assets/icons/
+    - assets/images/qris/
+
+# Launcher Icons Configuration
+# Place your source icon as assets/icons/app_icon.png (1024x1024 recommended)
+# Then run: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#1A237E"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+  min_sdk_android: 24
