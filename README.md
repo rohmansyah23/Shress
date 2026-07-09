@@ -1,61 +1,43 @@
 # Sheress
 
-Multi-tenant financial reporting application — offline-first dengan Supabase sync, role-based access, dan P&L reports.
+Multi-tenant financial reporting application — cloud-first dengan Supabase, role-based access, dan P&L reports.
 
 > **Status:** Active Development · `v1.0.0`
-
-## Fitur Utama
-
-| Fitur | Deskripsi |
-|---|---|
-| **📊 Dashboard** | Ringkasan keuangan per bisnis — Pendapatan, HPP, Laba Kotor, Pengeluaran, Laba/Rugi |
-| **💳 Transaksi** | Input transaksi Uang Masuk/Keluar per kategori, dengan dukungan COGS untuk income |
-| **📈 Laporan Laba/Rugi** | Periodic breakdown (Bulan Ini · Bulan Lalu · 3 Bulan · Kustom), grafik bulanan/mingguan, bar chart + line chart overlay |
-| **📤 Export CSV/PDF** | Ekspor laporan laba/rugi ke file CSV (spreadsheet) atau PDF (siap cetak), share via system share sheet |
-| **👥 Multi-role** | Owner (full access), Manager (manage staff + transaksi), Staff (transaksi sendiri) |
-| **🔐 Auth** | Login/logout via Supabase Auth, session restore, role-based routing |
-| **📱 QRIS** | Offline-first QRIS image display per bisnis, upload ke Supabase Storage |
-| **🔄 Offline Sync** | Hive local database + Supabase sync, connectivity-aware |
-| **👑 Owner Panel** | Multi-business dashboard, user management (role dropdown, business assignment) |
-
-## Screens
-
-```
-lib/ui/
-├── splash/          splash_screen.dart         → App splash + auth route guard
-├── auth/            login_screen.dart           → Email/password login
-├── owner/
-│   ├── owner_shell.dart                        → Owner scaffold + bottom nav
-│   ├── owner_dashboard_tab.dart                → Owner business overview
-│   └── user_management_panel.dart              → User/RBAC management
-├── business_switcher/
-│   └── business_switcher_screen.dart           → Business picker (manager/staff)
-├── dashboard/
-│   └── dashboard_screen.dart                   → Store dashboard + summary cards
-├── transaction/
-│   └── transaction_sheet.dart                  → Income/Expense form (modal)
-└── ledger/
-    └── profit_loss_sheet.dart                  → P&L sheet + bar/line chart + export
-```
 
 ## Tech Stack
 
 | Layer | Teknologi |
 |---|---|
 | **Framework** | Flutter 3.x · Dart 3.x |
-| **State Management** | Riverpod 2.x (StateNotifier + FutureProvider.family) |
+| **State Management** | Riverpod 2.x (StateNotifier + FutureProvider) |
 | **Backend** | Supabase (Auth · PostgreSQL · Storage) |
-| **Local DB** | Hive (offline-first, sync buffer) |
 | **Charts** | fl_chart 0.69.x (bar + line combined) |
 | **PDF** | pdf 3.x + share_plus 10.x |
 | **SVG** | flutter_svg 2.x |
-| **Icons** | flutter_launcher_icons |
+| **Error Tracking** | Sentry 9.x |
 | **Networking** | supabase_flutter · connectivity_plus |
+| **Icons** | flutter_launcher_icons |
+
+## Fitur Utama
+
+| Fitur | Deskripsi |
+|---|---|
+| **Dashboard** | Ringkasan keuangan per bisnis — Pendapatan, HPP, Laba Kotor, Pengeluaran, Laba/Rugi |
+| **Transaksi** | Input transaksi Uang Masuk/Keluar per kategori, dengan dukungan COGS untuk income |
+| **Laporan Laba/Rugi** | Periodic breakdown (Bulan Ini · Bulan Lalu · 3 Bulan · Kustom), grafik bulanan/mingguan, bar chart + line chart overlay |
+| **Export CSV/PDF** | Ekspor laporan laba/rugi ke file CSV atau PDF, share via system share sheet |
+| **Multi-role** | Owner (full access), Manager (manage staff + transaksi), Staff (transaksi sendiri) |
+| **Auth** | Login/logout via Supabase Auth, session restore, role-based routing, fallback RPC password |
+| **QRIS** | QRIS image display per bisnis, upload ke Supabase Storage |
+| **Owner Panel** | Multi-business dashboard, user management (role dropdown, business assignment) |
+| **Sync Status** | Indikator status koneksi & pending sync |
+| **Saved Reports** | Simpan laporan periodik untuk akses cepat |
 
 ## Arsitektur
 
 ```
 lib/
+├── main.dart                              Entry point + ProviderScope
 ├── core/
 │   ├── config/          app_config.dart         → .env loader + validator
 │   ├── constants/       constants.dart          → App-wide constants
@@ -63,31 +45,90 @@ lib/
 │   ├── network/         connectivity_service.dart
 │   ├── qris/            qris_resolver.dart      → QRIS image resolution
 │   │                   qris_upload_service.dart → Supabase Storage upload
-│   ├── sync/            sync_service.dart       → Offline → Supabase sync
+│   ├── services/        sentry_service.dart     → Crash reporting
+│   ├── sync/            sync_service.dart       → V1 stub (cloud-only)
 │   ├── theme/           app_theme.dart          → Material 3 theme + text styles
-│   └── utils/           format_helpers.dart     → Rupiah, date, period formatting
+│   ├── utils/           error_handler.dart      → Error classification
+│   │                   format_helpers.dart      → Rupiah, date, period formatting
+│   └── widgets/         error_widgets.dart      → Error/skeleton widgets
+│                       global_error_boundary.dart
+│                       offline_overlay.dart
+│                       skeleton_widgets.dart
 │
 ├── data/
 │   ├── local/
-│   │   ├── database.dart                       → Hive CRUD operations
-│   │   └── models/      *.dart                 → Data models (Business, Transaction, etc.)
-│   └── remote/
-│       └── auth_repository.dart                → Supabase Auth operations
+│   │   ├── database.dart                       → V1 stub (cloud-only)
+│   │   └── models/      *.dart                 → 6 data models
+│   ├── remote/
+│   │   ├── auth_repository.dart                → Supabase Auth + RPC fallback
+│   │   └── supabase_service.dart               → All Supabase queries
+│   └── repositories/                           → V2 (empty)
 │
 ├── providers/
-│   ├── auth_provider.dart                      → Auth state + role management
-│   └── transaction_provider.dart               → Transaction save + refresh
+│   ├── auth_provider.dart                      → Auth state, roles, users, businesses
+│   └── transaction_provider.dart               → Transaction CRUD + refresh
 │
-└── ui/                  (screens listed above)
+└── ui/
+    ├── auth/            login_screen.dart
+    ├── business_detail/ business_detail_screen.dart
+    ├── business_switcher/ business_switcher_screen.dart
+    ├── category/        category_management_screen.dart
+    ├── dashboard/       dashboard_screen.dart, qris_display_screen.dart, qris_upload_screen.dart
+    ├── ledger/          profit_loss_sheet.dart
+    ├── manager/         manager_shell.dart
+    ├── onboarding/      onboarding_screen.dart
+    ├── owner/           owner_shell.dart, owner_dashboard_tab.dart, owner_history_screen.dart,
+    │                    business_owner_shell.dart, user_management_panel.dart, user_form_screen.dart
+    ├── profile/         profile_screen.dart
+    ├── reports/         manager_report_screen.dart, owner_report_screen.dart, saved_reports_screen.dart
+    ├── settings/        settings_screen.dart
+    ├── splash/          splash_screen.dart
+    ├── sync/            sync_status_screen.dart
+    └── transaction/     transaction_sheet.dart, transaction_history_screen.dart, edit_transaction_page.dart
 ```
+
+## Provider Tree
+
+| Provider | Type | Purpose |
+|---|---|---|
+| `supabaseServiceProvider` | `Provider` | SupabaseService singleton |
+| `authRepositoryProvider` | `Provider` | AuthRepository singleton |
+| `authProvider` | `StateNotifierProvider` | Auth state + login/logout/session restore |
+| `isAuthenticatedProvider` | Derived `Provider<bool>` | Quick auth check |
+| `currentUserProvider` | Derived `Provider<UserModel?>` | Current user |
+| `currentUserRoleProvider` | Derived `Provider<String?>` | Current role |
+| `allBusinessesProvider` | `FutureProvider` | All businesses (owner) |
+| `accessibleBusinessesProvider` | `FutureProvider` | Filtered businesses (manager/staff) |
+| `allUsersProvider` | `FutureProvider` | All users (owner only) |
+| `transactionRefreshProvider` | `StateProvider<int>` | Trigger list refresh |
 
 ## Roles & Access
 
 | Role | Akses |
 |---|---|
-| **👑 Owner** | Semua bisnis, manage users, manage roles, all reports, manage categories |
-| **📋 Manager** | Business assignments, input transaksi, lihat laporan bisnis assigned, manage staff |
-| **👤 Staff** | Input transaksi sendiri, lihat laporan bisnis assigned |
+| **Owner** | Semua bisnis, manage users, manage roles, all reports, manage categories |
+| **Manager** | Business assignments, input transaksi, lihat laporan bisnis assigned, manage staff |
+| **Staff** | Input transaksi sendiri, lihat laporan bisnis assigned |
+
+## Error Handling
+
+- **`ErrorHandler.classify()`** — maps Supabase/network errors ke pesan Indonesia
+- **`GlobalErrorBoundary`** — catches Flutter framework errors
+- **`AppErrorObserver`** — catches Riverpod provider errors
+- **Zone-level capture** — async errors via `runZonedGuarded`
+- **Sentry** — all errors forwarded to Sentry dashboard
+
+## Supabase Migrations
+
+5 migration files di `supabase/migrations/`:
+
+| File | Isi |
+|---|---|
+| `001_initial_schema.sql` | Core tables + RLS + triggers + seed data |
+| `002_qris_storage_bucket.sql` | Storage bucket + RLS for QRIS |
+| `003_demo_accounts.sql` | 3 demo users (owner/manager/staff) |
+| `004_public_passwords.sql` | RPC `verify_public_password` fallback |
+| `005_update_rls_policies.sql` | RLS policy updates |
 
 ## Setup
 
@@ -107,11 +148,9 @@ flutter pub get
 ### 2. Konfigurasi `.env`
 
 ```env
-# Dapatkan dari Supabase Dashboard → Project Settings → API
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
-# Opsional
 APP_NAME=Sheress
 APP_ENVIRONMENT=development
 SYNC_INTERVAL_SECONDS=30
@@ -123,7 +162,7 @@ Ikuti panduan di [supabase/MIGRATE.md](supabase/MIGRATE.md):
 
 ```bash
 # Opsi 1: Via Supabase Dashboard
-# Buka SQL Editor → copy paste supabase/migrations/001_initial_schema.sql → Run
+# Buka SQL Editor → copy paste migration files → Run
 
 # Opsi 2: Via CLI
 supabase link --project-ref your-project-ref
@@ -136,67 +175,6 @@ supabase db push
 flutter run
 ```
 
-## Fitur Lengkap
-
-### 📊 Dashboard (per Store)
-- Laba/Rugi bersih (large card, warna dinamis 🟢/🔴)
-- Pendapatan, HPP, Laba Kotor, Pengeluaran (detail cards)
-- Sync banner dengan jumlah transaksi pending
-- QRIS button → bottom sheet overlay
-- Pull-to-refresh
-
-### 💳 Transaksi
-- Segmented tab: Uang Masuk / Uang Keluar
-- Kategori dropdown (dinamis per tab)
-- Date picker
-- COGS (HPP) — hanya untuk income, animasi expand
-- Payment method: Tunai / Transfer / QRIS / Lainnya
-- Validasi form + snackbar feedback
-
-### 📈 Laporan Laba/Rugi
-- **Period filters:** Bulan Ini · Bulan Lalu · 3 Bulan · Kustom (date range picker)
-- **Bar chart (fl_chart):** Grouped income/expense bars per month/week, animated (800ms easeInOutCubic)
-- **Line chart overlay:** Net profit trend line with dots, styled per profit/loss
-- **Weekly breakdown toggle:** Switch between monthly/weekly view (single-month periods only)
-- **Net profit summary rows** with ▲/▼ arrow indicators
-- **Accounting layout:** Pendapatan → HPP → Laba Kotor → Pengeluaran → Laba/Rugi Bersih
-- **Transaction list:** Toggle view with detail dialog
-- **Export:** CSV (spreadsheet) + PDF (professional A4, colored sections)
-
-### 👑 Owner Panel
-- Two-tab scaffold: Dashboard + Users
-- Multi-business overview cards
-- User list with search 🔍
-- Role dropdown: Owner / Manager / Staff
-- Business assignment checkboxes (multi-select)
-- Pull-to-refresh + local cache
-
-### 🔐 Authentication
-- Email/password login with Supabase Auth
-- Session restore on app start
-- Error messages in Bahasa Indonesia
-- Reactive route guard (Splash → Dashboard/Login)
-
-### 🔄 Offline Sync
-- All transactions saved to Hive first
-- Background sync when online
-- Sync banner showing pending count
-- Connectivity-aware
-
-### 🖼️ QRIS
-- Resolution chain: Supabase Storage URL → local SVG → network URL → fallback icon
-- Offline badge indicator
-- Placeholder SVGs bundled (replace with real QRIS via upload service)
-- Upload service to Supabase Storage
-
-## App Icon
-
-```bash
-# Place 1024×1024 PNG at assets/icons/app_icon.png
-# Then generate all resolutions:
-dart run flutter_launcher_icons
-```
-
 ## Struktur Database (Supabase)
 
 | Tabel | Deskripsi |
@@ -207,6 +185,15 @@ dart run flutter_launcher_icons
 | `categories` | Income/Expense categories per business |
 | `transactions` | Financial transactions |
 | `financial_reports` | Pre-calculated P&L snapshots |
+
+## Testing
+
+```bash
+flutter test                          # Run all tests
+flutter analyze                       # Static analysis
+```
+
+Saat ini hanya ada 1 smoke test (`test/widget_test.dart`).
 
 ## Lisensi
 
