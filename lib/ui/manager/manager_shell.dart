@@ -96,7 +96,10 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     final pages = <Widget>[
       _buildBusinessDashboard(),
       _selectedBusiness != null
-          ? TransactionHistoryScreen(business: _selectedBusiness!)
+          ? TransactionHistoryScreen(
+              key: ValueKey(_selectedBusiness!.businessId),
+              business: _selectedBusiness!,
+            )
           : const Center(child: Text('Pilih usaha terlebih dahulu')),
       const SizedBox.shrink(),
       _selectedBusiness != null

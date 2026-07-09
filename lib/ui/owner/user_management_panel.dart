@@ -317,25 +317,68 @@ class _UserCard extends ConsumerWidget {
     required this.onDelete,
   });
 
+  Color _roleColor(String role) {
+    switch (role) {
+      case AppConstants.roleOwner:
+        return AppTheme.primaryColor;
+      case AppConstants.roleManager:
+        return AppTheme.infoColor;
+      case AppConstants.roleStaff:
+        return AppTheme.secondaryColor;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _roleLabel(String role) {
+    switch (role) {
+      case AppConstants.roleOwner:
+        return 'Owner';
+      case AppConstants.roleManager:
+        return 'Manager';
+      case AppConstants.roleStaff:
+        return 'Staff';
+      default:
+        return role;
+    }
+  }
+
+  String _initials(String username) {
+    final parts = username.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return username.length >= 2
+        ? username.substring(0, 2).toUpperCase()
+        : username.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assignedIdsAsync = ref.watch(userBusinessIdsProvider(user.userId));
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
+            child: Row(
               children: [
                 CircleAvatar(
-                  radius: 22,
+                  radius: 24,
                   backgroundColor:
                       _roleColor(user.role).withValues(alpha: 0.15),
-                  child: Text(_roleEmoji(user.role),
-                      style: const TextStyle(fontSize: 20)),
+                  child: Text(
+                    _initials(user.username),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _roleColor(user.role),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -344,9 +387,21 @@ class _UserCard extends ConsumerWidget {
                     children: [
                       Text(user.username, style: AppTheme.heading3),
                       const SizedBox(height: 2),
-                      Text(
-                        'ID: ${user.userId.length > 12 ? '${user.userId.substring(0, 12)}...' : user.userId}',
-                        style: AppTheme.caption.copyWith(fontSize: 11),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _roleColor(user.role).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          _roleLabel(user.role),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: _roleColor(user.role),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -364,119 +419,110 @@ class _UserCard extends ConsumerWidget {
                     tooltip: 'Hapus user',
                     onPressed: onDelete,
                   ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: user.role,
-                      icon: const Icon(Icons.arrow_drop_down, size: 20),
-                      style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87),
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'owner', child: Text('👑 Owner')),
-                        DropdownMenuItem(
-                            value: 'manager', child: Text('📋 Manager')),
-                        DropdownMenuItem(
-                            value: 'staff', child: Text('👤 Staff')),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) onRoleChanged(value);
-                      },
-                    ),
-                  ),
-                ),
               ],
             ),
-            if (user.role != AppConstants.roleOwner) ...[
-              const Divider(height: 24),
-              Text('Akses ke Bisnis:',
+          ),
+          if (user.role != AppConstants.roleOwner) ...[
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Text('Role:',
+                      style: AppTheme.caption.copyWith(fontSize: 12)),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 32,
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: user.role,
+                        icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: _roleColor(user.role)),
+                        items: const [
+                          DropdownMenuItem(
+                              value: 'manager',
+                              child: Text('Manager',
+                                  style: TextStyle(color: Colors.black87))),
+                          DropdownMenuItem(
+                              value: 'staff',
+                              child: Text('Staff',
+                                  style: TextStyle(color: Colors.black87))),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) onRoleChanged(value);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text('Akses ke Bisnis:',
                   style: AppTheme.caption.copyWith(
                       fontWeight: FontWeight.w600, fontSize: 12)),
-              const SizedBox(height: 8),
-              assignedIdsAsync.when(
-                data: (assignedIds) {
-                  if (businesses.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text('Belum ada bisnis',
-                          style: AppTheme.caption.copyWith(fontSize: 12)),
-                    );
-                  }
-                  return Column(
+            ),
+            const SizedBox(height: 4),
+            assignedIdsAsync.when(
+              data: (assignedIds) {
+                if (businesses.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('Belum ada bisnis',
+                        style: AppTheme.caption),
+                  );
+                }
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
                     children: businesses.map((biz) {
                       final isChecked = assignedIds.contains(biz.businessId);
-                      return CheckboxListTile(
-                        dense: true,
-                        visualDensity: VisualDensity.compact,
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(biz.name,
-                            style: const TextStyle(fontSize: 13)),
-                        value: isChecked,
-                        onChanged: (checked) {
+                      return FilterChip(
+                        label: Text(biz.name, style: const TextStyle(fontSize: 12)),
+                        selected: isChecked,
+                        onSelected: (checked) {
                           final updated = Set<int>.from(assignedIds);
-                          if (checked == true) {
+                          if (checked) {
                             updated.add(biz.businessId);
                           } else {
                             updated.remove(biz.businessId);
                           }
                           onBusinessesChanged(updated);
                         },
-                        activeColor: Theme.of(context).colorScheme.primary,
-                        controlAffinity: ListTileControlAffinity.leading,
+                        showCheckmark: true,
+                        selectedColor:
+                            _roleColor(user.role).withValues(alpha: 0.15),
+                        checkmarkColor: _roleColor(user.role),
+                        visualDensity: VisualDensity.compact,
                       );
                     }).toList(),
-                  );
-                },
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: LinearProgressIndicator(),
-                ),
-                error: (e, _) => Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    ErrorHandler.classify(e).userMessage,
-                    style:
-                        AppTheme.caption.copyWith(color: AppTheme.lossColor),
                   ),
+                );
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.all(12),
+                child: LinearProgressIndicator(),
+              ),
+              error: (e, _) => Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  ErrorHandler.classify(e).userMessage,
+                  style:
+                      AppTheme.caption.copyWith(color: AppTheme.lossColor),
                 ),
               ),
-            ],
-          ],
-        ),
+            ),
+          ] else
+            const SizedBox(height: 12),
+        ],
       ),
     );
-  }
-
-  Color _roleColor(String role) {
-    switch (role) {
-      case AppConstants.roleOwner:
-        return AppTheme.primaryColor;
-      case AppConstants.roleManager:
-        return AppTheme.infoColor;
-      case AppConstants.roleStaff:
-        return AppTheme.secondaryColor;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _roleEmoji(String role) {
-    switch (role) {
-      case AppConstants.roleOwner:
-        return '👑';
-      case AppConstants.roleManager:
-        return '📋';
-      case AppConstants.roleStaff:
-        return '👤';
-      default:
-        return '❓';
-    }
   }
 }

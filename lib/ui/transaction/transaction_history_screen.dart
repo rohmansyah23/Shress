@@ -279,162 +279,169 @@ class _TransactionHistoryScreenState
         onPressed: () => TransactionSheet.show(context, widget.business),
         child: const Icon(Icons.add_rounded),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final filter in DateFilter.values)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: FilterChip(
-                        label: Text(filter.label, style: const TextStyle(fontSize: 12)),
-                        selected: _selectedFilter == filter,
-                        onSelected: (selected) {
-                          if (filter == DateFilter.custom) {
-                            _pickCustomRange();
-                          } else {
-                            setState(() => _selectedFilter = filter);
-                            _applyFilter();
-                          }
-                        },
-                      ),
-                    ),
-                ],
+      body: RefreshIndicator(
+        onRefresh: _loadTransactions,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (final filter in DateFilter.values)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: FilterChip(
+                            label: Text(filter.label, style: const TextStyle(fontSize: 12)),
+                            selected: _selectedFilter == filter,
+                            onSelected: (selected) {
+                              if (filter == DateFilter.custom) {
+                                _pickCustomRange();
+                              } else {
+                                setState(() => _selectedFilter = filter);
+                                _applyFilter();
+                              }
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Expanded(
-            child: _isLoading
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: SkeletonTransactionList(),
-                  )
-                : _filtered.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.receipt_long_rounded,
-                                size: 64, color: Colors.grey.shade400),
-                            const SizedBox(height: 12),
-                            Text('Tidak ada transaksi',
-                                style: AppTheme.heading3
-                                    .copyWith(color: Colors.grey)),
-                          ],
+            const SliverToBoxAdapter(child: SizedBox(height: 4)),
+            if (_isLoading)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SkeletonTransactionList(),
+                ),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (_filtered.isEmpty) {
+                      return SizedBox(
+                        height: MediaQuery.of(context).size.height - 200,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.receipt_long_rounded,
+                                  size: 64, color: Colors.grey.shade400),
+                              const SizedBox(height: 12),
+                              Text('Tidak ada transaksi',
+                                  style: AppTheme.heading3
+                                      .copyWith(color: Colors.grey)),
+                            ],
+                          ),
                         ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadTransactions,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.all(12),
-                          itemCount: _filtered.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final tx = _filtered[index];
-                            final isIncome =
-                                tx.type == AppConstants.typeIncome;
-                            return Card(
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () => _showTransactionDetail(tx),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Row(
+                      );
+                    }
+                    final tx = _filtered[index];
+                    final isIncome = tx.type == AppConstants.typeIncome;
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        left: 12,
+                        right: 12,
+                        bottom: 8,
+                        top: index == 0 ? 4 : 0,
+                      ),
+                      child: Card(
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => _showTransactionDetail(tx),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: (isIncome
+                                            ? AppTheme.profitColor
+                                            : AppTheme.lossColor)
+                                        .withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    isIncome
+                                        ? Icons.trending_up_rounded
+                                        : Icons.trending_down_rounded,
+                                    color: isIncome
+                                        ? AppTheme.profitColor
+                                        : AppTheme.lossColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        decoration: BoxDecoration(
-                                          color: (isIncome
-                                                  ? AppTheme.profitColor
-                                                  : AppTheme.lossColor)
-                                              .withValues(alpha: 0.12),
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
-                                        child: Icon(
-                                          isIncome
-                                              ? Icons.trending_up_rounded
-                                              : Icons
-                                                  .trending_down_rounded,
+                                      Text(
+                                        FormatHelpers.displayDate(
+                                            tx.transactionDate),
+                                        style: AppTheme.caption
+                                            .copyWith(fontSize: 11),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        FormatHelpers.rupiah(tx.amount),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
                                           color: isIncome
                                               ? AppTheme.profitColor
                                               : AppTheme.lossColor,
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              FormatHelpers.displayDate(
-                                                  tx.transactionDate),
-                                              style: AppTheme.caption
-                                                  .copyWith(fontSize: 11),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              FormatHelpers.rupiah(
-                                                  tx.amount),
-                                              style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w600,
-                                                color: isIncome
-                                                    ? AppTheme.profitColor
-                                                    : AppTheme.lossColor,
-                                              ),
-                                            ),
-                                            if (tx.description
-                                                    ?.isNotEmpty ==
-                                                true)
-                                              Text(
-                                                tx.description!,
-                                                style: AppTheme.caption,
-                                                maxLines: 1,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
-                                              ),
-                                          ],
+                                      if (tx.description?.isNotEmpty ==
+                                          true)
+                                        Text(
+                                          tx.description!,
+                                          style: AppTheme.caption,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                      ),
-                                      if (canEdit) ...[
-                                        IconButton(
-                                          icon: const Icon(
-                                              Icons.edit_outlined,
-                                              size: 20),
-                                          onPressed: () =>
-                                              _handleEdit(tx),
-                                          tooltip: 'Edit',
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.delete_outline_rounded,
-                                            size: 20,
-                                            color: AppTheme.lossColor,
-                                          ),
-                                          onPressed: () =>
-                                              _handleDelete(tx),
-                                          tooltip: 'Hapus',
-                                        ),
-                                      ],
                                     ],
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                                if (canEdit) ...[
+                                  IconButton(
+                                    icon: const Icon(
+                                        Icons.edit_outlined,
+                                        size: 20),
+                                    onPressed: () => _handleEdit(tx),
+                                    tooltip: 'Edit',
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.delete_outline_rounded,
+                                      size: 20,
+                                      color: AppTheme.lossColor,
+                                    ),
+                                    onPressed: () => _handleDelete(tx),
+                                    tooltip: 'Hapus',
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-          ),
-        ],
+                    );
+                  },
+                  childCount: _filtered.isEmpty ? 1 : _filtered.length,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

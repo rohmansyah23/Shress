@@ -452,12 +452,15 @@ class SkeletonTransactionList extends StatelessWidget {
           padding: EdgeInsets.all(12),
           child: SkeletonLine(width: double.infinity, height: 48),
         ),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.all(12),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: Column(
             children: List.generate(
               itemCount,
-              (_) => const SkeletonTransactionItem(),
+              (_) => const Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: SkeletonTransactionItem(),
+              ),
             ),
           ),
         ),
