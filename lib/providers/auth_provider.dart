@@ -191,3 +191,9 @@ final accessibleBusinessesProvider = FutureProvider<List<BusinessModel>>((ref) a
   if (user == null) return [];
   return SupabaseService.instance.getAccessibleBusinesses(user.userId, user.role);
 });
+
+/// All registered users (Owner only)
+final allUsersProvider = FutureProvider<List<UserModel>>((ref) async {
+  final repo = ref.read(authRepositoryProvider);
+  return repo.getAllUsers();
+});

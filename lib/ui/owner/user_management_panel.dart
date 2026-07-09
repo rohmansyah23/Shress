@@ -9,24 +9,16 @@ import '../../data/local/models/business_model.dart';
 import '../../data/local/models/user_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
+import 'user_form_screen.dart';
 
-/// Provider that fetches all users directly from Supabase (cloud-only)
-final allUsersProvider = FutureProvider<List<UserModel>>((ref) async {
-  final repo = ref.read(authRepositoryProvider);
-  return repo.getAllUsers();
-});
-
-/// Provider for a specific user's business assignments (Supabase cloud)
 final userBusinessIdsProvider =
     FutureProvider.family<Set<int>, String>((ref, userId) async {
   final ids = await SupabaseService.instance.getBusinessIdsForUser(userId);
   return ids.toSet();
 });
 
-/// Trigger to refresh user data
 final userManagementRefreshProvider = StateProvider<int>((ref) => 0);
 
-/// Complete User/RBAC Management Panel for Owner
 class UserManagementPanel extends ConsumerStatefulWidget {
   const UserManagementPanel({super.key});
 
@@ -57,104 +49,29 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
     if (mounted) setState(() => _businesses = businesses);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final usersAsync = ref.watch(allUsersProvider);
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: 'Cari user...',
-              prefixIcon: const Icon(Icons.search_rounded),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                    )
-                  : null,
-            ),
-            onChanged: (value) =>
-                setState(() => _searchQuery = value.toLowerCase()),
-          ),
-        ),
-
-        Expanded(
-          child: usersAsync.when(
-            data: (users) {
-              final filtered = users.where((u) {
-                if (_searchQuery.isEmpty) return true;
-                return u.username.toLowerCase().contains(_searchQuery) ||
-                    u.role.contains(_searchQuery);
-              }).toList();
-
-              if (filtered.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.person_search_rounded,
-                          size: 64, color: Colors.grey.shade400),
-                      const SizedBox(height: 16),
-                      Text(
-                        _searchQuery.isNotEmpty
-                            ? 'Tidak ada user ditemukan'
-                            : 'Belum ada user terdaftar',
-                        style: AppTheme.caption.copyWith(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return RefreshIndicator(
-                onRefresh: () async {
-                  ref.invalidate(allUsersProvider);
-                  ref.read(userManagementRefreshProvider.notifier).state++;
-                  await _loadBusinesses();
-                },
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final user = filtered[index];
-                    return _UserCard(
-                      key: ValueKey(user.userId),
-                      user: user,
-                      businesses: _businesses,
-                      onRoleChanged: (newRole) =>
-                          _handleRoleChange(user, newRole),
-                      onBusinessesChanged: (selectedIds) =>
-                          _handleBusinessAssign(user, selectedIds),
-                    );
-                  },
-                ),
-              );
-            },
-            loading: () => const SkeletonUserList(),
-            error: (error, _) => ErrorRetryWidget(
-              message: ErrorHandler.classify(error).userMessage,
-              onRetry: () => ref.invalidate(allUsersProvider),
-            ),
-          ),
-        ),
-      ],
+  Future<void> _openAddUser() async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const UserFormScreen()),
     );
+    if (result == true) {
+      ref.invalidate(allUsersProvider);
+    }
+  }
+
+  Future<void> _openEditUser(UserModel user) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => UserFormScreen(user: user)),
+    );
+    if (result == true) {
+      ref.invalidate(allUsersProvider);
+    }
   }
 
   Future<void> _handleRoleChange(UserModel user, String newRole) async {
     if (user.role == newRole) return;
-
     try {
       final repo = ref.read(authRepositoryProvider);
       await repo.updateUserRole(userId: user.userId, newRole: newRole);
-
       if (!mounted) return;
       ref.invalidate(allUsersProvider);
 
@@ -173,8 +90,8 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              'Role ${user.username} diubah ke ${_roleLabel(newRole)}'),
+          content:
+              Text('Role ${user.username} diubah ke ${_roleLabel(newRole)}'),
           backgroundColor: AppTheme.profitColor,
           behavior: SnackBarBehavior.floating,
         ),
@@ -189,20 +106,63 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
       UserModel user, Set<int> selectedIds) async {
     try {
       final repo = ref.read(authRepositoryProvider);
-
       await repo.syncUserBusinessAssignments(
         userId: user.userId,
         assignedBusinessIds: selectedIds.toList(),
       );
-
       if (!mounted) return;
       ref.invalidate(allUsersProvider);
       ref.invalidate(userBusinessIdsProvider(user.userId));
-
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Akses bisnis untuk ${user.username} diperbarui'),
+          backgroundColor: AppTheme.profitColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ErrorSnackbar.show(context, ErrorHandler.classify(e));
+    }
+  }
+
+  Future<void> _confirmDeleteUser(UserModel user) async {
+    if (user.role == AppConstants.roleOwner) {
+      ErrorSnackbar.showMessage(context, 'Tidak dapat menghapus Owner');
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Hapus User'),
+        content: Text('Yakin ingin menghapus user "${user.username}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.lossColor),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      await repo.deleteUser(user.userId);
+      if (!mounted) return;
+      ref.invalidate(allUsersProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('User "${user.username}" berhasil dihapus'),
           backgroundColor: AppTheme.profitColor,
           behavior: SnackBarBehavior.floating,
         ),
@@ -225,21 +185,136 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
         return role;
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final usersAsync = ref.watch(allUsersProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('User Management'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add_rounded),
+            tooltip: 'Tambah User',
+            onPressed: _openAddUser,
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Muat ulang',
+            onPressed: () {
+              ref.invalidate(allUsersProvider);
+              _loadBusinesses();
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Cari user...',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+              ),
+              onChanged: (value) =>
+                  setState(() => _searchQuery = value.toLowerCase()),
+            ),
+          ),
+          Expanded(
+            child: usersAsync.when(
+              data: (users) {
+                final filtered = users.where((u) {
+                  if (_searchQuery.isEmpty) return true;
+                  return u.username.toLowerCase().contains(_searchQuery) ||
+                      u.role.contains(_searchQuery);
+                }).toList();
+
+                if (filtered.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_search_rounded,
+                            size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text(
+                          _searchQuery.isNotEmpty
+                              ? 'Tidak ada user ditemukan'
+                              : 'Belum ada user terdaftar',
+                          style: AppTheme.caption.copyWith(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(allUsersProvider);
+                    ref.read(userManagementRefreshProvider.notifier).state++;
+                    await _loadBusinesses();
+                  },
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final user = filtered[index];
+                      return _UserCard(
+                        key: ValueKey(user.userId),
+                        user: user,
+                        businesses: _businesses,
+                        onEdit: () => _openEditUser(user),
+                        onRoleChanged: (newRole) =>
+                            _handleRoleChange(user, newRole),
+                        onBusinessesChanged: (selectedIds) =>
+                            _handleBusinessAssign(user, selectedIds),
+                        onDelete: () => _confirmDeleteUser(user),
+                      );
+                    },
+                  ),
+                );
+              },
+              loading: () => const SkeletonUserList(),
+              error: (error, _) => ErrorRetryWidget(
+                message: ErrorHandler.classify(error).userMessage,
+                onRetry: () => ref.invalidate(allUsersProvider),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-/// Individual user card with role and business assignment controls
 class _UserCard extends ConsumerWidget {
   final UserModel user;
   final List<BusinessModel> businesses;
+  final VoidCallback onEdit;
   final ValueChanged<String> onRoleChanged;
   final ValueChanged<Set<int>> onBusinessesChanged;
+  final VoidCallback onDelete;
 
   const _UserCard({
     super.key,
     required this.user,
     required this.businesses,
+    required this.onEdit,
     required this.onRoleChanged,
     required this.onBusinessesChanged,
+    required this.onDelete,
   });
 
   @override
@@ -257,7 +332,8 @@ class _UserCard extends ConsumerWidget {
               children: [
                 CircleAvatar(
                   radius: 22,
-                  backgroundColor: _roleColor(user.role).withValues(alpha: 0.15),
+                  backgroundColor:
+                      _roleColor(user.role).withValues(alpha: 0.15),
                   child: Text(_roleEmoji(user.role),
                       style: const TextStyle(fontSize: 20)),
                 ),
@@ -275,6 +351,19 @@ class _UserCard extends ConsumerWidget {
                     ],
                   ),
                 ),
+                IconButton(
+                  icon: Icon(Icons.edit_outlined,
+                      size: 20, color: AppTheme.infoColor),
+                  tooltip: 'Edit user',
+                  onPressed: onEdit,
+                ),
+                if (user.role != AppConstants.roleOwner)
+                  IconButton(
+                    icon: Icon(Icons.delete_outline_rounded,
+                        size: 20, color: AppTheme.lossColor),
+                    tooltip: 'Hapus user',
+                    onPressed: onDelete,
+                  ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
@@ -291,14 +380,11 @@ class _UserCard extends ConsumerWidget {
                           color: Colors.black87),
                       items: const [
                         DropdownMenuItem(
-                            value: 'owner',
-                            child: Text('👑 Owner')),
+                            value: 'owner', child: Text('👑 Owner')),
                         DropdownMenuItem(
-                            value: 'manager',
-                            child: Text('📋 Manager')),
+                            value: 'manager', child: Text('📋 Manager')),
                         DropdownMenuItem(
-                            value: 'staff',
-                            child: Text('👤 Staff')),
+                            value: 'staff', child: Text('👤 Staff')),
                       ],
                       onChanged: (value) {
                         if (value != null) onRoleChanged(value);
@@ -308,23 +394,19 @@ class _UserCard extends ConsumerWidget {
                 ),
               ],
             ),
-
             if (user.role != AppConstants.roleOwner) ...[
               const Divider(height: 24),
               Text('Akses ke Bisnis:',
                   style: AppTheme.caption.copyWith(
                       fontWeight: FontWeight.w600, fontSize: 12)),
               const SizedBox(height: 8),
-
-              // Show assigned IDs when loading
               assignedIdsAsync.when(
                 data: (assignedIds) {
                   if (businesses.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text('Belum ada bisnis',
-                          style:
-                              AppTheme.caption.copyWith(fontSize: 12)),
+                          style: AppTheme.caption.copyWith(fontSize: 12)),
                     );
                   }
                   return Column(
@@ -360,7 +442,8 @@ class _UserCard extends ConsumerWidget {
                   padding: EdgeInsets.all(8),
                   child: Text(
                     ErrorHandler.classify(e).userMessage,
-                    style: AppTheme.caption.copyWith(color: AppTheme.lossColor),
+                    style:
+                        AppTheme.caption.copyWith(color: AppTheme.lossColor),
                   ),
                 ),
               ),

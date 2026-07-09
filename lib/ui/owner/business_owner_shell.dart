@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/local/models/business_model.dart';
 import '../../providers/auth_provider.dart';
-import 'owner_dashboard_tab.dart';
+import '../dashboard/dashboard_screen.dart';
+import '../profile/profile_screen.dart';
+import '../reports/owner_report_screen.dart';
 import 'owner_history_screen.dart';
 import 'user_management_panel.dart';
-import '../reports/owner_report_screen.dart';
-import '../profile/profile_screen.dart';
 
-class OwnerShell extends ConsumerStatefulWidget {
-  const OwnerShell({super.key});
+class BusinessOwnerShell extends ConsumerStatefulWidget {
+  final BusinessModel business;
+
+  const BusinessOwnerShell({super.key, required this.business});
 
   @override
-  ConsumerState<OwnerShell> createState() => _OwnerShellState();
+  ConsumerState<BusinessOwnerShell> createState() => _BusinessOwnerShellState();
 }
 
-class _OwnerShellState extends ConsumerState<OwnerShell> {
+class _BusinessOwnerShellState extends ConsumerState<BusinessOwnerShell> {
   int _selectedIndex = 0;
 
   @override
@@ -23,27 +26,24 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
 
     if (user == null) {
       return const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Memuat profil...'),
-            ],
-          ),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     final pages = <Widget>[
-      OwnerDashboardTab(
-        user: user,
-        onTabSwitch: (index) => setState(() => _selectedIndex = index),
+      DashboardScreen(
+        business: widget.business,
+        onNavigateToRiwayat: () => setState(() => _selectedIndex = 1),
       ),
-      const OwnerHistoryScreen(),
+      OwnerHistoryScreen(
+        initialBusinessId: widget.business.businessId,
+        initialFilter: OwnerDateFilter.thisWeek,
+      ),
       const UserManagementPanel(),
-      const OwnerReportScreen(),
+      OwnerReportScreen(
+        initialBusinessId: widget.business.businessId,
+        initialPeriod: OwnerPeriodFilter.thisWeek,
+      ),
       const ProfileScreen(),
     ];
 

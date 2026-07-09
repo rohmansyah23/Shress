@@ -22,14 +22,14 @@ class TransactionSheet extends ConsumerStatefulWidget {
     this.startAsIncome = true,
   });
 
-  static Future<void> show(BuildContext context, BusinessModel business) {
+  static Future<void> show(BuildContext context, BusinessModel business, {bool startAsIncome = true}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => ProviderScope(
         overrides: [],
-        child: TransactionSheet(business: business),
+        child: TransactionSheet(business: business, startAsIncome: startAsIncome),
       ),
     );
   }

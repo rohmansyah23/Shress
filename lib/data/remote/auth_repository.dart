@@ -124,6 +124,86 @@ class AuthRepository {
     await _supabase.from('users').update({'role': newRole}).eq('id', userId);
   }
 
+  /// Create a new user (Owner operation)
+  Future<UserModel> createUser({
+    required String email,
+    required String password,
+    required String username,
+    required String role,
+  }) async {
+    final response = await _supabase.auth.admin.createUser(
+      AdminUserAttributes(
+        email: email,
+        password: password,
+        emailConfirm: true,
+        userMetadata: {'username': username, 'role': role},
+      ),
+    );
+    final authUser = response.user;
+    if (authUser == null) throw Exception('Gagal membuat user');
+
+    // Insert profile into public.users
+    await _supabase.from('users').insert({
+      'id': authUser.id,
+      'username': username,
+      'role': role,
+      'email': email,
+    });
+
+    return UserModel(
+      userId: authUser.id,
+      username: username,
+      role: role,
+    );
+  }
+
+  /// Delete a user (Owner operation)
+  Future<void> deleteUser(String userId) async {
+    // Delete user_businesses first
+    await _supabase.from('user_businesses').delete().eq('user_id', userId);
+    // Delete profile
+    await _supabase.from('users').delete().eq('id', userId);
+    // Delete auth user
+    await _supabase.auth.admin.deleteUser(userId);
+  }
+
+  /// Update user profile (username)
+  Future<void> updateUserProfile({
+    required String userId,
+    required String username,
+  }) async {
+    await _supabase
+        .from('users')
+        .update({'username': username})
+        .eq('id', userId);
+  }
+
+  /// Update user email (admin only - requires service_role)
+  Future<void> updateUserEmail({
+    required String userId,
+    required String email,
+  }) async {
+    await _supabase.auth.admin.updateUserById(
+      userId,
+      attributes: AdminUserAttributes(email: email),
+    );
+    await _supabase
+        .from('users')
+        .update({'email': email})
+        .eq('id', userId);
+  }
+
+  /// Update user password (admin only - requires service_role)
+  Future<void> updateUserPassword({
+    required String userId,
+    required String password,
+  }) async {
+    await _supabase.auth.admin.updateUserById(
+      userId,
+      attributes: AdminUserAttributes(password: password),
+    );
+  }
+
   /// Get all users (Owner operation) — cloud only
   Future<List<UserModel>> getAllUsers() async {
     return _supaService.getAllUsers();

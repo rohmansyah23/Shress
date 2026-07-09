@@ -10,6 +10,7 @@ import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/transaction_provider.dart';
+import '../dashboard/qris_display_screen.dart';
 
 // ==================== Data Models ====================
 
@@ -20,9 +21,6 @@ class ManagerReportData {
   final double totalExpense;
   final double netProfit;
   final String status;
-  final List<CategoryBreakdown> incomeBreakdown;
-  final List<CategoryBreakdown> expenseBreakdown;
-  final List<TransactionModel> transactions;
 
   const ManagerReportData({
     this.totalIncome = 0,
@@ -31,29 +29,15 @@ class ManagerReportData {
     this.totalExpense = 0,
     this.netProfit = 0,
     this.status = 'laba',
-    this.incomeBreakdown = const [],
-    this.expenseBreakdown = const [],
-    this.transactions = const [],
-  });
-}
-
-class CategoryBreakdown {
-  final String categoryName;
-  final double amount;
-  final int count;
-
-  const CategoryBreakdown({
-    required this.categoryName,
-    required this.amount,
-    required this.count,
   });
 }
 
 enum PeriodFilter {
+  today('Hari Ini'),
+  thisWeek('Minggu Ini'),
   thisMonth('Bulan Ini'),
-  lastMonth('Bulan Lalu'),
-  last3Months('3 Bulan'),
-  custom('Kustom');
+  thisYear('Tahun Ini'),
+  custom('Custom');
 
   final String label;
   const PeriodFilter(this.label);
@@ -82,59 +66,19 @@ final managerReportProvider =
         params.businessId, start, end);
   }
 
-  final categories = await supa.getCategoriesByBusiness(params.businessId);
-  final categoryMap = {for (final c in categories) c.categoryId: c};
-
   double totalIncome = 0, totalCogs = 0, totalExpense = 0;
-  final Map<int, double> incomeByCat = {};
-  final Map<int, int> incomeCountByCat = {};
-  final Map<int, double> expenseByCat = {};
-  final Map<int, int> expenseCountByCat = {};
 
   for (final tx in transactions) {
     if (tx.type == AppConstants.typeIncome) {
       totalIncome += tx.amount;
       totalCogs += tx.cogs;
-      incomeByCat.update(tx.categoryId, (v) => v + tx.amount,
-          ifAbsent: () => tx.amount);
-      incomeCountByCat.update(tx.categoryId, (v) => v + 1, ifAbsent: () => 1);
     } else {
       totalExpense += tx.amount;
-      expenseByCat.update(tx.categoryId, (v) => v + tx.amount,
-          ifAbsent: () => tx.amount);
-      expenseCountByCat.update(tx.categoryId, (v) => v + 1, ifAbsent: () => 1);
     }
   }
 
   final grossProfit = totalIncome - totalCogs;
   final netProfit = grossProfit - totalExpense;
-
-  final incomeBreakdown = incomeByCat.entries
-      .map((e) {
-        final cat = categoryMap[e.key];
-        return CategoryBreakdown(
-          categoryName: cat?.name ?? 'Kategori #${e.key}',
-          amount: e.value,
-          count: incomeCountByCat[e.key] ?? 0,
-        );
-      })
-      .toList()
-    ..sort((a, b) => b.amount.compareTo(a.amount));
-
-  final expenseBreakdown = expenseByCat.entries
-      .map((e) {
-        final cat = categoryMap[e.key];
-        return CategoryBreakdown(
-          categoryName: cat?.name ?? 'Kategori #${e.key}',
-          amount: e.value,
-          count: expenseCountByCat[e.key] ?? 0,
-        );
-      })
-      .toList()
-    ..sort((a, b) => b.amount.compareTo(a.amount));
-
-  final sortedTx = List<TransactionModel>.from(transactions)
-    ..sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
 
   return ManagerReportData(
     totalIncome: totalIncome,
@@ -143,9 +87,6 @@ final managerReportProvider =
     totalExpense: totalExpense,
     netProfit: netProfit,
     status: netProfit >= 0 ? 'laba' : 'rugi',
-    incomeBreakdown: incomeBreakdown,
-    expenseBreakdown: expenseBreakdown,
-    transactions: sortedTx,
   );
 });
 
@@ -194,56 +135,56 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
   PeriodFilter _selectedPeriod = PeriodFilter.thisMonth;
   DateTime? _customStart;
   DateTime? _customEnd;
-  bool _showTransactionDetail = false;
+
+  String _formatDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   String? get _startDate {
+    final now = DateTime.now();
     switch (_selectedPeriod) {
+      case PeriodFilter.today:
+        return _formatDate(now);
+      case PeriodFilter.thisWeek:
+        final weekStart = now.subtract(Duration(days: now.weekday - 1));
+        return _formatDate(weekStart);
       case PeriodFilter.thisMonth:
-        final now = DateTime.now();
         return '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
-      case PeriodFilter.lastMonth:
-        final last = DateTime(DateTime.now().year, DateTime.now().month - 1, 1);
-        return '${last.year}-${last.month.toString().padLeft(2, '0')}-01';
-      case PeriodFilter.last3Months:
-        final threeMonthsAgo =
-            DateTime(DateTime.now().year, DateTime.now().month - 3, 1);
-        return '${threeMonthsAgo.year}-${threeMonthsAgo.month.toString().padLeft(2, '0')}-01';
+      case PeriodFilter.thisYear:
+        return '${now.year}-01-01';
       case PeriodFilter.custom:
         if (_customStart == null) return null;
-        return '${_customStart!.year}-${_customStart!.month.toString().padLeft(2, '0')}-${_customStart!.day.toString().padLeft(2, '0')}';
+        return _formatDate(_customStart!);
     }
   }
 
   String? get _endDate {
+    final now = DateTime.now();
     switch (_selectedPeriod) {
+      case PeriodFilter.today:
+        return _formatDate(now);
+      case PeriodFilter.thisWeek:
+        return _formatDate(now);
       case PeriodFilter.thisMonth:
-        final now = DateTime.now();
         return '${now.year}-${now.month.toString().padLeft(2, '0')}-${_daysInMonth(now.year, now.month)}';
-      case PeriodFilter.lastMonth:
-        final last = DateTime(DateTime.now().year, DateTime.now().month - 1, 1);
-        final lastMonthEnd = DateTime(last.year, last.month + 1, 0);
-        return '${lastMonthEnd.year}-${lastMonthEnd.month.toString().padLeft(2, '0')}-${lastMonthEnd.day.toString().padLeft(2, '0')}';
-      case PeriodFilter.last3Months:
-        final now = DateTime.now();
-        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      case PeriodFilter.thisYear:
+        return '${now.year}-12-31';
       case PeriodFilter.custom:
         if (_customEnd == null) return null;
-        return '${_customEnd!.year}-${_customEnd!.month.toString().padLeft(2, '0')}-${_customEnd!.day.toString().padLeft(2, '0')}';
+        return _formatDate(_customEnd!);
     }
   }
 
   String get _periodLabel {
     switch (_selectedPeriod) {
+      case PeriodFilter.today:
+        return 'Hari Ini';
+      case PeriodFilter.thisWeek:
+        return 'Minggu Ini';
       case PeriodFilter.thisMonth:
-        final now = DateTime.now();
         return FormatHelpers.displayPeriod(
-            '${now.year}-${now.month.toString().padLeft(2, '0')}');
-      case PeriodFilter.lastMonth:
-        final last = DateTime(DateTime.now().year, DateTime.now().month - 1, 1);
-        return FormatHelpers.displayPeriod(
-            '${last.year}-${last.month.toString().padLeft(2, '0')}');
-      case PeriodFilter.last3Months:
-        return '3 Bulan Terakhir';
+            '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}');
+      case PeriodFilter.thisYear:
+        return 'Tahun ${DateTime.now().year}';
       case PeriodFilter.custom:
         if (_customStart == null || _customEnd == null) return 'Pilih Tanggal';
         return '${_customStart!.day}/${_customStart!.month} - ${_customEnd!.day}/${_customEnd!.month}';
@@ -289,15 +230,16 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
         title: const Text('Laporan Keuangan'),
         actions: [
           IconButton(
-            icon: Icon(
-              _showTransactionDetail
-                  ? Icons.pie_chart_rounded
-                  : Icons.receipt_long_rounded,
-            ),
-            tooltip:
-                _showTransactionDetail ? 'Lihat Ringkasan' : 'Lihat Transaksi',
-            onPressed: () =>
-                setState(() => _showTransactionDetail = !_showTransactionDetail),
+            icon: const Icon(Icons.qr_code_rounded),
+            tooltip: 'QRIS Pembayaran',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      QrisDisplayScreen(business: widget.business),
+                ),
+              );
+            },
           ),
         ],
         bottom: PreferredSize(
@@ -306,9 +248,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
         ),
       ),
       body: reportAsync.when(
-        data: (data) => _showTransactionDetail
-            ? _buildTransactionList(data)
-            : _buildSummary(data, colorScheme),
+        data: (data) => _buildSummary(data, colorScheme),
         loading: () => const SkeletonReport(),
         error: (error, _) => ErrorRetryWidget.fromAppError(
           ErrorHandler.classify(error),
@@ -370,9 +310,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
 
             // Net Profit Card
             Card(
-              color: data.netProfit >= 0
-                  ? AppTheme.profitColor.withValues(alpha: 0.1)
-                  : AppTheme.lossColor.withValues(alpha: 0.1),
+              elevation: 2,
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -390,7 +328,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
+                          horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
                         color: data.netProfit >= 0
                             ? AppTheme.profitColor
@@ -401,7 +339,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                         data.netProfit >= 0 ? 'LABA' : 'RUGI',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 11,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1,
                         ),
@@ -458,187 +396,8 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
               ],
             ),
 
-            const SizedBox(height: 24),
-
-            // Income breakdown
-            Text('Pendapatan', style: AppTheme.heading3),
-            const SizedBox(height: 8),
-            ...data.incomeBreakdown.map((b) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: Text(b.categoryName,
-                              style: const TextStyle(fontSize: 13))),
-                      Text('${b.count}×',
-                          style: AppTheme.caption.copyWith(fontSize: 11)),
-                      const SizedBox(width: 12),
-                      SizedBox(
-                        width: 120,
-                        child: Text(
-                          FormatHelpers.rupiah(b.amount),
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.profitColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
-
-            const Divider(height: 24),
-
-            // Expense breakdown
-            Text('Pengeluaran', style: AppTheme.heading3),
-            const SizedBox(height: 8),
-            ...data.expenseBreakdown.map((b) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: Text(b.categoryName,
-                              style: const TextStyle(fontSize: 13))),
-                      Text('${b.count}×',
-                          style: AppTheme.caption.copyWith(fontSize: 11)),
-                      const SizedBox(width: 12),
-                      SizedBox(
-                        width: 120,
-                        child: Text(
-                          FormatHelpers.rupiah(b.amount),
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.lossColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTransactionList(ManagerReportData data) {
-    final p = _currentParams;
-    if (data.transactions.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.receipt_long_rounded,
-                size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('Belum ada transaksi'),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        ref.invalidate(managerReportProvider(p));
-      },
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: data.transactions.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Row(
-                children: [
-                  _MiniCard('Pendapatan', data.totalIncome, AppTheme.profitColor),
-                  const SizedBox(width: 8),
-                  _MiniCard('Pengeluaran', data.totalExpense, AppTheme.lossColor),
-                  const SizedBox(width: 8),
-                  _MiniCard('Laba/Rugi', data.netProfit,
-                      data.netProfit >= 0 ? AppTheme.profitColor : AppTheme.lossColor),
-                ],
-              ),
-            );
-          }
-
-          final tx = data.transactions[index - 1];
-          final isIncome = tx.type == AppConstants.typeIncome;
-
-          return Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: (isIncome
-                              ? AppTheme.profitColor
-                              : AppTheme.lossColor)
-                          .withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      isIncome
-                          ? Icons.trending_up_rounded
-                          : Icons.trending_down_rounded,
-                      color: isIncome
-                          ? AppTheme.profitColor
-                          : AppTheme.lossColor,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          FormatHelpers.displayDate(tx.transactionDate),
-                          style: AppTheme.caption.copyWith(fontSize: 11),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          tx.description?.isNotEmpty == true
-                              ? tx.description!
-                              : (isIncome ? 'Pendapatan' : 'Pengeluaran'),
-                          style: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w500),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        FormatHelpers.rupiah(tx.amount),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isIncome
-                              ? AppTheme.profitColor
-                              : AppTheme.lossColor,
-                        ),
-                      ),
-                      if (isIncome && tx.cogs > 0)
-                        Text('HPP: ${FormatHelpers.rupiah(tx.cogs)}',
-                            style: AppTheme.caption.copyWith(fontSize: 10)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
       ),
     );
   }
@@ -684,32 +443,4 @@ class _DetailCard extends StatelessWidget {
   }
 }
 
-class _MiniCard extends StatelessWidget {
-  final String label;
-  final double amount;
-  final Color color;
 
-  const _MiniCard(this.label, this.amount, this.color);
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Text(label, style: AppTheme.caption.copyWith(fontSize: 10)),
-              const SizedBox(height: 4),
-              Text(
-                FormatHelpers.rupiah(amount),
-                style: TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.bold, color: color),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

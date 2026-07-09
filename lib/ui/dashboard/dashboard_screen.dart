@@ -15,8 +15,13 @@ import '../transaction/transaction_history_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   final BusinessModel business;
+  final VoidCallback? onNavigateToRiwayat;
 
-  const DashboardScreen({super.key, required this.business});
+  const DashboardScreen({
+    super.key,
+    required this.business,
+    this.onNavigateToRiwayat,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,12 +33,16 @@ class DashboardScreen extends ConsumerWidget {
             icon: const Icon(Icons.receipt_long_rounded),
             tooltip: 'Riwayat Transaksi',
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      TransactionHistoryScreen(business: business),
-                ),
-              );
+              if (onNavigateToRiwayat != null) {
+                onNavigateToRiwayat!();
+              } else {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        TransactionHistoryScreen(business: business),
+                  ),
+                );
+              }
             },
           ),
           IconButton(
@@ -55,15 +64,22 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: _DashboardContent(business: business),
+      body: _DashboardContent(
+        business: business,
+        onNavigateToRiwayat: onNavigateToRiwayat,
+      ),
     );
   }
 }
 
 class _DashboardContent extends ConsumerStatefulWidget {
   final BusinessModel business;
+  final VoidCallback? onNavigateToRiwayat;
 
-  const _DashboardContent({required this.business});
+  const _DashboardContent({
+    required this.business,
+    this.onNavigateToRiwayat,
+  });
 
   @override
   ConsumerState<_DashboardContent> createState() => _DashboardContentState();
@@ -152,32 +168,50 @@ class _DashboardContentState extends ConsumerState<_DashboardContent> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Card(
-                    color: isProfit
-                        ? AppTheme.profitColor.withValues(alpha: 0.1)
-                        : AppTheme.lossColor.withValues(alpha: 0.1),
+                    surfaceTintColor: Colors.transparent,
                     child: Padding(
                       padding: const EdgeInsets.all(20),
-                      child: Column(
+                      child: Row(
                         children: [
-                          Text('Laba / Rugi Bersih', style: AppTheme.labelSmall),
-                          const SizedBox(height: 8),
-                          Text(FormatHelpers.rupiah(netProfit),
-                            style: AppTheme.amountLarge.copyWith(
-                              color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            width: 6,
+                            height: 60,
                             decoration: BoxDecoration(
                               color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Laba / Rugi Bersih',
+                                    style: AppTheme.labelSmall.copyWith(fontSize: 12)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  FormatHelpers.rupiah(netProfit),
+                                  style: AppTheme.amountMedium.copyWith(
+                                    color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: (isProfit ? AppTheme.profitColor : AppTheme.lossColor)
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               isProfit ? 'LABA' : 'RUGI',
-                              style: const TextStyle(
-                                color: Colors.white, fontSize: 11,
-                                fontWeight: FontWeight.bold, letterSpacing: 1,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                                color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
                               ),
                             ),
                           ),
@@ -206,11 +240,17 @@ class _DashboardContentState extends ConsumerState<_DashboardContent> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _ActionButton(icon: Icons.trending_up_rounded, label: 'Uang\nMasuk', color: AppTheme.profitColor, onTap: () => TransactionSheet.show(context, widget.business))),
+                      Expanded(child: _ActionButton(icon: Icons.trending_up_rounded, label: 'Uang\nMasuk', color: AppTheme.profitColor, onTap: () => TransactionSheet.show(context, widget.business, startAsIncome: true))),
                       const SizedBox(width: 12),
-                      Expanded(child: _ActionButton(icon: Icons.trending_down_rounded, label: 'Uang\nKeluar', color: AppTheme.lossColor, onTap: () => TransactionSheet.show(context, widget.business))),
+                      Expanded(child: _ActionButton(icon: Icons.trending_down_rounded, label: 'Uang\nKeluar', color: AppTheme.lossColor, onTap: () => TransactionSheet.show(context, widget.business, startAsIncome: false))),
                       const SizedBox(width: 12),
-                      Expanded(child: _ActionButton(icon: Icons.history_rounded, label: 'Riwayat\nTransaksi', color: AppTheme.infoColor, onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => TransactionHistoryScreen(business: widget.business))))),
+                      Expanded(child: _ActionButton(icon: Icons.history_rounded, label: 'Riwayat\nTransaksi', color: AppTheme.infoColor, onTap: () {
+                        if (widget.onNavigateToRiwayat != null) {
+                          widget.onNavigateToRiwayat!();
+                        } else {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => TransactionHistoryScreen(business: widget.business)));
+                        }
+                      })),
                     ],
                   ),
                 ],

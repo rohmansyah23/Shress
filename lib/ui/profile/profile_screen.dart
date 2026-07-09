@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../data/local/models/business_model.dart';
+import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
+import '../dashboard/qris_display_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -25,6 +30,13 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Profil Saya'),
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_rounded),
+            tooltip: 'QRIS Pembayaran',
+            onPressed: () => _showQrisBusinessPicker(context, ref),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -137,6 +149,77 @@ class ProfileScreen extends ConsumerWidget {
       'Fitur ini akan tersedia segera',
       isError: false,
     );
+  }
+
+  Future<void> _showQrisBusinessPicker(
+      BuildContext context, WidgetRef ref) async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) return;
+
+    try {
+      final businesses = await SupabaseService.instance
+          .getAccessibleBusinesses(user.userId, user.role);
+      if (!context.mounted) return;
+
+      if (businesses.isEmpty) {
+        ErrorSnackbar.showMessage(
+          context,
+          'Tidak ada bisnis tersedia',
+        );
+        return;
+      }
+
+      if (businesses.length == 1) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                QrisDisplayScreen(business: businesses.first),
+          ),
+        );
+        return;
+      }
+
+      final selected = await showDialog<BusinessModel>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
+          title: const Text('Pilih Bisnis'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: businesses.length,
+              separatorBuilder: (_, _) =>
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+              itemBuilder: (_, i) => ListTile(
+                leading: const Icon(Icons.store_rounded),
+                title: Text(businesses[i].name),
+                onTap: () => Navigator.pop(ctx, businesses[i]),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal'),
+            ),
+          ],
+        ),
+      );
+
+      if (selected != null && context.mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => QrisDisplayScreen(business: selected),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ErrorSnackbar.show(context, ErrorHandler.classify(e));
+      }
+    }
   }
 
   void _showChangePasswordDialog(BuildContext context) {

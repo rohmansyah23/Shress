@@ -12,9 +12,22 @@ import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
+import 'transaction_sheet.dart';
+import 'edit_transaction_page.dart';
+import '../dashboard/qris_display_screen.dart';
 
-/// Transaction History screen with full CRUD for Manager/Staff.
-/// Read, Update, Delete operations directly on Supabase (cloud-only).
+enum DateFilter {
+  today('Hari Ini'),
+  thisWeek('Minggu Ini'),
+  thisMonth('Bulan Ini'),
+  thisYear('Tahun Ini'),
+  all('Semua'),
+  custom('Custom');
+
+  final String label;
+  const DateFilter(this.label);
+}
+
 class TransactionHistoryScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
   final bool isOwnerView;
@@ -32,10 +45,13 @@ class TransactionHistoryScreen extends ConsumerStatefulWidget {
 
 class _TransactionHistoryScreenState
     extends ConsumerState<TransactionHistoryScreen> {
-  final _searchCtrl = TextEditingController();
   List<TransactionModel> _all = [];
   List<TransactionModel> _filtered = [];
   bool _isLoading = true;
+  bool _initialLoadDone = false;
+  DateFilter _selectedFilter = DateFilter.all;
+  DateTime? _customStart;
+  DateTime? _customEnd;
 
   @override
   void initState() {
@@ -44,8 +60,17 @@ class _TransactionHistoryScreenState
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    ref.watch(transactionRefreshProvider);
+    if (_initialLoadDone) {
+      _loadTransactions();
+    }
+    _initialLoadDone = true;
+  }
+
+  @override
   void dispose() {
-    _searchCtrl.dispose();
     super.dispose();
   }
 
@@ -57,9 +82,9 @@ class _TransactionHistoryScreenState
       if (mounted) {
         setState(() {
           _all = transactions;
-          _filtered = List.from(transactions);
           _isLoading = false;
         });
+        _applyFilter();
       }
     } catch (e) {
       if (mounted) {
@@ -69,25 +94,85 @@ class _TransactionHistoryScreenState
     }
   }
 
-  void _applySearch(String q) {
+  void _applyFilter() {
     setState(() {
-      if (q.trim().isEmpty) {
-        _filtered = List.from(_all);
+      final now = DateTime.now();
+      DateTime? start;
+      DateTime? end;
+
+      switch (_selectedFilter) {
+        case DateFilter.today:
+          start = DateTime(now.year, now.month, now.day);
+          end = start;
+        case DateFilter.thisWeek:
+          start = now.subtract(Duration(days: now.weekday - 1));
+          start = DateTime(start.year, start.month, start.day);
+          end = now;
+        case DateFilter.thisMonth:
+          start = DateTime(now.year, now.month, 1);
+          end = now;
+        case DateFilter.thisYear:
+          start = DateTime(now.year, 1, 1);
+          end = now;
+        case DateFilter.all:
+          start = null;
+          end = null;
+        case DateFilter.custom:
+          if (_customStart != null && _customEnd != null) {
+            start = _customStart;
+            end = _customEnd;
+          } else {
+            start = null;
+            end = null;
+          }
+      }
+
+      if (start != null && end != null) {
+        _filtered = _all.where((t) {
+          final txDate = DateTime.tryParse(t.transactionDate);
+          if (txDate == null) return false;
+          final txDay = DateTime(txDate.year, txDate.month, txDate.day);
+          return !txDay.isBefore(start!) && !txDay.isAfter(end!);
+        }).toList();
       } else {
-        _filtered = _all
-            .where((t) =>
-                (t.description ?? '')
-                    .toLowerCase()
-                    .contains(q.toLowerCase()) ||
-                FormatHelpers.rupiah(t.amount).contains(q))
-            .toList();
+        _filtered = List.from(_all);
       }
     });
   }
 
+  void _pickCustomRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: _customStart != null && _customEnd != null
+          ? DateTimeRange(start: _customStart!, end: _customEnd!)
+          : DateTimeRange(
+              start: DateTime(DateTime.now().year, DateTime.now().month, 1),
+              end: DateTime.now()),
+      helpText: 'Pilih Rentang Tanggal',
+      cancelText: 'Batal',
+      confirmText: 'Terapkan',
+    );
+    if (picked != null) {
+      setState(() {
+        _customStart = picked.start;
+        _customEnd = picked.end;
+        _selectedFilter = DateFilter.custom;
+      });
+      _applyFilter();
+    }
+  }
+
   Future<void> _handleEdit(TransactionModel tx) async {
-    // Show edit dialog
-    final result = await _showEditDialog(tx);
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => EditTransactionPage(
+          transaction: tx,
+          business: widget.business,
+        ),
+      ),
+    );
     if (result == true) {
       await _loadTransactions();
       triggerTransactionRefresh(ref);
@@ -151,106 +236,6 @@ class _TransactionHistoryScreenState
     }
   }
 
-  Future<bool?> _showEditDialog(TransactionModel tx) async {
-    final amountCtrl =
-        TextEditingController(text: tx.amount.toStringAsFixed(0));
-    final descCtrl = TextEditingController(text: tx.description ?? '');
-    final isIncome = tx.type == AppConstants.typeIncome;
-    final cogsCtrl = TextEditingController(
-        text: isIncome ? tx.cogs.toStringAsFixed(0) : '0');
-
-    return showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(isIncome ? 'Edit Uang Masuk' : 'Edit Uang Keluar'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: amountCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Jumlah (Rp)',
-                  prefixIcon: Icon(Icons.monetization_on_outlined),
-                ),
-              ),
-              if (isIncome) ...[
-                const SizedBox(height: 12),
-                TextField(
-                  controller: cogsCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'HPP (Rp)',
-                    prefixIcon: Icon(Icons.inventory_2_outlined),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 12),
-              TextField(
-                controller: descCtrl,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Deskripsi',
-                  prefixIcon: Icon(Icons.description_outlined),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final newAmount =
-                  double.tryParse(amountCtrl.text.replaceAll(',', '')) ?? 0;
-              final newCogs =
-                  double.tryParse(cogsCtrl.text.replaceAll(',', '')) ?? 0;
-              final newDesc = descCtrl.text.trim();
-
-              if (newAmount <= 0) {
-                ScaffoldMessenger.of(ctx).showSnackBar(
-                  const SnackBar(content: Text('Jumlah harus lebih dari 0')),
-                );
-                return;
-              }
-
-              try {
-                final result = await updateTransaction(
-                  transactionId: tx.transactionId!,
-                  amount: newAmount,
-                  cogs: isIncome ? newCogs : null,
-                  description: newDesc.isEmpty ? null : newDesc,
-                );
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx, result.success);
-                if (!result.success) {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(result.message ?? 'Gagal memperbarui'),
-                      backgroundColor: AppTheme.lossColor,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx, false);
-                if (!mounted) return;
-                ErrorSnackbar.show(context, ErrorHandler.classify(e));
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<String> _getCategoryName(int categoryId) async {
     return SupabaseService.instance
         .getCategoryName(widget.business.businessId, categoryId);
@@ -271,25 +256,58 @@ class _TransactionHistoryScreenState
             : 'Riwayat Transaksi'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.qr_code_rounded),
+            tooltip: 'QRIS Pembayaran',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      QrisDisplayScreen(business: widget.business),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Muat ulang',
             onPressed: _loadTransactions,
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'add_transaction',
+        onPressed: () => TransactionSheet.show(context, widget.business),
+        child: const Icon(Icons.add_rounded),
+      ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              controller: _searchCtrl,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search_rounded),
-                hintText: 'Cari transaksi...',
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final filter in DateFilter.values)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: FilterChip(
+                        label: Text(filter.label, style: const TextStyle(fontSize: 12)),
+                        selected: _selectedFilter == filter,
+                        onSelected: (selected) {
+                          if (filter == DateFilter.custom) {
+                            _pickCustomRange();
+                          } else {
+                            setState(() => _selectedFilter = filter);
+                            _applyFilter();
+                          }
+                        },
+                      ),
+                    ),
+                ],
               ),
-              onChanged: _applySearch,
             ),
           ),
+          const SizedBox(height: 4),
           Expanded(
             child: _isLoading
                 ? const Padding(
@@ -324,8 +342,7 @@ class _TransactionHistoryScreenState
                             return Card(
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
-                                onTap: () =>
-                                    _showTransactionDetail(tx),
+                                onTap: () => _showTransactionDetail(tx),
                                 child: Padding(
                                   padding: const EdgeInsets.all(12),
                                   child: Row(
@@ -502,3 +519,5 @@ class _TransactionHistoryScreenState
     }
   }
 }
+
+

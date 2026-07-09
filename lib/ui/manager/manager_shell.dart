@@ -6,16 +6,17 @@ import '../../data/local/models/business_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../dashboard/qris_display_screen.dart';
 import '../transaction/transaction_sheet.dart';
+import '../transaction/transaction_history_screen.dart';
 import '../reports/manager_report_screen.dart';
 import '../profile/profile_screen.dart';
 
 /// Manager/Staff Shell with Bottom Navigation.
 /// Navbar order:
-///   1. Pilih Usaha (Business Selection)
-///   2. QRIS (Display QRIS)
-///   3. + (Tambah Transaksi)
-///   4. Laporan/Grafik (Financial reports)
-///   5. Profil (Profile - email, photo, password, logout)
+///   0. Pilih Usaha (Business Selection)
+///   1. Riwayat Transaksi
+///   2. + (Tambah Transaksi)
+///   3. Laporan (Financial summary)
+///   4. Profil
 class ManagerShell extends ConsumerStatefulWidget {
   const ManagerShell({super.key});
 
@@ -26,8 +27,6 @@ class ManagerShell extends ConsumerStatefulWidget {
 class _ManagerShellState extends ConsumerState<ManagerShell> {
   int _selectedIndex = 0;
   BusinessModel? _selectedBusiness;
-
-  // Keep a copy of businesses for quick switching
   List<BusinessModel> _businesses = [];
 
   @override
@@ -59,6 +58,20 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     TransactionSheet.show(context, _selectedBusiness!);
   }
 
+  void _showQris() {
+    if (_selectedBusiness == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih usaha terlebih dahulu')),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => QrisDisplayScreen(business: _selectedBusiness!),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
@@ -78,29 +91,34 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
       );
     }
 
-    // Build pages list
+    final showAppBar = _selectedIndex == 0 || _selectedIndex == 2;
+
     final pages = <Widget>[
-      // Tab 1: Pilih Usaha / Active Business Dashboard
       _buildBusinessDashboard(),
-
-      // Tab 2: QRIS Display
       _selectedBusiness != null
-          ? QrisDisplayScreen(business: _selectedBusiness!)
+          ? TransactionHistoryScreen(business: _selectedBusiness!)
           : const Center(child: Text('Pilih usaha terlebih dahulu')),
-
-      // Tab 3: Plus button - handled by onTap, placeholder
       const SizedBox.shrink(),
-
-      // Tab 4: Laporan/Grafik
       _selectedBusiness != null
           ? ManagerReportScreen(business: _selectedBusiness!)
           : const Center(child: Text('Pilih usaha terlebih dahulu')),
-
-      // Tab 5: Profil
       const ProfileScreen(),
     ];
 
     return Scaffold(
+      appBar: showAppBar
+          ? AppBar(
+              title: const Text('SSRS Finance'),
+              actions: [
+                if (_selectedBusiness != null)
+                  IconButton(
+                    icon: const Icon(Icons.qr_code_rounded),
+                    tooltip: 'QRIS Pembayaran',
+                    onPressed: _showQris,
+                  ),
+              ],
+            )
+          : null,
       body: IndexedStack(
         index: _selectedIndex,
         children: pages,
@@ -109,7 +127,6 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
           if (index == 2) {
-            // Plus button — show transaction sheet
             _showAddTransactionSheet();
             return;
           }
@@ -130,9 +147,9 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
                 : 'Pilih Usaha',
           ),
           const NavigationDestination(
-            icon: Icon(Icons.qr_code_outlined),
-            selectedIcon: Icon(Icons.qr_code_rounded),
-            label: 'QRIS',
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long_rounded),
+            label: 'Riwayat',
           ),
           const NavigationDestination(
             icon: Icon(Icons.add_circle_outline, size: 32),
@@ -187,8 +204,6 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text('Pilih Bisnis', style: AppTheme.heading2),
-                const SizedBox(height: 16),
                 ..._businesses.map((b) => Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       child: InkWell(
@@ -196,7 +211,7 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
                         onTap: () {
                           setState(() {
                             _selectedBusiness = b;
-                            _selectedIndex = 1; // Go to QRIS tab
+                            _selectedIndex = 1;
                           });
                         },
                         child: Padding(
