@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../data/local/models/business_model.dart';
+import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../dashboard/qris_display_screen.dart';
 import '../transaction/transaction_sheet.dart';
@@ -111,7 +112,7 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     return Scaffold(
       appBar: showAppBar
           ? AppBar(
-              title: const Text('SSRS Finance'),
+              title: Text(AppConstants.appName),
               actions: [
                 if (_selectedBusiness != null)
                   IconButton(

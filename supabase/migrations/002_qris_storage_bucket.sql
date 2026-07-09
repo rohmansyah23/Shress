@@ -1,5 +1,5 @@
 -- ============================================================
--- SSRS Finance - QRIS Storage Bucket Migration (v2)
+-- Sheress - QRIS Storage Bucket Migration (v2)
 -- Description: Creates storage bucket for QRIS images and
 --              updates seed data to use Supabase Storage URLs.
 -- Notes:

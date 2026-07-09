@@ -1,4 +1,4 @@
-# Analisis Gagal Login & Data Tidak Muncul — SSRS Finance
+# Analisis Gagal Login & Data Tidak Muncul — Sheress
 
 Dokumen ini mencatat **semua penyebab** kenapa user mengalami kegagalan login atau data (bisnis, kategori, transaksi) tidak muncul setelah login, beserta **perbaikan yang telah diterapkan**.
 

@@ -3,6 +3,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
+import '../constants/constants.dart';
 import '../../ui/ledger/profit_loss_sheet.dart';
 import '../utils/format_helpers.dart';
 
@@ -157,7 +158,7 @@ class ExportService {
           pw.Center(
             child: pw.Column(
               children: [
-                pw.Text('SSRS Finance', style: fontTitle),
+                pw.Text(AppConstants.appName, style: fontTitle),
                 pw.SizedBox(height: 4),
                 pw.Text(
                   'Laporan Laba / Rugi',

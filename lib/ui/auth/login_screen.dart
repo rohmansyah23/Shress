@@ -94,7 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'SSRS Finance',
+                    AppConstants.appName,
                     textAlign: TextAlign.center,
                     style: AppTheme.heading1.copyWith(
                       color: colorScheme.primary,

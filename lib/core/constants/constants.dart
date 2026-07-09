@@ -2,7 +2,7 @@ class AppConstants {
   AppConstants._();
 
   // App Info
-  static const String appName = 'SSRS Finance';
+  static const String appName = 'Sheress';
   static const String appVersion = '1.0.0';
 
   // Roles

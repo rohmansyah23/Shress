@@ -91,13 +91,13 @@ Future<void> _runApp() async {
       observers: [
         errorObserver,
       ],
-      child: const SSRSFinanceApp(),
+      child: const SheressApp(),
     ),
   );
 }
 
-class SSRSFinanceApp extends StatelessWidget {
-  const SSRSFinanceApp({super.key});
+class SheressApp extends StatelessWidget {
+  const SheressApp({super.key});
 
   @override
   Widget build(BuildContext context) {

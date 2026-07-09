@@ -43,7 +43,7 @@ class AppConfig {
       dotenv.env['SUPABASE_SERVICE_ROLE_KEY'] ?? '';
 
   static String get appName =>
-      dotenv.env['APP_NAME'] ?? 'SSRS Finance';
+      dotenv.env['APP_NAME'] ?? 'Sheress';
 
   static String get appEnvironment =>
       dotenv.env['APP_ENVIRONMENT'] ?? 'development';

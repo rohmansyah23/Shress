@@ -1,8 +1,8 @@
 -- ============================================================
--- SSRS Finance - Initial Schema Migration (v2)
+-- Sheress - Initial Schema Migration (v2)
 -- Database: Supabase (PostgreSQL)
 -- Description: Multi-tenant financial reporting system
--- Owner: SSRS
+-- Owner: Sheress
 -- ============================================================
 
 -- 0. EXTENSIONS
@@ -428,9 +428,9 @@ CREATE POLICY financial_reports_delete ON public.financial_reports
 
 -- 5a. Default Businesses with QRIS image references
 INSERT INTO public.businesses (name, description, qris_image_url) VALUES
-  ('Agen Minuman Alkali', 'SSRS - Agen Minuman Alkali', 'assets/images/qris/business_1_qris.svg'),
-  ('Teh Solo', 'SSRS - Teh Solo', 'assets/images/qris/business_2_qris.svg'),
-  ('Warung Kopi', 'SSRS - Warung Kopi', 'assets/images/qris/business_3_qris.svg')
+  ('Agen Minuman Alkali', 'Sheress - Agen Minuman Alkali', 'assets/images/qris/business_1_qris.svg'),
+  ('Teh Solo', 'Sheress - Teh Solo', 'assets/images/qris/business_2_qris.svg'),
+  ('Warung Kopi', 'Sheress - Warung Kopi', 'assets/images/qris/business_3_qris.svg')
 ON CONFLICT DO NOTHING;
 
 -- 5b. Default Categories per business

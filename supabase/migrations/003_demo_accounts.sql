@@ -1,5 +1,5 @@
 -- ============================================================
--- SSRS Finance - Demo Accounts Migration
+-- Sheress - Demo Accounts Migration
 -- Description: Creates demo user accounts for testing
 -- ============================================================
 
@@ -25,7 +25,7 @@ INSERT INTO auth.users (
     'owner@ssrs.com',
     crypt('password123', gen_salt('bf'::text)),
     now(),
-    jsonb_build_object('username', 'owner_ssrs', 'display_name', 'Owner SSRS', 'role', 'owner'),
+    jsonb_build_object('username', 'owner_sheress', 'display_name', 'Owner Sheress', 'role', 'owner'),
     now(),
     now()
   ),
@@ -34,7 +34,7 @@ INSERT INTO auth.users (
     'manager@ssrs.com',
     crypt('password123', gen_salt('bf'::text)),
     now(),
-    jsonb_build_object('username', 'manager_ssrs', 'display_name', 'Manager SSRS', 'role', 'manager'),
+    jsonb_build_object('username', 'manager_sheress', 'display_name', 'Manager Sheress', 'role', 'manager'),
     now(),
     now()
   ),
@@ -43,7 +43,7 @@ INSERT INTO auth.users (
     'staff@ssrs.com',
     crypt('password123', gen_salt('bf'::text)),
     now(),
-    jsonb_build_object('username', 'staff_ssrs', 'display_name', 'Staff SSRS', 'role', 'staff'),
+    jsonb_build_object('username', 'staff_sheress', 'display_name', 'Staff Sheress', 'role', 'staff'),
     now(),
     now()
   )

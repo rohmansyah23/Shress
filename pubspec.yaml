@@ -1,5 +1,5 @@
-name: ssrs_finance
-description: "SSRS Finance - Multi-tenant financial reporting application"
+name: sheress
+description: "Sheress - Multi-tenant financial reporting application"
 publish_to: 'none'
 
 version: 1.0.0+1

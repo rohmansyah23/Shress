@@ -1,4 +1,4 @@
-# SSRS Finance
+# Sheress
 
 Multi-tenant financial reporting application — offline-first dengan Supabase sync, role-based access, dan P&L reports.
 
@@ -99,8 +99,8 @@ lib/
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-org/ssrs_finance.git
-cd ssrs_finance
+git clone https://github.com/your-org/sheress.git
+cd sheress
 flutter pub get
 ```
 
@@ -112,7 +112,7 @@ SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 # Opsional
-APP_NAME=SSRS Finance
+APP_NAME=Sheress
 APP_ENVIRONMENT=development
 SYNC_INTERVAL_SECONDS=30
 ```
@@ -210,4 +210,4 @@ dart run flutter_launcher_icons
 
 ## Lisensi
 
-Proprietary — SSRS
+Proprietary — Sheress

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/constants.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/theme/app_theme.dart';
@@ -200,7 +201,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SSRS Finance'),
+        title: Text(AppConstants.appName),
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_rounded),

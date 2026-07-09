@@ -18,7 +18,7 @@
 ## Default Icons (Placeholder)
 
 The project includes vector-based adaptive icons:
-- **Background**: Deep Indigo (`#1A237E`) — SSRS brand color
+- **Background**: Deep Indigo (`#1A237E`) — Sheress brand color
 - **Foreground**: White building icon with "Rp" symbol
 - Located in `android/app/src/main/res/drawable/`
 

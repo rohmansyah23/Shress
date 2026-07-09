@@ -1,4 +1,4 @@
-package com.ssrs.ssrs_finance
+package com.sheress.app
 
 import io.flutter.embedding.android.FlutterActivity
 
