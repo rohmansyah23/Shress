@@ -5,6 +5,7 @@ import '../../core/utils/error_handler.dart';
 import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
+import '../../data/local/models/user_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../dashboard/qris_display_screen.dart';
@@ -55,6 +56,8 @@ class ProfileScreen extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
+    final hasDisplayName = user.displayName?.isNotEmpty == true;
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -66,9 +69,9 @@ class ProfileScreen extends ConsumerWidget {
                 radius: 48,
                 backgroundColor: colorScheme.primaryContainer,
                 child: Text(
-                  user.username.isNotEmpty
-                      ? user.username[0].toUpperCase()
-                      : '?',
+                  hasDisplayName
+                      ? user.displayName![0].toUpperCase()
+                      : (user.username.isNotEmpty ? user.username[0].toUpperCase() : '?'),
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
@@ -77,8 +80,15 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(user.username, style: AppTheme.heading2),
-              const SizedBox(height: 4),
+              Text(
+                hasDisplayName ? user.displayName! : user.username,
+                style: AppTheme.heading2,
+              ),
+              if (hasDisplayName) ...[
+                const SizedBox(height: 2),
+                Text('@${user.username}', style: AppTheme.caption),
+              ],
+              const SizedBox(height: 8),
               AppBadge.role(user.role, fontSize: 12),
             ],
           ),
@@ -94,11 +104,28 @@ class ProfileScreen extends ConsumerWidget {
               children: [
                 Text('Informasi Akun', style: AppTheme.heading3),
                 const SizedBox(height: 16),
+                _InfoRow(
+                    icon: Icons.badge_outlined,
+                    label: 'Nama Tampilan',
+                    value: user.displayName?.isNotEmpty == true ? user.displayName! : '-'),
+                const SizedBox(height: 12),
                 _InfoRow(icon: Icons.person_outlined, label: 'Username', value: user.username),
                 const SizedBox(height: 12),
                 _InfoRow(icon: Icons.badge_outlined, label: 'Role', value: user.role),
               ],
             ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Aksi Akun
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.edit_outlined),
+            title: const Text('Ubah Nama Tampilan'),
+            subtitle: const Text('Ganti nama panggilan/lengkap Anda'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => _showEditDisplayNameDialog(context, ref, user),
           ),
         ),
         const SizedBox(height: 16),
@@ -120,6 +147,83 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showEditDisplayNameDialog(
+      BuildContext context, WidgetRef ref, UserModel user) {
+    final nameCtrl = TextEditingController(text: user.displayName ?? '');
+    var isSubmitting = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
+          title: const Text('Ubah Nama Tampilan'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Nama Tampilan',
+                prefixIcon: Icon(Icons.badge_outlined),
+                hintText: 'Nama lengkap Anda',
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      if (nameCtrl.text.trim().isEmpty) {
+                        ErrorSnackbar.showMessage(
+                          ctx,
+                          'Nama tampilan tidak boleh kosong',
+                        );
+                        return;
+                      }
+                      setDialogState(() => isSubmitting = true);
+                      try {
+                        await ref
+                            .read(authProvider.notifier)
+                            .updateUserDisplayName(
+                                user.userId, nameCtrl.text.trim());
+                        if (!ctx.mounted) return;
+                        Navigator.pop(ctx);
+                        ErrorSnackbar.showMessage(
+                          context,
+                          'Nama tampilan berhasil diubah',
+                          isError: false,
+                        );
+                      } catch (e) {
+                        setDialogState(() => isSubmitting = false);
+                        ErrorSnackbar.show(
+                          ctx,
+                          ErrorHandler.classify(e),
+                        );
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Simpan'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -369,7 +369,9 @@ class _UserCard extends ConsumerWidget {
                   backgroundColor:
                       _roleColor(context, user.role).withValues(alpha: 0.15),
                   child: Text(
-                    _initials(user.username),
+                    _initials(user.displayName?.isNotEmpty == true
+                        ? user.displayName!
+                        : user.username),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -382,7 +384,18 @@ class _UserCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.username, style: AppTheme.heading3),
+                      Text(
+                        user.displayName?.isNotEmpty == true
+                            ? user.displayName!
+                            : user.username,
+                        style: AppTheme.heading3,
+                      ),
+                      if (user.displayName?.isNotEmpty == true)
+                        Text(
+                          '@${user.username}',
+                          style: AppTheme.caption.copyWith(fontSize: 12),
+                        ),
+                      const SizedBox(height: 2),
                       AppBadge.role(user.role),
                     ],
                   ),

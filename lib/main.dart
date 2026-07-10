@@ -14,7 +14,6 @@ import 'data/remote/supabase_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/theme_provider.dart';
-import 'ui/auth/set_new_password_screen.dart';
 import 'ui/splash/splash_screen.dart';
 
 Future<void> main() async {
@@ -112,32 +111,6 @@ class SheressApp extends ConsumerStatefulWidget {
 }
 
 class _SheressAppState extends ConsumerState<SheressApp> {
-  StreamSubscription<AuthState>? _authSub;
-
-  @override
-  void initState() {
-    super.initState();
-    _listenPasswordRecovery();
-  }
-
-  @override
-  void dispose() {
-    _authSub?.cancel();
-    super.dispose();
-  }
-
-  void _listenPasswordRecovery() {
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      if (data.event == AuthChangeEvent.passwordRecovery && mounted) {
-        // ignore: use_build_context_synchronously
-        Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(
-            builder: (_) => const SetNewPasswordScreen(),
-          ),
-        );
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

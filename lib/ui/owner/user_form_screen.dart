@@ -18,6 +18,7 @@ class UserFormScreen extends ConsumerStatefulWidget {
 class _UserFormScreenState extends ConsumerState<UserFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
+  final _displayNameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _pwdCtrl = TextEditingController();
   final _confirmPwdCtrl = TextEditingController();
@@ -32,12 +33,14 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
     if (_isEdit) {
       _usernameCtrl.text = widget.user!.username;
       _selectedRole = widget.user!.role;
+      _displayNameCtrl.text = widget.user!.displayName ?? '';
     }
   }
 
   @override
   void dispose() {
     _usernameCtrl.dispose();
+    _displayNameCtrl.dispose();
     _emailCtrl.dispose();
     _pwdCtrl.dispose();
     _confirmPwdCtrl.dispose();
@@ -62,6 +65,10 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         await ref.read(authRepositoryProvider).updateUserProfile(
               userId: user.userId,
               username: _usernameCtrl.text.trim(),
+            );
+        await ref.read(authRepositoryProvider).updateUserDisplayName(
+              userId: user.userId,
+              displayName: _displayNameCtrl.text.trim(),
             );
 
         // Update email if provided
@@ -95,6 +102,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
           password: _pwdCtrl.text.trim(),
           username: _usernameCtrl.text.trim(),
           role: _selectedRole,
+          displayName: _displayNameCtrl.text.trim(),
         );
 
         if (!mounted) return;
@@ -196,7 +204,22 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             ),
             const SizedBox(height: 24),
 
-            const Text('Nama Pengguna',
+            const Text('Nama Tampilan (Display Name)',
+                style:
+                    TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _displayNameCtrl,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.badge_outlined),
+                hintText: 'Nama lengkap user',
+              ),
+              validator: (v) =>
+                  v?.trim().isEmpty == true ? 'Nama tampilan harus diisi' : null,
+            ),
+            const SizedBox(height: 20),
+
+            const Text('Nama Pengguna (Username)',
                 style:
                     TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
@@ -204,10 +227,10 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               controller: _usernameCtrl,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.person_outline),
-                hintText: 'Nama display user',
+                hintText: 'Username untuk login',
               ),
               validator: (v) =>
-                  v?.trim().isEmpty == true ? 'Nama harus diisi' : null,
+                  v?.trim().isEmpty == true ? 'Username harus diisi' : null,
             ),
             const SizedBox(height: 20),
 
@@ -314,13 +337,16 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.badge_outlined),
               ),
-              items: const [
-                DropdownMenuItem(value: 'staff', child: Text('👤 Staff')),
-                DropdownMenuItem(
+              items: [
+                if (_selectedRole == 'owner')
+                  const DropdownMenuItem(value: 'owner', child: Text('👑 Owner')),
+                const DropdownMenuItem(value: 'staff', child: Text('👤 Staff')),
+                const DropdownMenuItem(
                     value: 'manager', child: Text('📋 Manager')),
               ],
-              onChanged: (v) =>
-                  setState(() => _selectedRole = v ?? _selectedRole),
+              onChanged: _selectedRole == 'owner'
+                  ? null
+                  : (v) => setState(() => _selectedRole = v ?? _selectedRole),
             ),
             const SizedBox(height: 32),
 

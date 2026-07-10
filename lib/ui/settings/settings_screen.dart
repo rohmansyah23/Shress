@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/constants.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_theme.dart';
@@ -167,7 +166,7 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle:
                       const Text('Ganti password akun Anda'),
                   trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => _showChangePasswordDialog(context),
+                  onTap: () => _showChangePasswordDialog(context, ref),
                 ),
                 const Divider(height: 1, indent: 16, endIndent: 16),
                 ListTile(
@@ -250,7 +249,7 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  void _showChangePasswordDialog(BuildContext context) {
+  void _showChangePasswordDialog(BuildContext context, WidgetRef ref) {
     final newPwdCtrl = TextEditingController();
     final confirmPwdCtrl = TextEditingController();
     var isSubmitting = false;
@@ -264,6 +263,7 @@ class SettingsScreen extends ConsumerWidget {
           title: const Text('Ubah Password'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextField(
                 controller: newPwdCtrl,
@@ -308,12 +308,19 @@ class SettingsScreen extends ConsumerWidget {
                         );
                         return;
                       }
+                      final user = ref.read(currentUserProvider);
+                      if (user == null) {
+                        ErrorSnackbar.showMessage(
+                          ctx,
+                          'User tidak ditemukan',
+                        );
+                        return;
+                      }
                       setDialogState(() => isSubmitting = true);
                       try {
-                        await Supabase.instance.client.auth
-                            .updateUser(
-                          UserAttributes(
-                              password: newPwdCtrl.text),
+                        await ref.read(authRepositoryProvider).updateUserPassword(
+                          userId: user.userId,
+                          password: newPwdCtrl.text,
                         );
                         if (!ctx.mounted) return;
                         Navigator.pop(ctx);

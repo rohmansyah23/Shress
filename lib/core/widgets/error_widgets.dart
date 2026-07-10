@@ -142,6 +142,7 @@ class OfflineBanner extends StatelessWidget {
 /// Inline error snackbar helper
 class ErrorSnackbar {
   static void show(BuildContext context, AppError error) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -175,6 +176,7 @@ class ErrorSnackbar {
 
   static void showMessage(BuildContext context, String message,
       {bool isError = true}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(

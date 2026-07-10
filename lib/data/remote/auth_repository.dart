@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/constants.dart';
 import 'supabase_service.dart';
 import '../local/models/business_model.dart';
 import '../local/models/user_model.dart';
@@ -17,13 +20,13 @@ class AuthRepository {
   });
 
   /// Current authenticated user (from Supabase)
-  User? get currentSupabaseUser => _supabase.auth.currentUser;
+  User? get currentSupabaseUser => null;
 
   /// Current session
-  Session? get currentSession => _supabase.auth.currentSession;
+  Session? get currentSession => null;
 
   /// Whether a user is currently authenticated
-  bool get isAuthenticated => _supabase.auth.currentUser != null;
+  bool get isAuthenticated => false;
 
   /// Sign in with email and password.
   /// Returns the authenticated UserModel on success.
@@ -31,88 +34,77 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    // Step 1: Try standard Supabase Auth sign in
     try {
-      final response = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-
-      final user = response.user;
-      if (user != null) {
-        // Fetch user profile from public.users table
-        final profileData = await _supabase
-            .from('users')
-            .select()
-            .eq('id', user.id)
-            .single();
-
-        return UserModel(
-          userId: user.id,
-          username: profileData['username'] as String? ?? user.email ?? 'User',
-          role: profileData['role'] as String? ?? 'staff',
-        );
-      }
-    } on AuthException catch (e) {
-      if (!e.message.toLowerCase().contains('invalid login credentials') &&
-          !e.message.toLowerCase().contains('invalid_credentials')) {
-        rethrow;
-      }
-    }
-
-    // Step 2 (Fallback): Verify against public.users.password_hash via RPC
-    try {
-      final rpc = await _supabase.rpc('verify_public_password', params: {
+      final result = await _supabase.rpc('verify_public_password', params: {
         'p_email': email,
         'p_password': password,
-      }).single();
+      });
 
-      final userId = rpc as String;
+      if (result == null) {
+        throw const AuthException('invalid login credentials');
+      }
+
+      final userId = result as String;
       final profileData = await _supabase
           .from('users')
           .select()
           .eq('id', userId)
           .single();
 
-      return UserModel(
+      final user = UserModel(
         userId: userId,
         username: profileData['username'] as String? ?? email.split('@').first,
         role: profileData['role'] as String? ?? 'staff',
+        displayName: profileData['display_name'] as String?,
       );
-    } catch (_) {
-      // RPC might not exist — ignore
-    }
 
-    throw AuthException('invalid login credentials');
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(AppConstants.keySessionUser, jsonEncode(user.toMap()));
+
+      return user;
+    } catch (e) {
+      if (e is AuthException) {
+        rethrow;
+      }
+      throw const AuthException('invalid login credentials');
+    }
   }
 
   /// Sign out the current user.
   Future<void> signOut() async {
-    await _supabase.auth.signOut();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(AppConstants.keySessionUser);
   }
 
   /// Try to restore session from stored credentials.
   Future<UserModel?> tryRestoreSession() async {
     try {
-      final session = _supabase.auth.currentSession;
-      if (session == null) return null;
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString(AppConstants.keySessionUser);
+      if (userJson == null) return null;
 
-      final user = _supabase.auth.currentUser;
-      if (user == null) return null;
+      final cachedUser = UserModel.fromMap(jsonDecode(userJson) as Map<String, dynamic>);
 
-      // Fetch fresh profile from Supabase
-      final profileData = await _supabase
-          .from('users')
-          .select()
-          .eq('id', user.id)
-          .single();
+      try {
+        final profileData = await _supabase
+            .from('users')
+            .select()
+            .eq('id', cachedUser.userId)
+            .single();
 
-      return UserModel(
-        userId: user.id,
-        username: profileData['username'] as String? ?? user.email ?? 'User',
-        role: profileData['role'] as String? ?? 'staff',
-      );
-    } catch (e) {
+        final freshUser = UserModel(
+          userId: cachedUser.userId,
+          username: profileData['username'] as String? ?? cachedUser.username,
+          role: profileData['role'] as String? ?? cachedUser.role,
+          displayName: profileData['display_name'] as String? ?? cachedUser.displayName,
+        );
+
+        await prefs.setString(AppConstants.keySessionUser, jsonEncode(freshUser.toMap()));
+        return freshUser;
+      } catch (_) {
+        return cachedUser;
+      }
+    } catch (_) {
       return null;
     }
   }
@@ -131,41 +123,34 @@ class AuthRepository {
     required String password,
     required String username,
     required String role,
+    required String displayName,
   }) async {
-    final response = await _supabase.auth.admin.createUser(
-      AdminUserAttributes(
-        email: email,
-        password: password,
-        emailConfirm: true,
-        userMetadata: {'username': username, 'role': role},
-      ),
-    );
-    final authUser = response.user;
-    if (authUser == null) throw Exception('Gagal membuat user');
-
-    // Insert profile into public.users
-    await _supabase.from('users').insert({
-      'id': authUser.id,
-      'username': username,
-      'role': role,
-      'email': email,
+    final result = await _supabase.rpc('create_public_user', params: {
+      'p_email': email,
+      'p_username': username,
+      'p_role': role,
+      'p_password': password,
     });
 
+    if (result == null) {
+      throw Exception('Gagal membuat user');
+    }
+
+    final userId = result as String;
+
+    await _supabase.from('users').update({'display_name': displayName}).eq('id', userId);
+
     return UserModel(
-      userId: authUser.id,
+      userId: userId,
       username: username,
       role: role,
+      displayName: displayName,
     );
   }
 
   /// Delete a user (Owner operation)
   Future<void> deleteUser(String userId) async {
-    // Delete user_businesses first
-    await _supabase.from('user_businesses').delete().eq('user_id', userId);
-    // Delete profile
     await _supabase.from('users').delete().eq('id', userId);
-    // Delete auth user
-    await _supabase.auth.admin.deleteUser(userId);
   }
 
   /// Update user profile (username)
@@ -179,15 +164,22 @@ class AuthRepository {
         .eq('id', userId);
   }
 
+  /// Update user display name
+  Future<void> updateUserDisplayName({
+    required String userId,
+    required String displayName,
+  }) async {
+    await _supabase
+        .from('users')
+        .update({'display_name': displayName})
+        .eq('id', userId);
+  }
+
   /// Update user email (admin only - requires service_role)
   Future<void> updateUserEmail({
     required String userId,
     required String email,
   }) async {
-    await _supabase.auth.admin.updateUserById(
-      userId,
-      attributes: AdminUserAttributes(email: email),
-    );
     await _supabase
         .from('users')
         .update({'email': email})
@@ -199,25 +191,20 @@ class AuthRepository {
     required String userId,
     required String password,
   }) async {
-    await _supabase.auth.admin.updateUserById(
-      userId,
-      attributes: AdminUserAttributes(password: password),
-    );
+    await _supabase.rpc('update_public_user_password', params: {
+      'p_user_id': userId,
+      'p_new_password': password,
+    });
   }
 
   /// Send password reset email via Supabase Auth
   Future<void> resetPassword(String email) async {
-    await _supabase.auth.resetPasswordForEmail(
-      email,
-      redirectTo: 'sheress://reset-password/',
-    );
+    throw Exception('Fitur lupa password dinonaktifkan. Silakan hubungi Owner untuk mengatur ulang password Anda.');
   }
 
   /// Update password after password recovery (must have valid recovery session)
   Future<void> updateCurrentUserPassword(String newPassword) async {
-    await _supabase.auth.updateUser(
-      UserAttributes(password: newPassword),
-    );
+    throw Exception('Fitur reset password dinonaktifkan.');
   }
 
   /// Create a new business and assign the current owner to it.

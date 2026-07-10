@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/constants/constants.dart';
 import '../data/local/models/business_model.dart';
@@ -146,8 +148,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
           userId: state.user!.userId,
           username: state.user!.username,
           role: newRole,
+          displayName: state.user!.displayName,
         ),
       );
+    }
+  }
+
+  Future<void> updateUserDisplayName(String userId, String newDisplayName) async {
+    await _authRepo.updateUserDisplayName(userId: userId, displayName: newDisplayName);
+    if (state.user?.userId == userId) {
+      final updatedUser = UserModel(
+        userId: state.user!.userId,
+        username: state.user!.username,
+        role: state.user!.role,
+        displayName: newDisplayName,
+      );
+      state = state.copyWith(user: updatedUser);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(AppConstants.keySessionUser, jsonEncode(updatedUser.toMap()));
     }
   }
 

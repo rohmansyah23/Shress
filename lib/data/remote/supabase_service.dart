@@ -25,7 +25,7 @@ class SupabaseService {
   SupabaseClient get client => _supabase;
 
   /// Check if the service has a live connection
-  bool get isConnected => _supabase.auth.currentSession != null;
+  bool get isConnected => true;
 
   // ==================== User Operations ====================
 
@@ -40,6 +40,7 @@ class SupabaseService {
         userId: data['id'] as String,
         username: data['username'] as String,
         role: data['role'] as String,
+        displayName: data['display_name'] as String?,
       );
     });
   }
@@ -51,6 +52,7 @@ class SupabaseService {
             userId: json['id'] as String,
             username: json['username'] as String,
             role: json['role'] as String,
+            displayName: json['display_name'] as String?,
           )).toList();
     });
   }

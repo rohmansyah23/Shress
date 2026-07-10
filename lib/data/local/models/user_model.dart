@@ -1,7 +1,8 @@
 class UserModel {
-  final String userId; // Matches Supabase Auth UID
+  final String userId;
   final String username;
   final String role; // 'owner', 'manager', 'staff'
+  final String? displayName;
   final DateTime? lastSyncedAt;
   final DateTime? createdAt;
 
@@ -9,6 +10,7 @@ class UserModel {
     required this.userId,
     required this.username,
     required this.role,
+    this.displayName,
     this.lastSyncedAt,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
@@ -17,6 +19,7 @@ class UserModel {
         'userId': userId,
         'username': username,
         'role': role,
+        'displayName': displayName,
         'lastSyncedAt': lastSyncedAt?.toIso8601String(),
         'createdAt': createdAt?.toIso8601String(),
       };
@@ -25,6 +28,7 @@ class UserModel {
         userId: map['userId'] as String,
         username: map['username'] as String,
         role: map['role'] as String,
+        displayName: map['displayName'] as String?,
         lastSyncedAt: map['lastSyncedAt'] != null
             ? DateTime.parse(map['lastSyncedAt'] as String)
             : null,
