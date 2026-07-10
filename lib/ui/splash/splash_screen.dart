@@ -17,7 +17,6 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
   bool _navigated = false;
-  bool _subscribed = false;
 
   void _navigateToDashboard(String role) {
     Widget destination;
@@ -43,21 +42,37 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (!_subscribed) {
-      _subscribed = true;
-      ref.listen(authProvider, (_, next) {
-        if (_navigated) return;
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkAuthState());
+  }
 
-        if (next.status == AuthStatus.authenticated && next.user != null) {
-          _navigated = true;
-          _navigateToDashboard(next.user!.role);
-        } else if (next.status == AuthStatus.unauthenticated) {
-          _navigated = true;
-          _navigateToLogin();
-        }
-      });
+  void _checkAuthState() {
+    if (_navigated) return;
+    final authState = ref.read(authProvider);
+    if (authState.status == AuthStatus.authenticated && authState.user != null) {
+      _navigated = true;
+      _navigateToDashboard(authState.user!.role);
+    } else if (authState.status == AuthStatus.unauthenticated) {
+      _navigated = true;
+      _navigateToLogin();
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<AuthState>(authProvider, (_, next) {
+      if (_navigated) return;
+
+      if (next.status == AuthStatus.authenticated && next.user != null) {
+        _navigated = true;
+        _navigateToDashboard(next.user!.role);
+      } else if (next.status == AuthStatus.unauthenticated) {
+        _navigated = true;
+        _navigateToLogin();
+      }
+    });
+
     final authState = ref.watch(authProvider);
     final colorScheme = Theme.of(context).colorScheme;
 

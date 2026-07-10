@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/constants.dart';
 import '../../core/utils/error_handler.dart';
+import '../../core/utils/format_helpers.dart';
 import '../local/models/business_model.dart';
 import '../local/models/category_model.dart';
 import '../local/models/transaction_model.dart';
@@ -104,10 +106,32 @@ class SupabaseService {
 
   Future<List<BusinessModel>> getAccessibleBusinesses(
       String userId, String role) async {
-    if (role == 'owner') {
+    if (role == AppConstants.roleOwner) {
       return getAllBusinesses();
     }
     return getBusinessesForUser(userId);
+  }
+
+  // ==================== Business Write Operations ====================
+
+  /// Create a new business and return the created [BusinessModel].
+  Future<BusinessModel> createBusiness({
+    required String name,
+    String? description,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('businesses').insert({
+        'name': name,
+        'description': description ?? '',
+      }).select().single();
+
+      return BusinessModel(
+        businessId: response['id'] as int,
+        name: response['name'] as String,
+        description: response['description'] as String?,
+        qrisImageUrl: response['qris_image_url'] as String?,
+      );
+    });
   }
 
   // ==================== Category Operations ====================
@@ -213,10 +237,10 @@ class SupabaseService {
     double totalExpense = 0;
 
     for (final tx in transactions) {
-      if (tx.type == 'income') {
+      if (tx.type == AppConstants.typeIncome) {
         totalIncome += tx.amount;
         totalCogs += tx.cogs;
-      } else if (tx.type == 'expense') {
+      } else if (tx.type == AppConstants.typeExpense) {
         totalExpense += tx.amount;
       }
     }
@@ -273,7 +297,7 @@ class SupabaseService {
     required String type,
     required double amount,
     double cogs = 0.0,
-    String paymentMethod = 'cash',
+    String paymentMethod = AppConstants.paymentCash,
     String? description,
     required String transactionDate,
   }) async {
@@ -284,7 +308,7 @@ class SupabaseService {
         'user_id': userId,
         'type': type,
         'amount': amount,
-        'cogs': type == 'income' ? cogs : 0.0,
+        'cogs': type == AppConstants.typeIncome ? cogs : 0.0,
         'payment_method': paymentMethod,
         'description': description ?? '',
         'transaction_date': transactionDate,
@@ -342,7 +366,7 @@ class SupabaseService {
           type: tx['type'] as String,
           amount: (tx['amount'] as num).toDouble(),
           cogs: (tx['cogs'] as num?)?.toDouble() ?? 0.0,
-          paymentMethod: tx['payment_method'] as String? ?? 'cash',
+          paymentMethod: tx['payment_method'] as String? ?? AppConstants.paymentCash,
           description: tx['description'] as String?,
           transactionDate: tx['transaction_date'] as String,
           statusSync: tx['status_sync'] as bool? ?? true,
@@ -351,6 +375,122 @@ class SupabaseService {
               : null,
         )).toList();
   }
+
+  // ==================== Monthly Trend ====================
+
+  /// Get net profit trend for the last [months] months.
+  /// Returns list sorted chronologically, newest last.
+  Future<List<({String month, double netProfit})>> getMonthlyNetProfits(
+    int businessId, {
+    int months = 6,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final now = DateTime.now();
+      final startMonth = DateTime(now.year, now.month - months + 1, 1);
+      final startStr =
+          '${startMonth.year}-${startMonth.month.toString().padLeft(2, '0')}-01';
+      final endStr =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
+
+      final data = await _supabase
+          .from('transactions')
+          .select()
+          .eq('business_id', businessId)
+          .gte('transaction_date', startStr)
+          .lte('transaction_date', endStr)
+          .order('transaction_date', ascending: true);
+
+      final transactions = _parseTransactions(data as List);
+
+      // Group by YYYY-MM
+      final Map<String, double> incomeByMonth = {};
+      final Map<String, double> expenseByMonth = {};
+
+      for (final tx in transactions) {
+        final monthKey = tx.transactionDate.length >= 7
+            ? tx.transactionDate.substring(0, 7)
+            : tx.transactionDate;
+
+        if (tx.type == 'income') {
+          incomeByMonth.update(
+              monthKey, (v) => v + tx.amount, ifAbsent: () => tx.amount);
+        } else {
+          expenseByMonth.update(
+              monthKey, (v) => v + tx.amount, ifAbsent: () => tx.amount);
+        }
+      }
+
+      // Build result for all months in range (even if no data)
+      final result = <({String month, double netProfit})>[];
+      for (int i = 0; i < months; i++) {
+        final d = DateTime(now.year, now.month - months + 1 + i, 1);
+        final key =
+            '${d.year}-${d.month.toString().padLeft(2, '0')}';
+        final income = incomeByMonth[key] ?? 0;
+        final expense = expenseByMonth[key] ?? 0;
+        result.add((month: key, netProfit: income - expense));
+      }
+
+      return result;
+    });
+  }
+
+  /// Get combined monthly net profits across multiple businesses.
+  Future<List<({String month, double netProfit})>> getAllMonthlyNetProfits(
+    List<int> businessIds, {
+    int months = 6,
+  }) async {
+    if (businessIds.isEmpty) return [];
+    return ErrorHandler.guard(() async {
+      final now = DateTime.now();
+      final startMonth = DateTime(now.year, now.month - months + 1, 1);
+      final startStr =
+          '${startMonth.year}-${startMonth.month.toString().padLeft(2, '0')}-01';
+      final endStr =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
+
+      final data = await _supabase
+          .from('transactions')
+          .select()
+          .inFilter('business_id', businessIds)
+          .gte('transaction_date', startStr)
+          .lte('transaction_date', endStr)
+          .order('transaction_date', ascending: true);
+
+      final transactions = _parseTransactions(data as List);
+
+      final Map<String, double> incomeByMonth = {};
+      final Map<String, double> expenseByMonth = {};
+
+      for (final tx in transactions) {
+        final monthKey = tx.transactionDate.length >= 7
+            ? tx.transactionDate.substring(0, 7)
+            : tx.transactionDate;
+
+        if (tx.type == 'income') {
+          incomeByMonth.update(
+              monthKey, (v) => v + tx.amount, ifAbsent: () => tx.amount);
+        } else {
+          expenseByMonth.update(
+              monthKey, (v) => v + tx.amount, ifAbsent: () => tx.amount);
+        }
+      }
+
+      final result = <({String month, double netProfit})>[];
+      for (int i = 0; i < months; i++) {
+        final d = DateTime(now.year, now.month - months + 1 + i, 1);
+        final key =
+            '${d.year}-${d.month.toString().padLeft(2, '0')}';
+        final income = incomeByMonth[key] ?? 0;
+        final expense = expenseByMonth[key] ?? 0;
+        result.add((month: key, netProfit: income - expense));
+      }
+
+      return result;
+    });
+  }
+
+
 
   // ==================== Category Name Lookup ====================
 

@@ -36,4 +36,12 @@ class FormatHelpers {
       return periodStr;
     }
   }
+
+  /// Get number of days in a given month
+  static int daysInMonth(int year, int month) {
+    if (month == 2) {
+      return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 29 : 28;
+    }
+    return [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+  }
 }

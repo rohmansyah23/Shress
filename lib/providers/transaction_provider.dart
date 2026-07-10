@@ -21,7 +21,7 @@ Future<TransactionSaveResult> saveTransaction({
   double cogs = 0.0,
   String? description,
   required String transactionDate,
-  String paymentMethod = 'cash',
+  String paymentMethod = AppConstants.paymentCash,
 }) async {
   try {
     if (amount <= 0) {

@@ -149,9 +149,15 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: isEdit
-                    ? AppTheme.infoColor.withValues(alpha: 0.08)
-                    : AppTheme.profitColor.withValues(alpha: 0.08),
+                    ? AppTheme.infoColor.withValues(alpha: 0.05)
+                    : AppTheme.profitColor.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isEdit
+                      ? AppTheme.infoColor.withValues(alpha: 0.15)
+                      : AppTheme.profitColor.withValues(alpha: 0.15),
+                  width: 1,
+                ),
               ),
               child: Row(
                 children: [

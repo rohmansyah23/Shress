@@ -14,6 +14,11 @@ class AppConstants {
   static const String typeIncome = 'income';
   static const String typeExpense = 'expense';
 
+  // Payment Methods
+  static const String paymentCash = 'cash';
+  static const String paymentTransfer = 'transfer';
+  static const String paymentQris = 'qris';
+
   // Report Status
   static const String statusLaba = 'laba';
   static const String statusRugi = 'rugi';

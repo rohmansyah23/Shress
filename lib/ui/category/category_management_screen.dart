@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
@@ -49,7 +50,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
 
   void _showAdd() {
     final nameCtrl = TextEditingController();
-    var type = 'expense';
+    var type = AppConstants.typeExpense;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -67,7 +68,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
                 DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
               ],
-              onChanged: (v) => type = v ?? 'expense',
+              onChanged: (v) => type = v ?? AppConstants.typeExpense,
               decoration: const InputDecoration(labelText: 'Tipe'),
             ),
           ],
@@ -122,7 +123,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
                 DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
               ],
-              onChanged: (v) => type = v ?? 'expense',
+              onChanged: (v) => type = v ?? AppConstants.typeExpense,
               decoration: const InputDecoration(labelText: 'Tipe'),
             ),
           ],
@@ -217,7 +218,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       child: ListTile(
                         title: Text(c.name),
                         subtitle: Text(
-                          c.type == 'income' ? 'Pemasukan' : 'Pengeluaran',
+                          c.type == AppConstants.typeIncome ? 'Pemasukan' : 'Pengeluaran',
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
@@ -20,7 +21,9 @@ final userBusinessIdsProvider =
 final userManagementRefreshProvider = StateProvider<int>((ref) => 0);
 
 class UserManagementPanel extends ConsumerStatefulWidget {
-  const UserManagementPanel({super.key});
+  final bool showAppBar;
+
+  const UserManagementPanel({super.key, this.showAppBar = true});
 
   @override
   ConsumerState<UserManagementPanel> createState() =>
@@ -190,26 +193,20 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
   Widget build(BuildContext context) {
     final usersAsync = ref.watch(allUsersProvider);
 
+    final body = _buildBody(usersAsync);
+    if (!widget.showAppBar) return body;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('User Management'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_add_rounded),
-            tooltip: 'Tambah User',
-            onPressed: _openAddUser,
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Muat ulang',
-            onPressed: () {
-              ref.invalidate(allUsersProvider);
-              _loadBusinesses();
-            },
-          ),
-        ],
+
       ),
-      body: Column(
+      body: body,
+    );
+  }
+
+  Widget _buildBody(AsyncValue<List<UserModel>> usersAsync) {
+    return Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -230,6 +227,28 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
               ),
               onChanged: (value) =>
                   setState(() => _searchQuery = value.toLowerCase()),
+            ),
+          ),
+          // Action buttons
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: Row(
+              children: [
+                FilledButton.tonalIcon(
+                  onPressed: _openAddUser,
+                  icon: const Icon(Icons.person_add_rounded, size: 18),
+                  label: const Text('Tambah User'),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded),
+                  tooltip: 'Muat ulang',
+                  onPressed: () {
+                    ref.invalidate(allUsersProvider);
+                    _loadBusinesses();
+                  },
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -293,8 +312,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
               ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }
@@ -327,19 +345,6 @@ class _UserCard extends ConsumerWidget {
         return AppTheme.secondaryColor;
       default:
         return Colors.grey;
-    }
-  }
-
-  String _roleLabel(String role) {
-    switch (role) {
-      case AppConstants.roleOwner:
-        return 'Owner';
-      case AppConstants.roleManager:
-        return 'Manager';
-      case AppConstants.roleStaff:
-        return 'Staff';
-      default:
-        return role;
     }
   }
 
@@ -386,23 +391,7 @@ class _UserCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(user.username, style: AppTheme.heading3),
-                      const SizedBox(height: 2),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: _roleColor(user.role).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          _roleLabel(user.role),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: _roleColor(user.role),
-                          ),
-                        ),
-                      ),
+                      AppBadge.role(user.role),
                     ],
                   ),
                 ),
@@ -444,12 +433,10 @@ class _UserCard extends ConsumerWidget {
                         items: const [
                           DropdownMenuItem(
                               value: 'manager',
-                              child: Text('Manager',
-                                  style: TextStyle(color: Colors.black87))),
+                              child: Text('Manager')),
                           DropdownMenuItem(
                               value: 'staff',
-                              child: Text('Staff',
-                                  style: TextStyle(color: Colors.black87))),
+                              child: Text('Staff')),
                         ],
                         onChanged: (value) {
                           if (value != null) onRoleChanged(value);

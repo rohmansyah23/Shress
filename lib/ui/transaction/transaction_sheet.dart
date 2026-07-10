@@ -49,7 +49,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
   List<CategoryModel> _categories = [];
   CategoryModel? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
-  String _paymentMethod = 'cash';
+  String _paymentMethod = AppConstants.paymentCash;
   bool _isSaving = false;
 
   final _dateTextController = TextEditingController();
@@ -279,9 +279,9 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Form(
         key: _formKey,
@@ -293,7 +293,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: Theme.of(context).colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -469,7 +469,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       ),
                       items: const [
                         DropdownMenuItem(
-                          value: 'cash',
+                          value: AppConstants.paymentCash,
                           child: Row(
                             children: [
                               Icon(Icons.money_rounded, size: 18),
@@ -479,7 +479,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           ),
                         ),
                         DropdownMenuItem(
-                          value: 'transfer',
+                          value: AppConstants.paymentTransfer,
                           child: Row(
                             children: [
                               Icon(Icons.account_balance_rounded, size: 18),
@@ -489,7 +489,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           ),
                         ),
                         DropdownMenuItem(
-                          value: 'qris',
+                          value: AppConstants.paymentQris,
                           child: Row(
                             children: [
                               Icon(Icons.qr_code_rounded, size: 18),
@@ -595,7 +595,6 @@ class _FormLabel extends StatelessWidget {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
           ),
         ),
         if (subtitle != null) ...[

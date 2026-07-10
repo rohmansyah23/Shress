@@ -31,11 +31,13 @@ enum OwnerDateFilter {
 class OwnerHistoryScreen extends ConsumerStatefulWidget {
   final int? initialBusinessId;
   final OwnerDateFilter initialFilter;
+  final bool showAppBar;
 
   const OwnerHistoryScreen({
     super.key,
     this.initialBusinessId,
     this.initialFilter = OwnerDateFilter.all,
+    this.showAppBar = true,
   });
 
   @override
@@ -56,6 +58,9 @@ class _OwnerHistoryScreenState
   DateTime? _customStart;
   DateTime? _customEnd;
 
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -68,9 +73,21 @@ class _OwnerHistoryScreenState
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  int? _lastRefresh;
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    ref.watch(transactionRefreshProvider);
+    final refresh = ref.watch(transactionRefreshProvider);
+    if (_lastRefresh != null && _lastRefresh != refresh) {
+      _loadTransactions();
+    }
+    _lastRefresh ??= refresh;
   }
 
   Future<void> _loadInitial() async {
@@ -126,52 +143,7 @@ class _OwnerHistoryScreenState
     }
   }
 
-  void _applyFilter() {
-    setState(() {
-      final now = DateTime.now();
-      DateTime? start;
-      DateTime? end;
 
-      switch (_selectedFilter) {
-        case OwnerDateFilter.today:
-          start = DateTime(now.year, now.month, now.day);
-          end = start;
-        case OwnerDateFilter.thisWeek:
-          start = now.subtract(Duration(days: now.weekday - 1));
-          start = DateTime(start.year, start.month, start.day);
-          end = now;
-        case OwnerDateFilter.thisMonth:
-          start = DateTime(now.year, now.month, 1);
-          end = now;
-        case OwnerDateFilter.thisYear:
-          start = DateTime(now.year, 1, 1);
-          end = now;
-        case OwnerDateFilter.all:
-          start = null;
-          end = null;
-        case OwnerDateFilter.custom:
-          if (_customStart != null && _customEnd != null) {
-            start = _customStart;
-            end = _customEnd;
-          } else {
-            start = null;
-            end = null;
-          }
-      }
-
-      if (start != null && end != null) {
-        _filtered = _all.where((t) {
-          final txDate = DateTime.tryParse(t.transactionDate);
-          if (txDate == null) return false;
-          final txDay =
-              DateTime(txDate.year, txDate.month, txDate.day);
-          return !txDay.isBefore(start!) && !txDay.isAfter(end!);
-        }).toList();
-      } else {
-        _filtered = List.from(_all);
-      }
-    });
-  }
 
   void _pickCustomRange() async {
     final picked = await showDateRangePicker(
@@ -248,7 +220,7 @@ class _OwnerHistoryScreenState
             child: const Text('Hapus'),
           ),
         ],
-      ),
+      )
     );
 
     if (confirmed == true && tx.transactionId != null) {
@@ -285,51 +257,16 @@ class _OwnerHistoryScreenState
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildBody(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final canEdit = user != null &&
         (user.role == AppConstants.roleManager ||
             user.role == AppConstants.roleStaff ||
             user.role == AppConstants.roleOwner);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _filterAllBusinesses
-              ? 'Riwayat Semua Bisnis'
-              : _selectedBusinessId != null
-                  ? _findBusinessName(_selectedBusinessId!)
-                  : 'Riwayat Transaksi',
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_rounded),
-            tooltip: 'QRIS Pembayaran',
-            onPressed: () => _showQrisPicker(),
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Muat ulang',
-            onPressed: _loadTransactions,
-          ),
-        ],
-      ),
-      floatingActionButton: _selectedBusinessId != null
-          ? FloatingActionButton(
-              heroTag: 'owner_add_tx',
-              onPressed: () {
-                final biz = _businesses.cast<BusinessModel?>().firstWhere(
-                    (b) => b?.businessId == _selectedBusinessId,
-                    orElse: () => null);
-                if (biz != null) {
-                  TransactionSheet.show(context, biz);
-                }
-              },
-              child: const Icon(Icons.add_rounded),
-            )
-          : null,
-      body: Column(
+    return Stack(
+      children: [
+        Column(
         children: [
           // Business filter chips
           Padding(
@@ -404,7 +341,47 @@ class _OwnerHistoryScreenState
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Cari transaksi...',
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                          _applyFilter();
+                        },
+                      )
+                    : null,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                      color: AppTheme.primaryColor, width: 2),
+                ),
+              ),
+              style: const TextStyle(fontSize: 14),
+              onChanged: (value) {
+                setState(() => _searchQuery = value.toLowerCase());
+                _applyFilter();
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
           // Transaction list
           Expanded(
             child: _isLoading
@@ -419,11 +396,14 @@ class _OwnerHistoryScreenState
                           children: [
                             Icon(Icons.receipt_long_rounded,
                                 size: 64,
-                                color: Colors.grey.shade400),
+                                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
                             const SizedBox(height: 12),
                             Text('Tidak ada transaksi',
-                                style: AppTheme.heading3.copyWith(
-                                    color: Colors.grey)),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                )),
                           ],
                         ),
                       )
@@ -558,11 +538,147 @@ class _OwnerHistoryScreenState
                               );
                             },
                           ),
+                        ),
                       ),
+        ],
+        ),
+        if (_selectedBusinessId != null)
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: FloatingActionButton(
+              heroTag: 'owner_add_tx',
+              onPressed: () {
+                final biz = _businesses.cast<BusinessModel?>().firstWhere(
+                    (b) => b?.businessId == _selectedBusinessId,
+                    orElse: () => null);
+                if (biz != null) {
+                  TransactionSheet.show(context, biz);
+                }
+              },
+              child: const Icon(Icons.add_rounded),
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final body = _buildBody(context);
+    if (!widget.showAppBar) return body;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          _filterAllBusinesses
+              ? 'Riwayat Semua Bisnis'
+              : _selectedBusinessId != null
+                  ? _findBusinessName(_selectedBusinessId!)
+                  : 'Riwayat Transaksi',
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_rounded),
+            tooltip: 'QRIS Pembayaran',
+            onPressed: () => _showQrisPicker(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Muat ulang',
+            onPressed: _loadTransactions,
           ),
         ],
       ),
+      body: body,
     );
+  }
+
+  bool _matchesSearch(TransactionModel tx) {
+    if (_searchQuery.isEmpty) return true;
+    final q = _searchQuery.toLowerCase();
+
+    if (tx.description?.toLowerCase().contains(q) == true) return true;
+
+    final amountStr = FormatHelpers.rupiah(tx.amount).toLowerCase();
+    if (amountStr.contains(q)) return true;
+
+    final dateStr = FormatHelpers.displayDate(tx.transactionDate).toLowerCase();
+    if (dateStr.contains(q)) return true;
+
+    if (tx.transactionDate.toLowerCase().contains(q)) return true;
+
+    final paymentLabel = _paymentLabel(tx.paymentMethod).toLowerCase();
+    if (paymentLabel.contains(q)) return true;
+
+    if ((tx.type == AppConstants.typeIncome ? 'uang masuk' : 'uang keluar').contains(q)) return true;
+
+    return false;
+  }
+
+  void _applyFilter() {
+    setState(() {
+      final now = DateTime.now();
+      DateTime? start;
+      DateTime? end;
+
+      switch (_selectedFilter) {
+        case OwnerDateFilter.today:
+          start = DateTime(now.year, now.month, now.day);
+          end = start;
+        case OwnerDateFilter.thisWeek:
+          start = now.subtract(Duration(days: now.weekday - 1));
+          start = DateTime(start.year, start.month, start.day);
+          end = now;
+        case OwnerDateFilter.thisMonth:
+          start = DateTime(now.year, now.month, 1);
+          end = now;
+        case OwnerDateFilter.thisYear:
+          start = DateTime(now.year, 1, 1);
+          end = now;
+        case OwnerDateFilter.all:
+          start = null;
+          end = null;
+        case OwnerDateFilter.custom:
+          if (_customStart != null && _customEnd != null) {
+            start = _customStart;
+            end = _customEnd;
+          } else {
+            start = null;
+            end = null;
+          }
+      }
+
+      Iterable<TransactionModel> filtered = _all;
+
+      if (start != null && end != null) {
+        filtered = filtered.where((t) {
+          final txDate = DateTime.tryParse(t.transactionDate);
+          if (txDate == null) return false;
+          final txDay = DateTime(txDate.year, txDate.month, txDate.day);
+          return !txDay.isBefore(start!) && !txDay.isAfter(end!);
+        });
+      }
+
+      if (_searchQuery.isNotEmpty) {
+        filtered = filtered.where(_matchesSearch);
+      }
+
+      _filtered = filtered.toList();
+    });
+  }
+
+  String _paymentLabel(String method) {
+    switch (method) {
+      case AppConstants.paymentCash:
+        return 'Tunai';
+      case AppConstants.paymentTransfer:
+        return 'Transfer Bank';
+      case AppConstants.paymentQris:
+        return 'QRIS';
+      default:
+        return 'Lainnya';
+    }
   }
 
   void _showQrisPicker() {
@@ -612,7 +728,7 @@ class _OwnerHistoryScreenState
             child: const Text('Batal'),
           ),
         ],
-      ),
+      )
     );
   }
 }

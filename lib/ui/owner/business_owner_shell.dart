@@ -20,10 +20,26 @@ class BusinessOwnerShell extends ConsumerStatefulWidget {
 class _BusinessOwnerShellState extends ConsumerState<BusinessOwnerShell> {
   int _selectedIndex = 0;
 
+  String get _appBarTitle {
+    switch (_selectedIndex) {
+      case 0:
+        return widget.business.name;
+      case 1:
+        return 'Riwayat Transaksi';
+      case 2:
+        return 'User Management';
+      case 3:
+        return 'Laporan';
+      case 4:
+        return 'Profil Saya';
+      default:
+        return widget.business.name;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-
     if (user == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -33,21 +49,35 @@ class _BusinessOwnerShellState extends ConsumerState<BusinessOwnerShell> {
     final pages = <Widget>[
       DashboardScreen(
         business: widget.business,
+        showAppBar: false,
+        onBack: () => Navigator.of(context).pop(),
         onNavigateToRiwayat: () => setState(() => _selectedIndex = 1),
       ),
       OwnerHistoryScreen(
         initialBusinessId: widget.business.businessId,
         initialFilter: OwnerDateFilter.thisWeek,
+        showAppBar: false,
       ),
-      const UserManagementPanel(),
+      const UserManagementPanel(showAppBar: false),
       OwnerReportScreen(
         initialBusinessId: widget.business.businessId,
         initialPeriod: OwnerPeriodFilter.thisWeek,
+        showAppBar: false,
       ),
-      const ProfileScreen(),
+      const ProfileScreen(showAppBar: false),
     ];
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(_appBarTitle),
+        leading: _selectedIndex == 0
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                tooltip: 'Kembali',
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
+      ),
       body: IndexedStack(
         index: _selectedIndex,
         children: pages,

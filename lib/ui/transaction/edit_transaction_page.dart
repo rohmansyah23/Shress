@@ -170,8 +170,15 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                   color: (isIncome
                           ? AppTheme.profitColor
                           : AppTheme.lossColor)
-                      .withValues(alpha: 0.08),
+                      .withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: (isIncome
+                            ? AppTheme.profitColor
+                            : AppTheme.lossColor)
+                        .withValues(alpha: 0.15),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   children: [

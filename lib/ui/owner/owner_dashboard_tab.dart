@@ -5,22 +5,31 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/shared_widgets.dart';
+import '../../core/widgets/skeleton_widgets.dart';
+import '../../core/widgets/trend_chart.dart';
 import '../../data/local/models/business_model.dart';
-import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/business_providers.dart';
 import '../../providers/transaction_provider.dart';
 import '../auth/login_screen.dart';
 import '../dashboard/qris_upload_screen.dart';
+import '../onboarding/onboarding_screen.dart';
 import 'business_owner_shell.dart';
+import 'create_business_screen.dart';
+import 'user_management_panel.dart';
 import '../reports/owner_report_screen.dart';
 import '../transaction/transaction_sheet.dart';
+
 class OwnerDashboardTab extends ConsumerStatefulWidget {
   final dynamic user;
+  final bool showAppBar;
   final void Function(int index)? onTabSwitch;
 
   const OwnerDashboardTab({
     super.key,
     required this.user,
+    this.showAppBar = true,
     this.onTabSwitch,
   });
 
@@ -30,43 +39,315 @@ class OwnerDashboardTab extends ConsumerStatefulWidget {
 }
 
 class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
-  Map<int, double> _netProfits = {};
-  bool _loadingSummaries = true;
-
   @override
-  void initState() {
-    super.initState();
-    _loadNetProfits();
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final businessesAsync = ref.watch(allBusinessesProvider);
+
+    final body = businessesAsync.when(
+      data: (businesses) {
+        final allIds = businesses.map((b) => b.businessId).toList()..sort();
+        final idsKey = allIds.join(',');
+        final trendAsync = ref.watch(allMonthlyNetProfitsProvider(idsKey));
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(allBusinessesProvider);
+            for (final id in allIds) {
+              ref.invalidate(businessSummaryProvider(id));
+            }
+            ref.invalidate(allMonthlyNetProfitsProvider(idsKey));
+          },
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Text('Halo, ${widget.user.username}',
+                  style: AppTheme.heading2),
+              const SizedBox(height: 4),
+              Text('Owner • ${businesses.length} bisnis',
+                  style: AppTheme.caption),
+              const SizedBox(height: 24),
+
+              _buildTotalNetProfit(businesses),
+              const SizedBox(height: 24),
+
+              // === Trend Chart ===
+              if (trendAsync.hasValue &&
+                  trendAsync.value!.isNotEmpty) ...[
+                TrendChart(
+                  data: trendAsync.value!
+                      .map((d) => TrendDataPoint(
+                          month: d.month, netProfit: d.netProfit))
+                      .toList(),
+                  title: 'Tren Laba/Rugi Semua Bisnis',
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              Text('Bisnis Saya', style: AppTheme.heading3),
+              const SizedBox(height: 12),
+
+              if (businesses.isEmpty)
+                _buildEmptyBusinesses()
+              else ...[
+                for (int i = 0; i < businesses.length; i++) ...[
+                  FadeInEntrance(
+                    delay: Duration(milliseconds: i * 50),
+                    child: _BusinessCardWithSummary(
+                      business: businesses[i],
+                      colorScheme: colorScheme,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BusinessOwnerShell(
+                              business: businesses[i],
+                            ),
+                          ),
+                        );
+                      },
+                      onLaporan: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => OwnerReportScreen(
+                              initialBusinessId: businesses[i].businessId,
+                              initialPeriod: OwnerPeriodFilter.thisWeek,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ],
+
+              const SizedBox(height: 16),
+              Text('Menu Lainnya', style: AppTheme.heading3),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.add_circle_rounded,
+                      label: 'Tambah\nTransaksi',
+                      color: AppTheme.infoColor,
+                      onTap: () {
+                        _pickBusinessAndAdd(context, businesses);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.add_business_rounded,
+                      label: 'Tambah\nBisnis',
+                      color: AppTheme.profitColor,
+                      onTap: () async {
+                        final result = await Navigator.of(context).push<bool>(
+                          MaterialPageRoute(
+                            builder: (_) => const CreateBusinessScreen(),
+                          ),
+                        );
+                        if (result == true) {
+                          ref.invalidate(allBusinessesProvider);
+                          ref.invalidate(transactionRefreshProvider);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.people_rounded,
+                      label: 'Kelola\nUser',
+                      color: AppTheme.warningColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const UserManagementPanel(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.assessment_rounded,
+                      label: 'Laporan',
+                      color: AppTheme.profitColor,
+                      onTap: () => widget.onTabSwitch?.call(3),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.settings_rounded,
+                      label: 'Pengaturan',
+                      color: AppTheme.infoColor,
+                      onTap: () => widget.onTabSwitch?.call(4),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.qr_code_rounded,
+                      label: 'Upload\nQRIS',
+                      color: AppTheme.infoColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const QrisUploadScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => ErrorRetryWidget(
+        message: ErrorHandler.classify(error).userMessage,
+        onRetry: () => ref.invalidate(allBusinessesProvider),
+      ),
+    );
+
+    if (!widget.showAppBar) return body;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(AppConstants.appName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_rounded),
+            tooltip: 'Upload QRIS',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (_) => const QrisUploadScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded),
+            tooltip: 'Keluar',
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+          ),
+        ],
+      ),
+      body: body,
+    );
   }
 
-  Future<void> _loadNetProfits() async {
-    setState(() => _loadingSummaries = true);
-    try {
-      final businesses = await SupabaseService.instance
-          .getAccessibleBusinesses(widget.user.userId, widget.user.role);
-      final Map<int, double> profits = {};
+  Widget _buildTotalNetProfit(List<BusinessModel> businesses) {
+    final allIds = businesses.map((b) => b.businessId).toList()..sort();
+    if (allIds.isEmpty) return const SizedBox.shrink();
+    final idsKey = allIds.join(',');
 
-      for (final b in businesses) {
-        final s = await SupabaseService.instance
-            .getBusinessSummary(b.businessId);
-        profits[b.businessId] = s['netProfit'] ?? 0;
-      }
-
-      if (mounted) {
-        setState(() {
-          _netProfits = profits;
-          _loadingSummaries = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _loadingSummaries = false);
-      }
-    }
+    final combinedAsync = ref.watch(combinedBusinessSummaryProvider(idsKey));
+    return combinedAsync.when(
+      data: (summary) {
+        final total = (summary['netProfit'] as num?)?.toDouble() ?? 0;
+        return NetProfitCard(
+          netProfit: total,
+          style: NetProfitCardStyle.row,
+          title: 'Total Laba / Rugi Bersih',
+        );
+      },
+      loading: () => const SkeletonNetProfitCardRow(),
+      error: (_, _) => const SizedBox.shrink(),
+    );
   }
 
-  double get _totalNetProfit =>
-      _netProfits.values.fold(0.0, (sum, v) => sum + v);
+  Widget _buildEmptyBusinesses() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                Icons.store_rounded,
+                size: 32,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Selamat datang di Sheress!',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Anda belum memiliki bisnis.\nBuat bisnis pertama Anda atau ikuti panduan\nuntuk memulai.',
+              textAlign: TextAlign.center,
+              style: AppTheme.caption.copyWith(height: 1.5),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.rocket_launch_rounded, size: 18),
+                  label: const Text('Panduan Cepat'),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const OnboardingScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 12),
+                FilledButton.icon(
+                  icon: const Icon(Icons.add_business_rounded, size: 18),
+                  label: const Text('Buat Bisnis'),
+                  onPressed: () async {
+                    final result = await Navigator.of(context).push<bool>(
+                      MaterialPageRoute(
+                        builder: (_) => const CreateBusinessScreen(),
+                      ),
+                    );
+                    if (result == true) {
+                      ref.invalidate(allBusinessesProvider);
+                      ref.invalidate(transactionRefreshProvider);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _pickBusinessAndAdd(BuildContext context, List<BusinessModel> businesses) {
     if (businesses.isEmpty) return;
@@ -104,273 +385,32 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
       ),
     );
   }
-
-  Widget _buildTotalSummary() {
-    if (_loadingSummaries) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Center(
-            child: SizedBox(
-              width: 20, height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-        ),
-      );
-    }
-
-    final isProfit = _totalNetProfit >= 0;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: (isProfit
-                        ? AppTheme.profitColor
-                        : AppTheme.lossColor)
-                    .withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                isProfit
-                    ? Icons.trending_up_rounded
-                    : Icons.trending_down_rounded,
-                color: isProfit
-                    ? AppTheme.profitColor
-                    : AppTheme.lossColor,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Total Laba / Rugi Bersih',
-                      style: AppTheme.caption.copyWith(fontSize: 12)),
-                  const SizedBox(height: 4),
-                  Text(
-                    FormatHelpers.rupiah(_totalNetProfit),
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isProfit
-                          ? AppTheme.profitColor
-                          : AppTheme.lossColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: (isProfit
-                        ? AppTheme.profitColor
-                        : AppTheme.lossColor)
-                    .withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                isProfit ? 'LABA' : 'RUGI',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: isProfit
-                      ? AppTheme.profitColor
-                      : AppTheme.lossColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final businessesAsync = ref.watch(allBusinessesProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppConstants.appName),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_rounded),
-            tooltip: 'Upload QRIS',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (_) => const QrisUploadScreen()),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Keluar',
-            onPressed: () async {
-              await ref.read(authProvider.notifier).logout();
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                      builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              }
-            },
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(allBusinessesProvider);
-          ref.invalidate(transactionRefreshProvider);
-          await _loadNetProfits();
-        },
-        child: businessesAsync.when(
-          data: (businesses) => ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text('Halo, ${widget.user.username}',
-                  style: AppTheme.heading2),
-              const SizedBox(height: 4),
-              Text('Owner • ${businesses.length} bisnis',
-                  style: AppTheme.caption),
-              const SizedBox(height: 24),
-
-              _buildTotalSummary(),
-              const SizedBox(height: 24),
-
-              Text('Bisnis Saya', style: AppTheme.heading3),
-              const SizedBox(height: 12),
-
-              if (businesses.isEmpty)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Center(
-                      child: Text(
-                        'Belum ada bisnis.',
-                        textAlign: TextAlign.center,
-                        style: AppTheme.caption,
-                      ),
-                    ),
-                  ),
-                )
-              else
-                for (final business in businesses) ...[
-                  _BusinessCard(
-                    business: business,
-                    netProfit: _netProfits[business.businessId],
-                    isLoading: _loadingSummaries,
-                    colorScheme: colorScheme,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => BusinessOwnerShell(
-                            business: business,
-                          ),
-                        ),
-                      );
-                    },
-                    onLaporan: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => OwnerReportScreen(
-                            initialBusinessId: business.businessId,
-                            initialPeriod: OwnerPeriodFilter.thisWeek,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                ],
-
-              const SizedBox(height: 16),
-              Text('Akses Cepat', style: AppTheme.heading3),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _QuickActionCard(
-                      icon: Icons.add_circle_rounded,
-                      label: 'Tambah Transaksi',
-                      color: AppTheme.infoColor,
-                      onTap: () {
-                        _pickBusinessAndAdd(context, businesses);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _QuickActionCard(
-                      icon: Icons.people_rounded,
-                      label: 'Kelola User',
-                      color: AppTheme.warningColor,
-                      onTap: () => widget.onTabSwitch?.call(2),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _QuickActionCard(
-                      icon: Icons.assessment_rounded,
-                      label: 'Laporan',
-                      color: AppTheme.profitColor,
-                      onTap: () => widget.onTabSwitch?.call(3),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => ErrorRetryWidget(
-            message: ErrorHandler.classify(error).userMessage,
-            onRetry: () {
-              ref.invalidate(allBusinessesProvider);
-              ref.invalidate(transactionRefreshProvider);
-            },
-          ),
-        ),
-      ),
-    );
-  }
 }
 
-class _BusinessCard extends StatelessWidget {
+class _BusinessCardWithSummary extends ConsumerWidget {
   final BusinessModel business;
-  final double? netProfit;
-  final bool isLoading;
   final ColorScheme colorScheme;
   final VoidCallback onTap;
   final VoidCallback onLaporan;
 
-  const _BusinessCard({
+  const _BusinessCardWithSummary({
     required this.business,
-    required this.netProfit,
-    required this.isLoading,
     required this.colorScheme,
     required this.onTap,
     required this.onLaporan,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final isProfit = netProfit != null && netProfit! >= 0;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(businessSummaryProvider(business.businessId));
+
+    final netProfit = summaryAsync.asData?.value['netProfit'] as num?;
+    final isLoading = summaryAsync.isLoading;
+    final isProfit = netProfit != null && netProfit >= 0;
 
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -412,7 +452,7 @@ class _BusinessCard extends StatelessWidget {
                           const SizedBox(width: 6),
                           Text(
                             netProfit != null
-                                ? 'Laba/Rugi: ${FormatHelpers.rupiah(netProfit!)}'
+                                ? 'Laba/Rugi: ${FormatHelpers.rupiah(netProfit.toDouble())}'
                                 : 'Belum ada data',
                             style: TextStyle(
                               fontSize: 12,
@@ -433,7 +473,7 @@ class _BusinessCard extends StatelessWidget {
                 onPressed: onLaporan,
               ),
               Icon(Icons.chevron_right_rounded,
-                  color: Colors.grey.shade400),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
             ],
           ),
         ),
@@ -442,43 +482,4 @@ class _BusinessCard extends StatelessWidget {
   }
 }
 
-class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
 
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(icon, size: 32, color: color),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: AppTheme.bodyText.copyWith(
-                  fontWeight: FontWeight.w600,
-                  height: 1.3,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

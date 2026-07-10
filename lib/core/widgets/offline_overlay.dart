@@ -233,10 +233,6 @@ class _RetryButton extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-        elevation: 2,
       ),
     );
   }

@@ -112,7 +112,6 @@ class AppErrorScreen extends StatelessWidget {
                 appError.userMessage,
                 textAlign: TextAlign.center,
                 style: AppTheme.bodyText.copyWith(
-                  color: Colors.black87,
                   height: 1.5,
                 ),
               ),
@@ -136,20 +135,18 @@ class AppErrorScreen extends StatelessWidget {
                 ),
               ),
               if (kDebugMode) ...[
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                const SizedBox(height: 24),                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   child: Text(
                     errorDetails.exception.toString(),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontFamily: 'monospace',
-                      color: Colors.grey,
-                    ),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                  ),
                   ),
                 ),
               ],
@@ -289,7 +286,7 @@ AppErrorObserver initGlobalErrorHandlers({
               Expanded(
                 child: Text(
                   '${details.exception.runtimeType}: ${details.exception}',
-                  style: const TextStyle(fontSize: 11, color: Colors.black87),
+                  style: const TextStyle(fontSize: 11),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),

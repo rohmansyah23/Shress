@@ -44,19 +44,12 @@ class QrisDisplayScreen extends StatelessWidget {
                       width: 250,
                       height: 250,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.grey.shade200, width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        color: Theme.of(context).colorScheme.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(12),
                         child: isLocal
                             ? SvgPicture.asset(
                                 qrisSource,
@@ -72,7 +65,7 @@ class QrisDisplayScreen extends StatelessWidget {
                                   return const Center(
                                       child: CircularProgressIndicator());
                                 },
-                                errorBuilder: (_, _, _) => _buildFallback(),
+                                  errorBuilder: (_, _, _) => _buildFallback(),
                               ),
                       ),
                     ),
@@ -81,14 +74,13 @@ class QrisDisplayScreen extends StatelessWidget {
                       width: 250,
                       height: 250,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.grey.shade200),
+                        color: Theme.of(context).colorScheme.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
                       ),
                       child: _buildFallback(),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
+                    const SizedBox(height: 16),                      Text(
                       'QRIS belum tersedia untuk bisnis ini',
                       style: AppTheme.caption.copyWith(color: AppTheme.warningColor),
                       textAlign: TextAlign.center,
@@ -104,6 +96,8 @@ class QrisDisplayScreen extends StatelessWidget {
   }
 
   Widget _buildFallback() {
+    // Warna statis — fallback widget jarang terlihat,
+    // dan menggunakan warna netral yang berfungsi di kedua mode.
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

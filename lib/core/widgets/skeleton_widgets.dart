@@ -49,8 +49,14 @@ class _ShimmerWidgetState extends State<ShimmerWidget>
 
   @override
   Widget build(BuildContext context) {
-    final base = widget.baseColor ?? Colors.grey.shade200;
-    final highlight = widget.highlightColor ?? Colors.grey.shade100;
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Theme-aware default colors: terlihat di light AND dark mode
+    final base = widget.baseColor ??
+        (isDark ? cs.surfaceContainerHighest : Colors.grey.shade200);
+    final highlight = widget.highlightColor ??
+        (isDark ? cs.surfaceContainerHigh : Colors.grey.shade100);
 
     return AnimatedBuilder(
       animation: _animation,
@@ -214,32 +220,6 @@ class SkeletonNetProfitCard extends StatelessWidget {
   }
 }
 
-/// Skeleton for the net profit card (colored variant for dashboard)
-class SkeletonNetProfitCardColored extends StatelessWidget {
-  const SkeletonNetProfitCardColored({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              const SkeletonLine(width: 100, height: 11),
-              const SizedBox(height: 12),
-              const SkeletonLine(width: 180, height: 32),
-              const SizedBox(height: 12),
-              ShimmerWidget(width: 60, height: 22, borderRadius: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Skeleton for a row of summary cards (2-column grid)
 class SkeletonSummaryGrid extends StatelessWidget {
   const SkeletonSummaryGrid({super.key});
@@ -345,11 +325,12 @@ class SkeletonChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(color: cs.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -380,7 +361,8 @@ class SkeletonChart extends StatelessWidget {
   }
 }
 
-/// Full-screen skeleton for dashboard loading
+/// Full-screen skeleton for DashboardScreen — matches actual layout
+/// Actual: net profit row → summary grid (2×2) → trend chart → aksi cepat heading → 3 action buttons
 class SkeletonDashboard extends StatelessWidget {
   const SkeletonDashboard({super.key});
 
@@ -392,18 +374,27 @@ class SkeletonDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SkeletonLine(width: 120, height: 22),
-          const SizedBox(height: 16),
-          const SkeletonNetProfitCardColored(),
+          // Net profit card (Row: icon + text + badge)
+          const SkeletonNetProfitCardRow(),
+          const SizedBox(height: 12),
+          // Summary grid (2×2: Pendapatan, HPP, Laba Kotor, Pengeluaran)
           const SkeletonSummaryGrid(),
           const SizedBox(height: 24),
+          // Trend chart skeleton
+          const SkeletonChart(height: 200),
+          const SizedBox(height: 24),
+          // Aksi Cepat heading
           const SkeletonLine(width: 100, height: 18),
           const SizedBox(height: 12),
+          // 3 action buttons
           Row(
             children: List.generate(
               3,
               (_) => const Expanded(
-                child: SkeletonCard(height: 80),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: SkeletonActionButton(),
+                ),
               ),
             ),
           ),
@@ -413,7 +404,63 @@ class SkeletonDashboard extends StatelessWidget {
   }
 }
 
-/// Skeleton for P&L report loading
+/// Skeleton for the net profit card (Row layout: icon + text + badge)
+class SkeletonNetProfitCardRow extends StatelessWidget {
+  const SkeletonNetProfitCardRow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            ShimmerWidget(width: 48, height: 48, borderRadius: 12),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonLine(width: 100, height: 11),
+                  SizedBox(height: 4),
+                  SkeletonLine(width: 140, height: 22),
+                ],
+              ),
+            ),
+            ShimmerWidget(width: 60, height: 22, borderRadius: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Skeleton for action button (used in dashboard)
+class SkeletonActionButton extends StatelessWidget {
+  const SkeletonActionButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        child: Column(
+          children: [
+            ShimmerWidget(width: 28, height: 28, borderRadius: 14),
+            const SizedBox(height: 8),
+            const SkeletonLine(width: 50, height: 10),
+            const SizedBox(height: 2),
+            const SkeletonLine(width: 40, height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Skeleton for P&L report loading (ManagerReportScreen)
+/// Actual: period label → net profit card → detail cards grid (2×2)
 class SkeletonReport extends StatelessWidget {
   const SkeletonReport({super.key});
 
@@ -425,13 +472,14 @@ class SkeletonReport extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SkeletonLine(width: 80, height: 12),
+          // Period label
+          const SkeletonLine(width: 120, height: 12),
           const SizedBox(height: 16),
-          const SkeletonChart(height: 250),
-          const SizedBox(height: 24),
-          const SkeletonLine(width: 120, height: 14),
+          // Net profit card (Column: title, amount, badge)
+          const SkeletonNetProfitCard(),
           const SizedBox(height: 12),
-          ...List.generate(3, (_) => const SkeletonCard(height: 60)),
+          // Detail cards grid (2×2: Pendapatan, HPP, Laba Kotor, Pengeluaran)
+          const SkeletonSummaryGrid(),
         ],
       ),
     );
@@ -439,6 +487,7 @@ class SkeletonReport extends StatelessWidget {
 }
 
 /// Skeleton for transaction list loading
+/// Matches actual layout: filter chips → search bar → transaction list
 class SkeletonTransactionList extends StatelessWidget {
   final int itemCount;
 
@@ -449,11 +498,36 @@ class SkeletonTransactionList extends StatelessWidget {
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(12),
-            child: SkeletonLine(width: double.infinity, height: 48),
+          // Filter chips row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: List.generate(
+                  4,
+                  (i) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ShimmerWidget(
+                      width: i == 0 ? 100 : 80,
+                      height: 32,
+                      borderRadius: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
+          const SizedBox(height: 8),
+          // Search bar
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: SkeletonLine(width: double.infinity, height: 44),
+          ),
+          const SizedBox(height: 8),
+          // Transaction list items
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             child: Column(
@@ -485,6 +559,63 @@ class SkeletonDetailRow extends StatelessWidget {
           const Expanded(child: SkeletonLine(width: 120, height: 13)),
           const SizedBox(width: 12),
           SkeletonLine(width: 100, height: 13),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-page skeleton for OwnerReportScreen — matches actual layout
+/// Includes: period filter chips, net profit card, summary grid
+class SkeletonReportFull extends StatelessWidget {
+  const SkeletonReportFull({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Period filter chips row
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(
+                4,
+                (i) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ShimmerWidget(
+                    width: i == 3 ? 100 : 80,
+                    height: 32,
+                    borderRadius: 20,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Net profit card skeleton
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  const SkeletonLine(width: 120, height: 12),
+                  const SizedBox(height: 12),
+                  const SkeletonLine(width: 180, height: 32),
+                  const SizedBox(height: 12),
+                  ShimmerWidget(width: 80, height: 28, borderRadius: 20),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Summary cards grid (2 rows of 2)
+          const SkeletonSummaryGrid(),
         ],
       ),
     );

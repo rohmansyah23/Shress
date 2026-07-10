@@ -1,13 +1,15 @@
+import '../../../core/constants/constants.dart';
+
 class TransactionModel {
   int? hiveKey; // Hive auto-generated key
   final int? transactionId; // Supabase bigint ID (null for offline-created records)
   final int businessId;
   final int categoryId;
   final String userId;
-  final String type; // 'income' or 'expense'
+  final String type;
   final double amount;
-  final double cogs; // Default 0.0 for expenses
-  final String paymentMethod; // 'cash', 'transfer', 'qris', 'other'
+  final double cogs;
+  final String paymentMethod;
   final String? description;
   final String transactionDate; // Format: YYYY-MM-DD
   bool statusSync; // false = pending upload to server
@@ -22,7 +24,7 @@ class TransactionModel {
     required this.type,
     required this.amount,
     this.cogs = 0.0,
-    this.paymentMethod = 'cash',
+    this.paymentMethod = AppConstants.paymentCash,
     this.description,
     required this.transactionDate,
     this.statusSync = false,
@@ -53,7 +55,7 @@ class TransactionModel {
         type: map['type'] as String,
         amount: (map['amount'] as num).toDouble(),
         cogs: (map['cogs'] as num?)?.toDouble() ?? 0.0,
-        paymentMethod: map['paymentMethod'] as String? ?? 'cash',
+        paymentMethod: map['paymentMethod'] as String? ?? AppConstants.paymentCash,
         description: map['description'] as String?,
         transactionDate: map['transactionDate'] as String,
         statusSync: map['statusSync'] as bool? ?? false,

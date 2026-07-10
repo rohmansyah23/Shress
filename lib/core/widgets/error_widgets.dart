@@ -47,7 +47,6 @@ class ErrorRetryWidget extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: AppTheme.bodyText.copyWith(
-                color: Colors.black87,
                 height: 1.5,
               ),
             ),

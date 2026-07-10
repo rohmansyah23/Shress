@@ -231,20 +231,20 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
                 else ...[
                   InkWell(
                     onTap: _pickImage,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                     child: Container(
                       width: double.infinity,
                       height: 260,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(16),
+                        color: Theme.of(context).colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: Colors.grey.shade300, width: 2),
+                            color: Theme.of(context).colorScheme.outlineVariant, width: 1),
                       ),
                       child: _previewUrl != null
                           ? ClipRRect(
                               borderRadius:
-                                  BorderRadius.circular(14),
+                                  BorderRadius.circular(12),
                               child: Image.file(
                                 _selectedImage!,
                                 fit: BoxFit.contain,
@@ -259,13 +259,12 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
                                 Icon(
                                     Icons.add_photo_alternate_outlined,
                                     size: 64,
-                                    color: Colors.grey.shade400),
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
                                 const SizedBox(height: 12),
                                 Text('Ketuk untuk pilih gambar',
                                     style: AppTheme.caption
                                         .copyWith(
-                                            color: Colors
-                                                .grey.shade500)),
+                                            color: Theme.of(context).colorScheme.onSurfaceVariant)),
                               ],
                             ),
                     ),

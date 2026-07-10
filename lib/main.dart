@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,7 +11,10 @@ import 'core/services/sentry_service.dart';
 import 'core/widgets/global_error_boundary.dart';
 import 'core/widgets/offline_overlay.dart';
 import 'data/remote/supabase_service.dart';
+import 'core/services/notification_service.dart';
 import 'core/theme/app_theme.dart';
+import 'providers/theme_provider.dart';
+import 'ui/auth/set_new_password_screen.dart';
 import 'ui/splash/splash_screen.dart';
 
 Future<void> main() async {
@@ -86,6 +91,9 @@ Future<void> _runApp() async {
   // Initialize ConnectivityService for offline detection
   await ConnectivityService.instance.initialize();
 
+  // Initialize notification service for daily reminders
+  await NotificationService.instance.init();
+
   runApp(
     ProviderScope(
       observers: [
@@ -96,15 +104,51 @@ Future<void> _runApp() async {
   );
 }
 
-class SheressApp extends StatelessWidget {
+class SheressApp extends ConsumerStatefulWidget {
   const SheressApp({super.key});
 
   @override
+  ConsumerState<SheressApp> createState() => _SheressAppState();
+}
+
+class _SheressAppState extends ConsumerState<SheressApp> {
+  StreamSubscription<AuthState>? _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenPasswordRecovery();
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
+  }
+
+  void _listenPasswordRecovery() {
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.passwordRecovery && mounted) {
+        // ignore: use_build_context_synchronously
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(
+            builder: (_) => const SetNewPasswordScreen(),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       home: Stack(
         children: [
           const SplashScreen(),

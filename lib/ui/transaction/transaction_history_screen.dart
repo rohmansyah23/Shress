@@ -31,11 +31,13 @@ enum DateFilter {
 class TransactionHistoryScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
   final bool isOwnerView;
+  final bool showAppBar;
 
   const TransactionHistoryScreen({
     super.key,
     required this.business,
     this.isOwnerView = false,
+    this.showAppBar = true,
   });
 
   @override
@@ -52,6 +54,9 @@ class _TransactionHistoryScreenState
   DateFilter _selectedFilter = DateFilter.all;
   DateTime? _customStart;
   DateTime? _customEnd;
+
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -71,6 +76,7 @@ class _TransactionHistoryScreenState
 
   @override
   void dispose() {
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -92,6 +98,34 @@ class _TransactionHistoryScreenState
         ErrorSnackbar.show(context, ErrorHandler.classify(e));
       }
     }
+  }
+
+  bool _matchesSearch(TransactionModel tx) {
+    if (_searchQuery.isEmpty) return true;
+    final q = _searchQuery.toLowerCase();
+
+    // Search by description
+    if (tx.description?.toLowerCase().contains(q) == true) return true;
+
+    // Search by formatted amount (e.g. "Rp50.000")
+    final amountStr = FormatHelpers.rupiah(tx.amount).toLowerCase();
+    if (amountStr.contains(q)) return true;
+
+    // Search by formatted date (e.g. "15 Jan 2024")
+    final dateStr = FormatHelpers.displayDate(tx.transactionDate).toLowerCase();
+    if (dateStr.contains(q)) return true;
+
+    // Search by raw date (e.g. "2024-01-15")
+    if (tx.transactionDate.toLowerCase().contains(q)) return true;
+
+    // Search by payment method label
+    final paymentLabel = _paymentLabel(tx.paymentMethod).toLowerCase();
+    if (paymentLabel.contains(q)) return true;
+
+    // Search by type
+    if ((tx.type == AppConstants.typeIncome ? 'uang masuk' : 'uang keluar').contains(q)) return true;
+
+    return false;
   }
 
   void _applyFilter() {
@@ -127,16 +161,24 @@ class _TransactionHistoryScreenState
           }
       }
 
+      Iterable<TransactionModel> filtered = _all;
+
+      // Apply date filter
       if (start != null && end != null) {
-        _filtered = _all.where((t) {
+        filtered = filtered.where((t) {
           final txDate = DateTime.tryParse(t.transactionDate);
           if (txDate == null) return false;
           final txDay = DateTime(txDate.year, txDate.month, txDate.day);
           return !txDay.isBefore(start!) && !txDay.isAfter(end!);
-        }).toList();
-      } else {
-        _filtered = List.from(_all);
+        });
       }
+
+      // Apply search query
+      if (_searchQuery.isNotEmpty) {
+        filtered = filtered.where(_matchesSearch);
+      }
+
+      _filtered = filtered.toList();
     });
   }
 
@@ -249,6 +291,200 @@ class _TransactionHistoryScreenState
             user.role == AppConstants.roleStaff ||
             user.role == AppConstants.roleOwner);
 
+    final body = RefreshIndicator(
+      onRefresh: _loadTransactions,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final filter in DateFilter.values)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: FilterChip(
+                          label: Text(filter.label, style: const TextStyle(fontSize: 12)),
+                          selected: _selectedFilter == filter,
+                          onSelected: (selected) {
+                            if (filter == DateFilter.custom) {
+                              _pickCustomRange();
+                            } else {
+                              setState(() => _selectedFilter = filter);
+                              _applyFilter();
+                            }
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Search bar
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Cari transaksi...',
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                            _applyFilter();
+                          },
+                        )
+                      : null,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                        color: AppTheme.primaryColor, width: 2),
+                  ),
+                ),
+                style: const TextStyle(fontSize: 14),
+                onChanged: (value) {
+                  setState(() => _searchQuery = value.toLowerCase());
+                  _applyFilter();
+                },
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 4)),
+          if (_isLoading)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: SkeletonTransactionList(),
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  if (_filtered.isEmpty) {
+                    return SizedBox(
+                      height: MediaQuery.of(context).size.height - 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.receipt_long_rounded,
+                                size: 64,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
+                            const SizedBox(height: 12),
+                            Text('Tidak ada transaksi',
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                )),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  final tx = _filtered[index];
+                  final isIncome = tx.type == AppConstants.typeIncome;
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      left: 12,
+                      right: 12,
+                      bottom: 8,
+                      top: index == 0 ? 4 : 0,
+                    ),
+                    child: Card(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () => _showTransactionDetail(tx),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44, height: 44,
+                                decoration: BoxDecoration(
+                                  color: (isIncome ? AppTheme.profitColor : AppTheme.lossColor)
+                                      .withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                                  color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      FormatHelpers.displayDate(tx.transactionDate),
+                                      style: AppTheme.caption.copyWith(fontSize: 11),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      FormatHelpers.rupiah(tx.amount),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
+                                      ),
+                                    ),
+                                    if (tx.description?.isNotEmpty == true)
+                                      Text(
+                                        tx.description!,
+                                        style: AppTheme.caption,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              if (canEdit) ...[
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined, size: 20),
+                                  onPressed: () => _handleEdit(tx),
+                                  tooltip: 'Edit',
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete_outline_rounded, size: 20, color: AppTheme.lossColor),
+                                  onPressed: () => _handleDelete(tx),
+                                  tooltip: 'Hapus',
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                childCount: _filtered.isEmpty ? 1 : _filtered.length,
+              ),
+            ),
+        ],
+      ),
+    );
+
+    if (!widget.showAppBar) return body;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isOwnerView
@@ -279,170 +515,7 @@ class _TransactionHistoryScreenState
         onPressed: () => TransactionSheet.show(context, widget.business),
         child: const Icon(Icons.add_rounded),
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadTransactions,
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      for (final filter in DateFilter.values)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: FilterChip(
-                            label: Text(filter.label, style: const TextStyle(fontSize: 12)),
-                            selected: _selectedFilter == filter,
-                            onSelected: (selected) {
-                              if (filter == DateFilter.custom) {
-                                _pickCustomRange();
-                              } else {
-                                setState(() => _selectedFilter = filter);
-                                _applyFilter();
-                              }
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 4)),
-            if (_isLoading)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.all(12),
-                  child: SkeletonTransactionList(),
-                ),
-              )
-            else
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (_filtered.isEmpty) {
-                      return SizedBox(
-                        height: MediaQuery.of(context).size.height - 200,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.receipt_long_rounded,
-                                  size: 64, color: Colors.grey.shade400),
-                              const SizedBox(height: 12),
-                              Text('Tidak ada transaksi',
-                                  style: AppTheme.heading3
-                                      .copyWith(color: Colors.grey)),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-                    final tx = _filtered[index];
-                    final isIncome = tx.type == AppConstants.typeIncome;
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        left: 12,
-                        right: 12,
-                        bottom: 8,
-                        top: index == 0 ? 4 : 0,
-                      ),
-                      child: Card(
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () => _showTransactionDetail(tx),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: (isIncome
-                                            ? AppTheme.profitColor
-                                            : AppTheme.lossColor)
-                                        .withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    isIncome
-                                        ? Icons.trending_up_rounded
-                                        : Icons.trending_down_rounded,
-                                    color: isIncome
-                                        ? AppTheme.profitColor
-                                        : AppTheme.lossColor,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        FormatHelpers.displayDate(
-                                            tx.transactionDate),
-                                        style: AppTheme.caption
-                                            .copyWith(fontSize: 11),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        FormatHelpers.rupiah(tx.amount),
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: isIncome
-                                              ? AppTheme.profitColor
-                                              : AppTheme.lossColor,
-                                        ),
-                                      ),
-                                      if (tx.description?.isNotEmpty ==
-                                          true)
-                                        Text(
-                                          tx.description!,
-                                          style: AppTheme.caption,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                                if (canEdit) ...[
-                                  IconButton(
-                                    icon: const Icon(
-                                        Icons.edit_outlined,
-                                        size: 20),
-                                    onPressed: () => _handleEdit(tx),
-                                    tooltip: 'Edit',
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.delete_outline_rounded,
-                                      size: 20,
-                                      color: AppTheme.lossColor,
-                                    ),
-                                    onPressed: () => _handleDelete(tx),
-                                    tooltip: 'Hapus',
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  childCount: _filtered.isEmpty ? 1 : _filtered.length,
-                ),
-              ),
-          ],
-        ),
-      ),
+      body: body,
     );
   }
 
@@ -515,11 +588,11 @@ class _TransactionHistoryScreenState
 
   String _paymentLabel(String method) {
     switch (method) {
-      case 'cash':
+      case AppConstants.paymentCash:
         return 'Tunai';
-      case 'transfer':
+      case AppConstants.paymentTransfer:
         return 'Transfer Bank';
-      case 'qris':
+      case AppConstants.paymentQris:
         return 'QRIS';
       default:
         return 'Lainnya';

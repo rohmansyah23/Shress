@@ -101,7 +101,7 @@ class ExportService {
 
     // Net Profit
     buf.writeln('LABA / RUGI BERSIH,${data.netProfit.toStringAsFixed(0)},');
-    buf.writeln('Status,${data.status == 'laba' ? 'LABA' : 'RUGI'},');
+    buf.writeln('Status,${data.status == AppConstants.statusLaba ? 'LABA' : 'RUGI'},');
     buf.writeln('');
 
     // Transaction list
@@ -109,8 +109,8 @@ class ExportService {
     buf.writeln('=== DAFTAR TRANSAKSI ===');
     buf.writeln('Tanggal,Tipe,Jumlah,HPP,Deskripsi,Metode Bayar');
     for (final tx in data.transactions) {
-      final tipe = tx.type == 'income' ? 'Uang Masuk' : 'Uang Keluar';
-      final cogs = tx.type == 'income' ? tx.cogs.toStringAsFixed(0) : '0';
+      final tipe = tx.type == AppConstants.typeIncome ? 'Uang Masuk' : 'Uang Keluar';
+      final cogs = tx.type == AppConstants.typeIncome ? tx.cogs.toStringAsFixed(0) : '0';
       buf.writeln(
         '${tx.transactionDate},$tipe,'
         '${tx.amount.toStringAsFixed(0)},$cogs,'
@@ -384,9 +384,9 @@ class ExportService {
               headers: ['Tanggal', 'Tipe', 'Jumlah', 'HPP', 'Deskripsi'],
               data: data.transactions.map((tx) => [
                     tx.transactionDate,
-                    tx.type == 'income' ? 'Masuk' : 'Keluar',
+                    tx.type == AppConstants.typeIncome ? 'Masuk' : 'Keluar',
                     FormatHelpers.rupiah(tx.amount),
-                    tx.type == 'income'
+                    tx.type == AppConstants.typeIncome
                         ? FormatHelpers.rupiah(tx.cogs)
                         : '-',
                     tx.description ?? '-',

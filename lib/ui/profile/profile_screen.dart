@@ -1,30 +1,24 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
+import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
-import '../auth/login_screen.dart';
 import '../dashboard/qris_display_screen.dart';
+import '../settings/settings_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
+  final bool showAppBar;
+
+  const ProfileScreen({super.key, this.showAppBar = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-
-    if (user == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    final body = _buildBody(context, ref);
+    if (!showAppBar) return body;
 
     return Scaffold(
       appBar: AppBar(
@@ -32,122 +26,100 @@ class ProfileScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Pengaturan',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.qr_code_rounded),
             tooltip: 'QRIS Pembayaran',
             onPressed: () => _showQrisBusinessPicker(context, ref),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Avatar & Info
-          Center(
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 48,
-                  backgroundColor: colorScheme.primaryContainer,
-                  child: Text(
-                    user.username.isNotEmpty
-                        ? user.username[0].toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(user.username, style: AppTheme.heading2),
-                const SizedBox(height: 4),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _roleColor(user.role, colorScheme).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    _roleLabel(user.role),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: _roleColor(user.role, colorScheme),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // Menu Items
-          Card(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.email_outlined),
-                  title: const Text('Email'),
-                  subtitle: const Text('Kelola email - coming soon'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => _showComingSoon(context),
-                ),
-                const Divider(height: 1, indent: 16, endIndent: 16),
-                ListTile(
-                  leading: const Icon(Icons.lock_outlined),
-                  title: const Text('Ubah Password'),
-                  subtitle: const Text('Ganti password akun'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => _showChangePasswordDialog(context),
-                ),
-                const Divider(height: 1, indent: 16, endIndent: 16),
-                ListTile(
-                  leading: const Icon(Icons.photo_camera_outlined),
-                  title: const Text('Foto Profil'),
-                  subtitle: const Text('Ganti foto profil - coming soon'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => _showComingSoon(context),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Logout
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.logout_rounded),
-              label: const Text('Keluar'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.lossColor,
-                side: const BorderSide(color: AppTheme.lossColor),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              onPressed: () async {
-                await ref.read(authProvider.notifier).logout();
-                if (context.mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                        builder: (_) => const LoginScreen()),
-                    (route) => false,
-                  );
-                }
-              },
-            ),
-          ),
-        ],
-      ),
+      body: body,
     );
   }
 
-  void _showComingSoon(BuildContext context) {
-    ErrorSnackbar.showMessage(
-      context,
-      'Fitur ini akan tersedia segera',
-      isError: false,
+  Widget _buildBody(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // Avatar & Info
+        Center(
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 48,
+                backgroundColor: colorScheme.primaryContainer,
+                child: Text(
+                  user.username.isNotEmpty
+                      ? user.username[0].toUpperCase()
+                      : '?',
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(user.username, style: AppTheme.heading2),
+              const SizedBox(height: 4),
+              AppBadge.role(user.role, fontSize: 12),
+            ],
+          ),
+        ),
+        const SizedBox(height: 32),
+
+        // Info Akun
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Informasi Akun', style: AppTheme.heading3),
+                const SizedBox(height: 16),
+                _InfoRow(icon: Icons.person_outlined, label: 'Username', value: user.username),
+                const SizedBox(height: 12),
+                _InfoRow(icon: Icons.badge_outlined, label: 'Role', value: user.role),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Menu Pengaturan
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.settings_outlined),
+            title: const Text('Pengaturan'),
+            subtitle: const Text('Tema, notifikasi, keamanan akun'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -222,135 +194,35 @@ class ProfileScreen extends ConsumerWidget {
     }
   }
 
-  void _showChangePasswordDialog(BuildContext context) {
-    final oldPwdCtrl = TextEditingController();
-    final newPwdCtrl = TextEditingController();
-    final confirmPwdCtrl = TextEditingController();
-    var isSubmitting = false;
+}
 
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Ubah Password'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: oldPwdCtrl,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password Lama',
-                  prefixIcon: Icon(Icons.lock_outlined),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: newPwdCtrl,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password Baru',
-                  prefixIcon: Icon(Icons.lock),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: confirmPwdCtrl,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Konfirmasi Password Baru',
-                  prefixIcon: Icon(Icons.lock_outline),
-                ),
-              ),
-            ],
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        const SizedBox(width: 12),
+        Text('$label: ', style: AppTheme.caption),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            overflow: TextOverflow.ellipsis,
           ),
-          actions: [
-            TextButton(
-              onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: isSubmitting
-                  ? null
-                  : () async {
-                      if (newPwdCtrl.text != confirmPwdCtrl.text) {
-                        ErrorSnackbar.showMessage(
-                          ctx,
-                          'Password baru tidak cocok',
-                        );
-                        return;
-                      }
-                      if (newPwdCtrl.text.length < 6) {
-                        ErrorSnackbar.showMessage(
-                          ctx,
-                          'Password minimal 6 karakter',
-                        );
-                        return;
-                      }
-                      setDialogState(() => isSubmitting = true);
-                      try {
-                        await Supabase.instance.client.auth
-                            .updateUser(
-                          UserAttributes(
-                              password: newPwdCtrl.text),
-                        );
-                        if (!ctx.mounted) return;
-                        Navigator.pop(ctx);
-                        ErrorSnackbar.showMessage(
-                          context,
-                          'Password berhasil diubah',
-                          isError: false,
-                        );
-                      } catch (e) {
-                        setDialogState(() => isSubmitting = false);
-                        ErrorSnackbar.show(
-                          ctx,
-                          ErrorHandler.classify(e),
-                        );
-                      }
-                    },
-              child: isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('Simpan'),
-            ),
-          ],
         ),
-      ),
+      ],
     );
   }
-
-  Color _roleColor(String role, ColorScheme colorScheme) {
-    switch (role) {
-      case 'owner':
-        return AppTheme.primaryColor;
-      case 'manager':
-        return AppTheme.infoColor;
-      case 'staff':
-        return AppTheme.secondaryColor;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _roleLabel(String role) {
-    switch (role) {
-      case 'owner':
-        return 'Owner';
-      case 'manager':
-        return 'Manager';
-      case 'staff':
-        return 'Staff';
-      default:
-        return role;
-    }
-  }
 }
+

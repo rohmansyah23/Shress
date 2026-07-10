@@ -84,7 +84,7 @@ final profitLossProvider =
     // Default: current month
     final now = DateTime.now();
     final start = '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
-    final end = '${now.year}-${now.month.toString().padLeft(2, '0')}-${_daysInMonth(now.year, now.month)}';
+    final end = '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
     transactions = await supa.getTransactionsByDateRange(params.businessId, start, end);
   }
 
@@ -175,12 +175,6 @@ class _PnLParams {
   int get hashCode => Object.hash(businessId, startDate, endDate);
 }
 
-int _daysInMonth(int year, int month) {
-  if (month == 2) {
-    return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 29 : 28;
-  }
-  return [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
-}
 
 // ==================== UI ====================
 
@@ -239,7 +233,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
     switch (_selectedPeriod) {
       case PeriodFilter.thisMonth:
         final now = DateTime.now();
-        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${_daysInMonth(now.year, now.month).toString().padLeft(2, '0')}';
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month).toString().padLeft(2, '0')}';
       case PeriodFilter.lastMonth:
         final last = DateTime(DateTime.now().year, DateTime.now().month - 1, 1);
         final lastMonthEnd = DateTime(last.year, last.month + 1, 0);
@@ -693,7 +687,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
@@ -721,12 +715,12 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
                       decoration: BoxDecoration(
                         color: _showWeeklyBreakdown
                             ? colorScheme.primary.withValues(alpha: 0.12)
-                            : Colors.grey.shade100,
+                            : colorScheme.surfaceContainer,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: _showWeeklyBreakdown
                               ? colorScheme.primary.withValues(alpha: 0.3)
-                              : Colors.grey.shade300,
+                              : colorScheme.outlineVariant,
                         ),
                       ),
                       child: Row(
@@ -739,7 +733,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
                             size: 12,
                             color: _showWeeklyBreakdown
                                 ? colorScheme.primary
-                                : Colors.grey.shade600,
+                                : colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 3),
                           Text(
@@ -749,7 +743,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
                               fontWeight: FontWeight.w600,
                               color: _showWeeklyBreakdown
                                   ? colorScheme.primary
-                                  : Colors.grey.shade600,
+                                  : colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -783,7 +777,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
                       barTouchData: BarTouchData(
                         enabled: true,
                         touchTooltipData: BarTouchTooltipData(
-                          getTooltipColor: (_) => Colors.grey.shade800,
+                          getTooltipColor: (_) => colorScheme.surfaceContainerHighest,
                           getTooltipItem: (group, groupIndex, rod, rodIndex) {
                             final idx = group.x.toInt();
                             if (idx < 0 || idx >= data.length) return null;
@@ -823,7 +817,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.grey.shade600,
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               );
@@ -843,7 +837,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
                                   _compactAmount(value),
                                   style: TextStyle(
                                     fontSize: 9,
-                                    color: Colors.grey.shade500,
+                                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
                                   ),
                                 ),
                               );
@@ -857,7 +851,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
                         drawVerticalLine: false,
                         horizontalInterval: chartRange / 4,
                         getDrawingHorizontalLine: (value) => FlLine(
-                          color: Colors.grey.shade200,
+                          color: colorScheme.outlineVariant,
                           strokeWidth: 1,
                         ),
                       ),
@@ -976,7 +970,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade600,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(width: 8),
@@ -1013,7 +1007,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
       children: [
         Icon(Icons.show_chart_rounded, size: 10, color: AppTheme.infoColor),
         const SizedBox(width: 3),
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+        Text(label, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
       ],
     );
   }
@@ -1031,7 +1025,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
           ),
         ),
         const SizedBox(width: 4),
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+        Text(label, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
       ],
     );
   }
@@ -1045,7 +1039,7 @@ class _ProfitLossSheetState extends ConsumerState<ProfitLossSheet> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.receipt_long_rounded,
-                size: 64, color: Colors.grey.shade400),
+                size: 64, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
             const SizedBox(height: 16),
             const Text('Belum ada transaksi', style: AppTheme.caption),
           ],
@@ -1412,8 +1406,8 @@ class _BreakdownRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(4),
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               '$count×',

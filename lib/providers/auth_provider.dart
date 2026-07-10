@@ -114,6 +114,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
+  /// Send password reset email to the given email address
+  Future<String?> sendPasswordResetEmail(String email) async {
+    try {
+      await _authRepo.resetPassword(email);
+      return null; // success
+    } catch (e) {
+      return _mapAuthError(e);
+    }
+  }
+
+  /// Update password after password recovery (requires valid recovery session)
+  Future<String?> updatePasswordAfterRecovery(String newPassword) async {
+    try {
+      await _authRepo.updateCurrentUserPassword(newPassword);
+      return null; // success
+    } catch (e) {
+      return _mapAuthError(e);
+    }
+  }
+
   Future<List<UserModel>> getAllUsers() async {
     return _authRepo.getAllUsers();
   }

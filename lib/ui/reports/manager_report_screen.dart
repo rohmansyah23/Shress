@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
@@ -61,7 +62,7 @@ final managerReportProvider =
     final now = DateTime.now();
     final start = '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
     final end =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${_daysInMonth(now.year, now.month)}';
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
     transactions = await supa.getTransactionsByDateRange(
         params.businessId, start, end);
   }
@@ -112,19 +113,14 @@ class _ReportParams {
   int get hashCode => Object.hash(businessId, startDate, endDate);
 }
 
-int _daysInMonth(int year, int month) {
-  if (month == 2) {
-    return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 29 : 28;
-  }
-  return [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
-}
 
 // ==================== UI ====================
 
 class ManagerReportScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
+  final bool showAppBar;
 
-  const ManagerReportScreen({super.key, required this.business});
+  const ManagerReportScreen({super.key, required this.business, this.showAppBar = true});
 
   @override
   ConsumerState<ManagerReportScreen> createState() =>
@@ -165,7 +161,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
       case PeriodFilter.thisWeek:
         return _formatDate(now);
       case PeriodFilter.thisMonth:
-        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${_daysInMonth(now.year, now.month)}';
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
       case PeriodFilter.thisYear:
         return '${now.year}-12-31';
       case PeriodFilter.custom:
@@ -225,6 +221,17 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
     final reportAsync = ref.watch(managerReportProvider(params));
     final colorScheme = Theme.of(context).colorScheme;
 
+    final body = reportAsync.when(
+      data: (data) => _buildSummary(data, colorScheme),
+      loading: () => const SkeletonReport(),
+      error: (error, _) => ErrorRetryWidget.fromAppError(
+        ErrorHandler.classify(error),
+        onRetry: () => ref.invalidate(managerReportProvider(params)),
+      ),
+    );
+
+    if (!widget.showAppBar) return body;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laporan Keuangan'),
@@ -247,14 +254,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
           child: _buildPeriodSelector(colorScheme),
         ),
       ),
-      body: reportAsync.when(
-        data: (data) => _buildSummary(data, colorScheme),
-        loading: () => const SkeletonReport(),
-        error: (error, _) => ErrorRetryWidget.fromAppError(
-          ErrorHandler.classify(error),
-          onRetry: () => ref.invalidate(managerReportProvider(params)),
-        ),
-      ),
+      body: body,
     );
   }
 
@@ -308,46 +308,9 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                 style: AppTheme.labelSmall.copyWith(fontSize: 12)),
             const SizedBox(height: 16),
 
-            // Net Profit Card
-            Card(
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Text('Laba / Rugi Bersih', style: AppTheme.labelSmall),
-                    const SizedBox(height: 8),
-                    Text(
-                      FormatHelpers.rupiah(data.netProfit),
-                      style: AppTheme.amountLarge.copyWith(
-                        color: data.netProfit >= 0
-                            ? AppTheme.profitColor
-                            : AppTheme.lossColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: data.netProfit >= 0
-                            ? AppTheme.profitColor
-                            : AppTheme.lossColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        data.netProfit >= 0 ? 'LABA' : 'RUGI',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            NetProfitCard(
+              netProfit: data.netProfit,
+              style: NetProfitCardStyle.column,
             ),
             const SizedBox(height: 12),
 
@@ -355,7 +318,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _DetailCard(
+                  child: SummaryCard(
                     title: 'Pendapatan',
                     amount: data.totalIncome,
                     icon: Icons.trending_up_rounded,
@@ -364,7 +327,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _DetailCard(
+                  child: SummaryCard(
                     title: 'HPP',
                     amount: data.totalCogs,
                     icon: Icons.inventory_rounded,
@@ -377,7 +340,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _DetailCard(
+                  child: SummaryCard(
                     title: 'Laba Kotor',
                     amount: data.grossProfit,
                     icon: Icons.monetization_on_rounded,
@@ -386,7 +349,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _DetailCard(
+                  child: SummaryCard(
                     title: 'Pengeluaran',
                     amount: data.totalExpense,
                     icon: Icons.trending_down_rounded,
@@ -396,46 +359,6 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
               ],
             ),
 
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DetailCard extends StatelessWidget {
-  final String title;
-  final double amount;
-  final IconData icon;
-  final Color color;
-
-  const _DetailCard({
-    required this.title,
-    required this.amount,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 18, color: color),
-                const SizedBox(width: 6),
-                Text(title, style: AppTheme.labelSmall),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              FormatHelpers.rupiah(amount),
-              style: AppTheme.amountMedium.copyWith(color: color),
-            ),
           ],
         ),
       ),

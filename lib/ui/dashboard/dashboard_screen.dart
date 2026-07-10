@@ -2,44 +2,87 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
-import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/skeleton_widgets.dart';
+import '../../core/widgets/trend_chart.dart';
 import '../../core/network/connectivity_service.dart';
 import '../../data/local/models/business_model.dart';
-import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/transaction_provider.dart';
+import '../../providers/business_providers.dart';
 import '../transaction/transaction_sheet.dart';
 import '../transaction/transaction_history_screen.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
+  final bool showAppBar;
   final VoidCallback? onNavigateToRiwayat;
+  final VoidCallback? onBack;
 
   const DashboardScreen({
     super.key,
     required this.business,
+    this.showAppBar = true,
     this.onNavigateToRiwayat,
+    this.onBack,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final summaryAsync =
+        ref.watch(businessSummaryProvider(widget.business.businessId));
+    final trendAsync =
+        ref.watch(monthlyNetProfitsProvider(widget.business.businessId));
+
+    final body = summaryAsync.when(
+      data: (summary) {
+        final trendData = trendAsync.asData?.value;
+        final isTrendLoading = trendAsync.isLoading;
+        return _buildContent(summary, trendData, isTrendLoading);
+      },
+      loading: () => const SkeletonDashboard(),
+      error: (error, _) {
+        final appError =
+            error is AppError ? error : ErrorHandler.classify(error);
+        return ErrorRetryWidget.fromAppError(
+          appError,
+          onRetry: () {
+            ref.invalidate(businessSummaryProvider(widget.business.businessId));
+            ref.invalidate(monthlyNetProfitsProvider(widget.business.businessId));
+          },
+        );
+      },
+    );
+
+    if (!widget.showAppBar) return body;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(business.name),
+        leading: widget.onBack != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                tooltip: 'Kembali',
+                onPressed: widget.onBack,
+              )
+            : null,
+        title: Text(widget.business.name),
         actions: [
           IconButton(
             icon: const Icon(Icons.receipt_long_rounded),
             tooltip: 'Riwayat Transaksi',
             onPressed: () {
-              if (onNavigateToRiwayat != null) {
-                onNavigateToRiwayat!();
+              if (widget.onNavigateToRiwayat != null) {
+                widget.onNavigateToRiwayat!();
               } else {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) =>
-                        TransactionHistoryScreen(business: business),
+                        TransactionHistoryScreen(business: widget.business),
                   ),
                 );
               }
@@ -64,191 +107,140 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: _DashboardContent(
-        business: business,
-        onNavigateToRiwayat: onNavigateToRiwayat,
-      ),
+      body: body,
     );
   }
-}
 
-class _DashboardContent extends ConsumerStatefulWidget {
-  final BusinessModel business;
-  final VoidCallback? onNavigateToRiwayat;
-
-  const _DashboardContent({
-    required this.business,
-    this.onNavigateToRiwayat,
-  });
-
-  @override
-  ConsumerState<_DashboardContent> createState() => _DashboardContentState();
-}
-
-class _DashboardContentState extends ConsumerState<_DashboardContent> {
-  Map<String, double> _summary = {
-    'totalIncome': 0,
-    'totalCogs': 0,
-    'grossProfit': 0,
-    'totalExpense': 0,
-    'netProfit': 0,
-  };
-  bool _isLoading = true;
-  AppError? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSummary();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    ref.watch(transactionRefreshProvider);
-    ref.watch(isOnlineProvider);
-    if (!_isLoading && _error == null) {
-      _loadSummary();
-    }
-  }
-
-  Future<void> _loadSummary() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    try {
-      final summary = await SupabaseService.instance
-          .getBusinessSummary(widget.business.businessId);
-      if (mounted) {
-        setState(() {
-          _summary = summary;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e is AppError ? e : ErrorHandler.classify(e);
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const SkeletonDashboard();
-    }
-
-    if (_error != null) {
-      return ErrorRetryWidget.fromAppError(
-        _error!,
-        onRetry: _loadSummary,
-      );
-    }
-
-    final netProfit = _summary['netProfit'] ?? 0;
-    final isProfit = netProfit >= 0;
+  Widget _buildContent(
+    Map<String, double> summary,
+    List<({String month, double netProfit})>? trendData,
+    bool isTrendLoading,
+  ) {
+    final netProfit = summary['netProfit'] ?? 0;
 
     return Column(
       children: [
         Consumer(builder: (context, ref, _) {
           final isOnline = ref.watch(isOnlineProvider);
-          return OfflineBanner(isOffline: !isOnline, onRetry: _loadSummary);
+          return OfflineBanner(
+            isOffline: !isOnline,
+            onRetry: () {
+              ref.invalidate(
+                  businessSummaryProvider(widget.business.businessId));
+              ref.invalidate(
+                  monthlyNetProfitsProvider(widget.business.businessId));
+            },
+          );
         }),
         Expanded(
           child: RefreshIndicator(
-            onRefresh: _loadSummary,
+            onRefresh: () async {
+              ref.invalidate(
+                  businessSummaryProvider(widget.business.businessId));
+              ref.invalidate(
+                  monthlyNetProfitsProvider(widget.business.businessId));
+              await Future.wait([
+                ref.read(
+                    businessSummaryProvider(widget.business.businessId).future),
+                ref.read(
+                    monthlyNetProfitsProvider(widget.business.businessId).future),
+              ]);
+            },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Card(
-                    surfaceTintColor: Colors.transparent,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Laba / Rugi Bersih',
-                                    style: AppTheme.labelSmall.copyWith(fontSize: 12)),
-                                const SizedBox(height: 4),
-                                Text(
-                                  FormatHelpers.rupiah(netProfit),
-                                  style: AppTheme.amountMedium.copyWith(
-                                    color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: (isProfit ? AppTheme.profitColor : AppTheme.lossColor)
-                                  .withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              isProfit ? 'LABA' : 'RUGI',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                                color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  NetProfitCard(
+                    netProfit: netProfit,
+                    style: NetProfitCardStyle.accentBar,
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _DetailCard(title: 'Pendapatan', amount: _summary['totalIncome'] ?? 0, icon: Icons.trending_up_rounded, color: AppTheme.profitColor)),
+                      Expanded(
+                          child: SummaryCard(
+                              title: 'Pendapatan',
+                              amount: summary['totalIncome'] ?? 0,
+                              icon: Icons.trending_up_rounded,
+                              color: AppTheme.profitColor)),
                       const SizedBox(width: 12),
-                      Expanded(child: _DetailCard(title: 'HPP (COGS)', amount: _summary['totalCogs'] ?? 0, icon: Icons.inventory_rounded, color: AppTheme.warningColor)),
+                      Expanded(
+                          child: SummaryCard(
+                              title: 'HPP (COGS)',
+                              amount: summary['totalCogs'] ?? 0,
+                              icon: Icons.inventory_rounded,
+                              color: AppTheme.warningColor)),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _DetailCard(title: 'Laba Kotor', amount: _summary['grossProfit'] ?? 0, icon: Icons.monetization_on_rounded, color: AppTheme.infoColor)),
+                      Expanded(
+                          child: SummaryCard(
+                              title: 'Laba Kotor',
+                              amount: summary['grossProfit'] ?? 0,
+                              icon: Icons.monetization_on_rounded,
+                              color: AppTheme.infoColor)),
                       const SizedBox(width: 12),
-                      Expanded(child: _DetailCard(title: 'Pengeluaran', amount: _summary['totalExpense'] ?? 0, icon: Icons.trending_down_rounded, color: AppTheme.lossColor)),
+                      Expanded(
+                          child: SummaryCard(
+                              title: 'Pengeluaran',
+                              amount: summary['totalExpense'] ?? 0,
+                              icon: Icons.trending_down_rounded,
+                              color: AppTheme.lossColor)),
                     ],
                   ),
                   const SizedBox(height: 24),
+
+                  // === Trend Chart ===
+                  if (!isTrendLoading &&
+                      trendData != null &&
+                      trendData.isNotEmpty) ...[
+                    TrendChart(
+                      data: trendData
+                          .map((d) => TrendDataPoint(
+                              month: d.month, netProfit: d.netProfit))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
                   Text('Aksi Cepat', style: AppTheme.heading3),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: _ActionButton(icon: Icons.trending_up_rounded, label: 'Uang\nMasuk', color: AppTheme.profitColor, onTap: () => TransactionSheet.show(context, widget.business, startAsIncome: true))),
+                      Expanded(
+                          child: QuickActionButton(
+                              icon: Icons.trending_up_rounded,
+                              label: 'Uang\nMasuk',
+                              color: AppTheme.profitColor,
+                              onTap: () => TransactionSheet.show(
+                                  context, widget.business,
+                                  startAsIncome: true))),
                       const SizedBox(width: 12),
-                      Expanded(child: _ActionButton(icon: Icons.trending_down_rounded, label: 'Uang\nKeluar', color: AppTheme.lossColor, onTap: () => TransactionSheet.show(context, widget.business, startAsIncome: false))),
+                      Expanded(
+                          child: QuickActionButton(
+                              icon: Icons.trending_down_rounded,
+                              label: 'Uang\nKeluar',
+                              color: AppTheme.lossColor,
+                              onTap: () => TransactionSheet.show(
+                                  context, widget.business,
+                                  startAsIncome: false))),
                       const SizedBox(width: 12),
-                      Expanded(child: _ActionButton(icon: Icons.history_rounded, label: 'Riwayat\nTransaksi', color: AppTheme.infoColor, onTap: () {
+                      Expanded(
+                          child: QuickActionButton(
+                              icon: Icons.history_rounded,
+                              label: 'Riwayat\nTransaksi',
+                              color: AppTheme.infoColor,
+                              onTap: () {
                         if (widget.onNavigateToRiwayat != null) {
                           widget.onNavigateToRiwayat!();
                         } else {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => TransactionHistoryScreen(business: widget.business)));
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => TransactionHistoryScreen(
+                                  business: widget.business)));
                         }
                       })),
                     ],
@@ -263,67 +255,4 @@ class _DashboardContentState extends ConsumerState<_DashboardContent> {
   }
 }
 
-class _DetailCard extends StatelessWidget {
-  final String title;
-  final double amount;
-  final IconData icon;
-  final Color color;
 
-  const _DetailCard({
-    required this.title,
-    required this.amount,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [Icon(icon, size: 18, color: color), const SizedBox(width: 6), Text(title, style: AppTheme.labelSmall)]),
-            const SizedBox(height: 12),
-            Text(FormatHelpers.rupiah(amount), style: AppTheme.amountMedium.copyWith(color: color)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-          child: Column(
-            children: [
-              Icon(icon, size: 28, color: color),
-              const SizedBox(height: 8),
-              Text(label, textAlign: TextAlign.center, style: AppTheme.caption.copyWith(fontSize: 12, fontWeight: FontWeight.w600, height: 1.3)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

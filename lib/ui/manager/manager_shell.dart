@@ -10,13 +10,15 @@ import '../transaction/transaction_sheet.dart';
 import '../transaction/transaction_history_screen.dart';
 import '../reports/manager_report_screen.dart';
 import '../profile/profile_screen.dart';
+import 'manager_dashboard_screen.dart';
 
-/// Manager/Staff Shell with Bottom Navigation.
+/// Manager/Staff Shell — single Scaffold with dynamic AppBar.
+///
 /// Navbar order:
-///   0. Pilih Usaha (Business Selection)
+///   0. Dashboard
 ///   1. Riwayat Transaksi
 ///   2. + (Tambah Transaksi)
-///   3. Laporan (Financial summary)
+///   3. Laporan
 ///   4. Profil
 class ManagerShell extends ConsumerStatefulWidget {
   const ManagerShell({super.key});
@@ -36,17 +38,121 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     _loadBusinesses();
   }
 
+  String get _appBarTitle {
+    switch (_selectedIndex) {
+      case 0:
+        return _selectedBusiness?.name ?? AppConstants.appName;
+      case 1:
+        return _selectedBusiness?.name ?? 'Riwayat Transaksi';
+      case 3:
+        return 'Laporan Keuangan';
+      case 4:
+        return 'Profil Saya';
+      default:
+        return AppConstants.appName;
+    }
+  }
+
   Future<void> _loadBusinesses() async {
     final user = ref.read(currentUserProvider);
     if (user == null) return;
-    final businesses = await SupabaseService.instance
-        .getAccessibleBusinesses(user.userId, user.role);
-    if (mounted && businesses.isNotEmpty) {
+
+    try {
+      final businesses = await SupabaseService.instance
+          .getAccessibleBusinesses(user.userId, user.role);
+
+      if (!mounted) return;
+
       setState(() {
         _businesses = businesses;
-        _selectedBusiness ??= businesses.first;
+        _selectedBusiness ??= businesses.isNotEmpty ? businesses.first : null;
       });
+    } catch (_) {
+      // Silently handle — UI will show empty state
     }
+  }
+
+  void _switchBusiness(BusinessModel business) {
+    setState(() {
+      _selectedBusiness = business;
+      _selectedIndex = 0;
+    });
+  }
+
+  void _showBusinessPicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  const Icon(Icons.swap_horiz_rounded, size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Ganti Bisnis',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            const SizedBox(height: 8),
+            ..._businesses.map((b) => ListTile(
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.store_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 22,
+                    ),
+                  ),
+                  title: Text(
+                    b.name,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: b.description != null && b.description!.isNotEmpty
+                      ? Text(
+                          b.description!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : null,
+                  trailing: _selectedBusiness?.businessId == b.businessId
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: AppTheme.profitColor)
+                      : const Icon(Icons.chevron_right_rounded),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _switchBusiness(b);
+                  },
+                )),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showAddTransactionSheet() {
@@ -60,12 +166,7 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
   }
 
   void _showQris() {
-    if (_selectedBusiness == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih usaha terlebih dahulu')),
-      );
-      return;
-    }
+    if (_selectedBusiness == null) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => QrisDisplayScreen(business: _selectedBusiness!),
@@ -92,40 +193,63 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
       );
     }
 
-    final showAppBar = _selectedIndex == 0 || _selectedIndex == 2;
-
     final pages = <Widget>[
-      _buildBusinessDashboard(),
+      _selectedBusiness != null
+          ? ManagerDashboardScreen(
+              key: ValueKey('manager_dashboard_${_selectedBusiness!.businessId}'),
+              selectedBusiness: _selectedBusiness!,
+              businesses: _businesses,
+              showAppBar: false,
+              onSwitchBusiness: _showBusinessPicker,
+              onShowQris: _showQris,
+              onNavigateToRiwayat: () => setState(() => _selectedIndex = 1),
+            )
+          : _buildEmptyPlaceholder('Pilih usaha untuk memulai', key: const ValueKey('empty_dashboard')),
       _selectedBusiness != null
           ? TransactionHistoryScreen(
-              key: ValueKey(_selectedBusiness!.businessId),
+              key: ValueKey('manager_history_${_selectedBusiness!.businessId}'),
               business: _selectedBusiness!,
+              showAppBar: false,
             )
-          : const Center(child: Text('Pilih usaha terlebih dahulu')),
-      const SizedBox.shrink(),
+          : _buildEmptyPlaceholder('Pilih usaha untuk melihat riwayat', key: const ValueKey('empty_history')),
+      const SizedBox.shrink(key: ValueKey('manager_empty')),
       _selectedBusiness != null
-          ? ManagerReportScreen(business: _selectedBusiness!)
-          : const Center(child: Text('Pilih usaha terlebih dahulu')),
-      const ProfileScreen(),
+          ? ManagerReportScreen(
+              key: ValueKey('manager_report_${_selectedBusiness!.businessId}'),
+              business: _selectedBusiness!,
+              showAppBar: false,
+            )
+          : _buildEmptyPlaceholder('Pilih usaha untuk melihat laporan', key: const ValueKey('empty_report')),
+      const ProfileScreen(
+        key: ValueKey('manager_profile'),
+        showAppBar: false,
+      ),
     ];
 
     return Scaffold(
-      appBar: showAppBar
-          ? AppBar(
-              title: Text(AppConstants.appName),
-              actions: [
-                if (_selectedBusiness != null)
-                  IconButton(
-                    icon: const Icon(Icons.qr_code_rounded),
-                    tooltip: 'QRIS Pembayaran',
-                    onPressed: _showQris,
-                  ),
-              ],
-            )
-          : null,
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: pages,
+      appBar: AppBar(
+        title: Text(_appBarTitle),
+        actions: _selectedIndex == 0 && _selectedBusiness != null
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.qr_code_rounded),
+                  tooltip: 'QRIS Pembayaran',
+                  onPressed: _showQris,
+                ),
+              ]
+            : null,
+      ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        switchInCurve: Curves.easeIn,
+        switchOutCurve: Curves.easeOut,
+        child: pages[_selectedIndex],
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -138,17 +262,9 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
         },
         destinations: [
           NavigationDestination(
-            icon: Icon(_selectedBusiness != null
-                ? Icons.store_outlined
-                : Icons.store_mall_directory_outlined),
-            selectedIcon: Icon(_selectedBusiness != null
-                ? Icons.store_rounded
-                : Icons.store_mall_directory_rounded),
-            label: _selectedBusiness != null
-                ? _selectedBusiness!.name.length > 8
-                    ? '${_selectedBusiness!.name.substring(0, 8)}...'
-                    : _selectedBusiness!.name
-                : 'Pilih Usaha',
+            icon: const Icon(Icons.dashboard_outlined),
+            selectedIcon: const Icon(Icons.dashboard_rounded),
+            label: 'Dashboard',
           ),
           const NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
@@ -175,106 +291,29 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     );
   }
 
-  Widget _buildBusinessDashboard() {
-    return RefreshIndicator(
-      onRefresh: () async {
-        await _loadBusinesses();
-      },
-      child: _businesses.isEmpty
-          ? ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.business_rounded,
-                            size: 64, color: Colors.grey.shade400),
-                        const SizedBox(height: 16),
-                        Text('Tidak ada bisnis tersedia',
-                            style: AppTheme.heading3
-                                .copyWith(color: Colors.grey)),
-                        const SizedBox(height: 8),
-                        Text('Hubungi Owner untuk mendapatkan akses',
-                            style: AppTheme.caption),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                ..._businesses.map((b) => Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () {
-                          setState(() {
-                            _selectedBusiness = b;
-                            _selectedIndex = 1;
-                          });
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Icon(Icons.store_rounded,
-                                    color: Theme.of(context).colorScheme.primary,
-                                    size: 28),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(b.name, style: AppTheme.heading3),
-                                    if (b.description != null &&
-                                        b.description!.isNotEmpty) ...[
-                                      const SizedBox(height: 4),
-                                      Text(b.description!,
-                                          style: AppTheme.caption,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis),
-                                    ],
-                                    if (_selectedBusiness?.businessId ==
-                                        b.businessId) ...[
-                                      const SizedBox(height: 4),
-                                      const Text('✓ Sedang aktif',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: AppTheme.profitColor,
-                                              fontWeight: FontWeight.w600)),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              if (_selectedBusiness?.businessId ==
-                                  b.businessId)
-                                Icon(Icons.check_circle_rounded,
-                                    color: AppTheme.profitColor)
-                              else
-                                Icon(Icons.chevron_right_rounded,
-                                    color: Colors.grey.shade400),
-                            ],
-                          ),
-                        ),
-                      ),
-                    )),
-              ],
+  Widget _buildEmptyPlaceholder(String message, {Key? key}) {
+    return Center(
+      key: key,
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.store_rounded,
+                size: 64,
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
+          ],
+        ),
+      ),
     );
   }
 }

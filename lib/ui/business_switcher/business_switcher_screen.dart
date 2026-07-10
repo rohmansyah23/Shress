@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../providers/auth_provider.dart';
@@ -78,16 +79,19 @@ class BusinessSwitcherScreen extends ConsumerWidget {
               itemCount: businesses.length,
               itemBuilder: (context, index) {
                 final business = businesses[index];
-                return _BusinessCard(
-                  business: business,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            DashboardScreen(business: business),
-                      ),
-                    );
-                  },
+                return FadeInEntrance(
+                  delay: Duration(milliseconds: index * 50),
+                  child: _BusinessCard(
+                    business: business,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              DashboardScreen(business: business),
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
             );

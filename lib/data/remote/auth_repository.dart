@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
+import '../local/models/business_model.dart';
 import '../local/models/user_model.dart';
 
 /// Repository handling all Supabase Auth operations — cloud only.
@@ -202,6 +203,40 @@ class AuthRepository {
       userId,
       attributes: AdminUserAttributes(password: password),
     );
+  }
+
+  /// Send password reset email via Supabase Auth
+  Future<void> resetPassword(String email) async {
+    await _supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'sheress://reset-password/',
+    );
+  }
+
+  /// Update password after password recovery (must have valid recovery session)
+  Future<void> updateCurrentUserPassword(String newPassword) async {
+    await _supabase.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
+  }
+
+  /// Create a new business and assign the current owner to it.
+  /// Returns the created [BusinessModel].
+  Future<BusinessModel> createBusinessWithOwner({
+    required String name,
+    String? description,
+    required String ownerUserId,
+  }) async {
+    final business = await _supaService.createBusiness(
+      name: name,
+      description: description,
+    );
+    // Assign owner to the new business
+    await assignUserToBusiness(
+      userId: ownerUserId,
+      businessId: business.businessId,
+    );
+    return business;
   }
 
   /// Get all users (Owner operation) — cloud only
