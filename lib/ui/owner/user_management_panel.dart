@@ -326,14 +326,15 @@ class _UserCard extends ConsumerWidget {
     required this.onDelete,
   });
 
-  Color _roleColor(String role) {
+  Color _roleColor(BuildContext context, String role) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (role) {
       case AppConstants.roleOwner:
-        return AppTheme.primaryColor;
+        return isDark ? Theme.of(context).colorScheme.primary : AppTheme.primaryColor;
       case AppConstants.roleManager:
-        return AppTheme.infoColor;
+        return isDark ? Theme.of(context).colorScheme.secondary : AppTheme.infoColor;
       case AppConstants.roleStaff:
-        return AppTheme.secondaryColor;
+        return isDark ? Theme.of(context).colorScheme.tertiary : AppTheme.secondaryColor;
       default:
         return Colors.grey;
     }
@@ -366,13 +367,13 @@ class _UserCard extends ConsumerWidget {
                 CircleAvatar(
                   radius: 24,
                   backgroundColor:
-                      _roleColor(user.role).withValues(alpha: 0.15),
+                      _roleColor(context, user.role).withValues(alpha: 0.15),
                   child: Text(
                     _initials(user.username),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: _roleColor(user.role),
+                      color: _roleColor(context, user.role),
                     ),
                   ),
                 ),
@@ -420,7 +421,7 @@ class _UserCard extends ConsumerWidget {
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: _roleColor(user.role)),
+                            color: _roleColor(context, user.role)),
                         items: const [
                           DropdownMenuItem(
                               value: 'manager',
@@ -476,8 +477,8 @@ class _UserCard extends ConsumerWidget {
                         },
                         showCheckmark: true,
                         selectedColor:
-                            _roleColor(user.role).withValues(alpha: 0.15),
-                        checkmarkColor: _roleColor(user.role),
+                            _roleColor(context, user.role).withValues(alpha: 0.15),
+                        checkmarkColor: _roleColor(context, user.role),
                         visualDensity: VisualDensity.compact,
                       );
                     }).toList(),

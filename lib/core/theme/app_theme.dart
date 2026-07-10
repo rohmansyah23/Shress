@@ -14,6 +14,30 @@ class AppTheme {
   static const Color warningColor = Color(0xFFF57F17); // Orange
   static const Color infoColor = Color(0xFF1565C0); // Blue
 
+  static Color profitColorTheme(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF81C784)
+        : profitColor;
+  }
+
+  static Color lossColorTheme(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFFE57373)
+        : lossColor;
+  }
+
+  static Color warningColorTheme(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFFFFB74D)
+        : warningColor;
+  }
+
+  static Color infoColorTheme(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF64B5F6)
+        : infoColor;
+  }
+
   // Background
   static const Color scaffoldBackground = Color(0xFFF5F5F5);
   static const Color cardBackground = Colors.white;
@@ -33,9 +57,12 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: scaffoldBackground,
       appBarTheme: const AppBarTheme(
-        centerTitle: true,
+        centerTitle: false,
         elevation: 0,
-        scrolledUnderElevation: 1,
+        scrolledUnderElevation: 0,
+        shape: Border(
+          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
@@ -44,6 +71,7 @@ class AppTheme {
           side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
         ),
         clipBehavior: Clip.antiAlias,
+        color: cardBackground,
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -98,7 +126,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor, width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF3949AB), width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -148,15 +176,18 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: darkScaffoldBackground,
       appBarTheme: const AppBarTheme(
-        centerTitle: true,
+        centerTitle: false,
         elevation: 0,
-        scrolledUnderElevation: 1,
+        scrolledUnderElevation: 0,
+        shape: Border(
+          bottom: BorderSide(color: Color(0xFF353535), width: 1),
+        ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFF2D3748), width: 1),
+          side: const BorderSide(color: Color(0xFF353535), width: 1),
         ),
         clipBehavior: Clip.antiAlias,
         color: darkCardBackground,
@@ -194,7 +225,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          side: const BorderSide(color: Color(0xFF2D3748), width: 1),
+          side: const BorderSide(color: Color(0xFF353535), width: 1),
           textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -206,15 +237,15 @@ class AppTheme {
         fillColor: darkSurfaceColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF2D3748)),
+          borderSide: const BorderSide(color: Color(0xFF353535)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF2D3748)),
+          borderSide: const BorderSide(color: Color(0xFF353535)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor, width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF9FA8DA), width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,

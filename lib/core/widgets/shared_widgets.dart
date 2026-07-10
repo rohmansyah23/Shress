@@ -131,15 +131,15 @@ class NetProfitCard extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (style) {
       case NetProfitCardStyle.column:
-        return _buildColumnStyle();
+        return _buildColumnStyle(context);
       case NetProfitCardStyle.accentBar:
-        return _buildAccentBarStyle();
+        return _buildAccentBarStyle(context);
       case NetProfitCardStyle.row:
-        return _buildRowStyle();
+        return _buildRowStyle(context);
     }
   }
 
-  Widget _buildRowStyle() {
+  Widget _buildRowStyle(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -149,7 +149,7 @@ class NetProfitCard extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: (isProfit ? AppTheme.profitColor : AppTheme.lossColor)
+                color: (isProfit ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context))
                     .withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -157,7 +157,7 @@ class NetProfitCard extends StatelessWidget {
                 isProfit
                     ? Icons.trending_up_rounded
                     : Icons.trending_down_rounded,
-                color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
+                color: isProfit ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
               ),
             ),
             const SizedBox(width: 16),
@@ -175,20 +175,20 @@ class NetProfitCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
+                      color: isProfit ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
                     ),
                   ),
                 ],
               ),
             ),
-            _buildBadge(),
+            _buildBadge(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildColumnStyle() {
+  Widget _buildColumnStyle(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -202,18 +202,18 @@ class NetProfitCard extends StatelessWidget {
             Text(
               FormatHelpers.rupiah(netProfit),
               style: AppTheme.amountLarge.copyWith(
-                color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
+                color: isProfit ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
               ),
             ),
             const SizedBox(height: 8),
-            _buildBadge(),
+            _buildBadge(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAccentBarStyle() {
+  Widget _buildAccentBarStyle(BuildContext context) {
     return Card(
       surfaceTintColor: Colors.transparent,
       child: Padding(
@@ -224,7 +224,7 @@ class NetProfitCard extends StatelessWidget {
               width: 6,
               height: 60,
               decoration: BoxDecoration(
-                color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
+                color: isProfit ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -241,24 +241,24 @@ class NetProfitCard extends StatelessWidget {
                   Text(
                     FormatHelpers.rupiah(netProfit),
                     style: AppTheme.amountMedium.copyWith(
-                      color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
+                      color: isProfit ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
                     ),
                   ),
                 ],
               ),
             ),
-            _buildBadge(),
+            _buildBadge(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBadge() {
+  Widget _buildBadge(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: (isProfit ? AppTheme.profitColor : AppTheme.lossColor)
+        color: (isProfit ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context))
             .withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -268,7 +268,7 @@ class NetProfitCard extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.bold,
           letterSpacing: 1,
-          color: isProfit ? AppTheme.profitColor : AppTheme.lossColor,
+          color: isProfit ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
         ),
       ),
     );
@@ -355,7 +355,7 @@ class TransactionCard extends StatelessWidget {
             if (onDelete != null)
               IconButton(
                 icon: Icon(Icons.delete_outline_rounded,
-                    size: 20, color: AppTheme.lossColor),
+                    size: 20, color: AppTheme.lossColorTheme(context)),
                 onPressed: onDelete,
                 tooltip: 'Hapus',
               ),

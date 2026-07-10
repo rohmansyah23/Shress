@@ -167,14 +167,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               title: 'Pendapatan',
                               amount: summary['totalIncome'] ?? 0,
                               icon: Icons.trending_up_rounded,
-                              color: AppTheme.profitColor)),
+                              color: AppTheme.profitColorTheme(context))),
                       const SizedBox(width: 12),
                       Expanded(
                           child: SummaryCard(
                               title: 'HPP (COGS)',
                               amount: summary['totalCogs'] ?? 0,
                               icon: Icons.inventory_rounded,
-                              color: AppTheme.warningColor)),
+                              color: AppTheme.warningColorTheme(context))),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -185,14 +185,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               title: 'Laba Kotor',
                               amount: summary['grossProfit'] ?? 0,
                               icon: Icons.monetization_on_rounded,
-                              color: AppTheme.infoColor)),
+                              color: AppTheme.infoColorTheme(context))),
                       const SizedBox(width: 12),
                       Expanded(
                           child: SummaryCard(
                               title: 'Pengeluaran',
                               amount: summary['totalExpense'] ?? 0,
                               icon: Icons.trending_down_rounded,
-                              color: AppTheme.lossColor)),
+                              color: AppTheme.lossColorTheme(context))),
                     ],
                   ),
                   const SizedBox(height: 24),

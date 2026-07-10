@@ -136,8 +136,8 @@ class TrendChart extends StatelessWidget {
                           '$monthLabel\n${FormatHelpers.rupiah(spot.y)}',
                           TextStyle(
                             color: spot.y >= 0
-                                ? AppTheme.profitColor
-                                : AppTheme.lossColor,
+                                ? AppTheme.profitColorTheme(context)
+                                : AppTheme.lossColorTheme(context),
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),

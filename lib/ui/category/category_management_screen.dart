@@ -292,12 +292,12 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                                 children: [
                                   CircleAvatar(
                                     radius: 20,
-                                    backgroundColor: (isIncome ? AppTheme.profitColor : AppTheme.lossColor)
+                                    backgroundColor: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context))
                                         .withValues(alpha: 0.15),
                                     child: Icon(
                                       isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                                       size: 18,
-                                      color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
+                                      color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -310,7 +310,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                                         Text(
                                           isIncome ? 'Pemasukan' : 'Pengeluaran',
                                           style: AppTheme.caption.copyWith(
-                                            color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
+                                            color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
                                             fontWeight: FontWeight.w600,
                                             fontSize: 11,
                                           ),
