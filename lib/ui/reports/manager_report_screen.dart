@@ -267,7 +267,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
           children: [
             for (final period in PeriodFilter.values)
               Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.only(right: 6),
                 child: FilterChip(
                   label: Text(period.label),
                   selected: _selectedPeriod == period,
@@ -310,7 +310,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
 
             NetProfitCard(
               netProfit: data.netProfit,
-              style: NetProfitCardStyle.column,
+              style: NetProfitCardStyle.accentBar,
             ),
             const SizedBox(height: 12),
 

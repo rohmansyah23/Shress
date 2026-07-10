@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/category_model.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -22,11 +20,19 @@ class CategoryManagementScreen extends StatefulWidget {
 class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   late List<CategoryModel> _categories;
   bool _isLoading = true;
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -59,9 +65,10 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'Nama')),
-            const SizedBox(height: 8),
+              controller: nameCtrl,
+              decoration: const InputDecoration(labelText: 'Nama Kategori'),
+            ),
+            const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: type,
               items: const [
@@ -83,11 +90,11 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               final name = nameCtrl.text.trim();
               if (name.isEmpty) return;
               try {
-                await Supabase.instance.client.from('categories').insert({
-                  'business_id': widget.business.businessId,
-                  'name': name,
-                  'type': type,
-                });
+                await SupabaseService.instance.createCategory(
+                  businessId: widget.business.businessId,
+                  name: name,
+                  type: type,
+                );
                 if (!mounted) return;
                 Navigator.of(context).pop();
                 _load();
@@ -114,9 +121,10 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'Nama')),
-            const SizedBox(height: 8),
+              controller: nameCtrl,
+              decoration: const InputDecoration(labelText: 'Nama Kategori'),
+            ),
+            const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: type,
               items: const [
@@ -138,10 +146,11 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               final name = nameCtrl.text.trim();
               if (name.isEmpty) return;
               try {
-                await Supabase.instance.client
-                    .from('categories')
-                    .update({'name': name, 'type': type})
-                    .eq('id', c.categoryId);
+                await SupabaseService.instance.updateCategory(
+                  categoryId: c.categoryId,
+                  name: name,
+                  type: type,
+                );
                 if (!mounted) return;
                 Navigator.of(context).pop();
                 _load();
@@ -161,6 +170,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Hapus Kategori'),
         content: Text('Hapus kategori "${c.name}"?'),
         actions: [
@@ -168,13 +178,14 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Batal'),
           ),
-          ElevatedButton(
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             onPressed: () async {
               try {
-                await Supabase.instance.client
-                    .from('categories')
-                    .delete()
-                    .eq('id', c.categoryId);
+                await SupabaseService.instance.deleteCategory(c.categoryId);
                 if (!mounted) return;
                 Navigator.of(context).pop();
                 _load();
@@ -192,51 +203,142 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Kelola Kategori')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAdd,
-        child: const Icon(Icons.add_rounded),
-      ),
-      body: _isLoading
-          ? const Center(
-              child: ShimmerWidget(width: 48, height: 48, borderRadius: 24),
-            )
-          : _categories.isEmpty
-              ? Center(
-                  child: Text('Belum ada kategori',
-                      style:
-                          AppTheme.heading3.copyWith(color: Colors.grey)),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: _categories.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final c = _categories[index];
-                    return Card(
-                      child: ListTile(
-                        title: Text(c.name),
-                        subtitle: Text(
-                          c.type == AppConstants.typeIncome ? 'Pemasukan' : 'Pengeluaran',
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Cari kategori...',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+              ),
+              onChanged: (value) =>
+                  setState(() => _searchQuery = value.toLowerCase()),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: Row(
+              children: [
+                FilledButton.tonalIcon(
+                  onPressed: _showAdd,
+                  icon: const Icon(Icons.category_rounded, size: 18),
+                  label: const Text('Tambah Kategori'),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : () {
+                    final filtered = _categories.where((c) {
+                      if (_searchQuery.isEmpty) return true;
+                      return c.name.toLowerCase().contains(_searchQuery) ||
+                          (c.type == AppConstants.typeIncome ? 'pemasukan' : 'pengeluaran')
+                              .contains(_searchQuery);
+                    }).toList();
+
+                    if (filtered.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit_rounded),
-                              onPressed: () => _showEdit(c),
+                            Icon(
+                              Icons.category_rounded,
+                              size: 64,
+                              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_rounded),
-                              onPressed: () => _confirmDelete(c),
+                            const SizedBox(height: 16),
+                            Text(
+                              _searchQuery.isNotEmpty
+                                  ? 'Tidak ada kategori ditemukan'
+                                  : 'Belum ada kategori terdaftar',
+                              style: AppTheme.caption.copyWith(fontSize: 14),
                             ),
                           ],
                         ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final c = filtered[index];
+                          final isIncome = c.type == AppConstants.typeIncome;
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            clipBehavior: Clip.antiAlias,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: (isIncome ? AppTheme.profitColor : AppTheme.lossColor)
+                                        .withValues(alpha: 0.15),
+                                    child: Icon(
+                                      isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                                      size: 18,
+                                      color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(c.name, style: AppTheme.heading3),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          isIncome ? 'Pemasukan' : 'Pengeluaran',
+                                          style: AppTheme.caption.copyWith(
+                                            color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined, size: 20, color: AppTheme.infoColor),
+                                    tooltip: 'Edit Kategori',
+                                    onPressed: () => _showEdit(c),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppTheme.lossColor),
+                                    tooltip: 'Hapus Kategori',
+                                    onPressed: () => _confirmDelete(c),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
-                  },
-                ),
+                  }(),
+          ),
+        ],
+      ),
     );
   }
 }

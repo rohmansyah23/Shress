@@ -239,15 +239,6 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                   icon: const Icon(Icons.person_add_rounded, size: 18),
                   label: const Text('Tambah User'),
                 ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.refresh_rounded),
-                  tooltip: 'Muat ulang',
-                  onPressed: () {
-                    ref.invalidate(allUsersProvider);
-                    _loadBusinesses();
-                  },
-                ),
               ],
             ),
           ),

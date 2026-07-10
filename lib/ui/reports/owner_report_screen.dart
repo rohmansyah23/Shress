@@ -264,7 +264,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                 children: [
                   // Business filter (selalu tampak, tidak hanya di AppBar)
                   _buildBusinessFilter(),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
 
                   // Period filter chips
                   SingleChildScrollView(
@@ -273,7 +273,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                       children: [
                         for (final period in OwnerPeriodFilter.values)
                           Padding(
-                            padding: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.only(right: 6),
                             child: FilterChip(
                               label: Text(period.label),
                               selected: _selectedPeriod == period,
@@ -301,7 +301,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                   else ...[
                     NetProfitCard(
                       netProfit: netProfit,
-                      style: NetProfitCardStyle.column,
+                      style: NetProfitCardStyle.accentBar,
                       title: _filterAllBusinesses
                           ? 'Total Laba / Rugi Bersih'
                           : 'Laba / Rugi Bersih',
@@ -360,29 +360,27 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
   }
 
   Widget _buildBusinessFilter() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            FilterChip(
-              label: const Text('Semua'),
-              selected: _filterAllBusinesses,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() {
-                    _filterAllBusinesses = true;
-                    _selectedBusinessId = null;
-                  });
-                  _loadSummary();
-                }
-              },
-            ),
-            const SizedBox(width: 8),
-            ..._businesses.map((b) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          FilterChip(
+            label: const Text('Semua'),
+            selected: _filterAllBusinesses,
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  _filterAllBusinesses = true;
+                  _selectedBusinessId = null;
+                });
+                _loadSummary();
+              }
+            },
+          ),
+          const SizedBox(width: 6),
+          ..._businesses.map((b) => Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: FilterChip(
                     label: Text(
                         b.name.length > 15 ? '${b.name.substring(0, 15)}...' : b.name),
                     selected: _selectedBusinessId == b.businessId,
@@ -396,8 +394,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                     },
                   ),
                 )),
-          ],
-        ),
+        ],
       ),
     );
   }

@@ -8,6 +8,7 @@ import '../../core/widgets/skeleton_widgets.dart';
 import '../../core/widgets/trend_chart.dart';
 import '../../core/network/connectivity_service.dart';
 import '../../data/local/models/business_model.dart';
+import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/business_providers.dart';
 import '../transaction/transaction_sheet.dart';
@@ -32,18 +33,22 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  TrendFilter _selectedTrendFilter = TrendFilter.weekly;
+
   @override
   Widget build(BuildContext context) {
     final summaryAsync =
         ref.watch(businessSummaryProvider(widget.business.businessId));
     final trendAsync =
-        ref.watch(monthlyNetProfitsProvider(widget.business.businessId));
+        ref.watch(businessNetProfitsTrendProvider((
+      businessId: widget.business.businessId,
+      filter: _selectedTrendFilter,
+    )));
 
     final body = summaryAsync.when(
       data: (summary) {
-        final trendData = trendAsync.asData?.value;
         final isTrendLoading = trendAsync.isLoading;
-        return _buildContent(summary, trendData, isTrendLoading);
+        return _buildContent(summary, trendAsync, isTrendLoading);
       },
       loading: () => const SkeletonDashboard(),
       error: (error, _) {
@@ -53,7 +58,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           appError,
           onRetry: () {
             ref.invalidate(businessSummaryProvider(widget.business.businessId));
-            ref.invalidate(monthlyNetProfitsProvider(widget.business.businessId));
+            ref.invalidate(businessNetProfitsTrendProvider);
           },
         );
       },
@@ -113,7 +118,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   Widget _buildContent(
     Map<String, double> summary,
-    List<({String month, double netProfit})>? trendData,
+    AsyncValue<List<({String period, double netProfit})>> trendAsync,
     bool isTrendLoading,
   ) {
     final netProfit = summary['netProfit'] ?? 0;
@@ -128,7 +133,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ref.invalidate(
                   businessSummaryProvider(widget.business.businessId));
               ref.invalidate(
-                  monthlyNetProfitsProvider(widget.business.businessId));
+                  businessNetProfitsTrendProvider);
             },
           );
         }),
@@ -138,12 +143,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ref.invalidate(
                   businessSummaryProvider(widget.business.businessId));
               ref.invalidate(
-                  monthlyNetProfitsProvider(widget.business.businessId));
+                  businessNetProfitsTrendProvider);
               await Future.wait([
                 ref.read(
                     businessSummaryProvider(widget.business.businessId).future),
-                ref.read(
-                    monthlyNetProfitsProvider(widget.business.businessId).future),
               ]);
             },
             child: SingleChildScrollView(
@@ -194,18 +197,46 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // === Trend Chart ===
-                  if (!isTrendLoading &&
-                      trendData != null &&
-                      trendData.isNotEmpty) ...[
-                    TrendChart(
-                      data: trendData
-                          .map((d) => TrendDataPoint(
-                              month: d.month, netProfit: d.netProfit))
-                          .toList(),
+                  // === Trend Chart dengan Filter ===
+                  Text('Tren Laba/Rugi', style: AppTheme.heading3),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _buildTrendFilterChip('Mingguan', TrendFilter.weekly),
+                      const SizedBox(width: 8),
+                      _buildTrendFilterChip('Bulanan', TrendFilter.monthly),
+                      const SizedBox(width: 8),
+                      _buildTrendFilterChip('Tahunan', TrendFilter.yearly),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  trendAsync.when(
+                    data: (trendData) {
+                      if (trendData.isEmpty) {
+                        return const SizedBox(
+                          height: 160,
+                          child: Center(child: Text('Belum ada data grafik', style: AppTheme.caption)),
+                        );
+                      }
+                      return TrendChart(
+                        data: trendData
+                            .map((d) => TrendDataPoint(
+                                month: d.period, netProfit: d.netProfit))
+                            .toList(),
+                        title: _selectedTrendFilter == TrendFilter.weekly
+                            ? 'Tren Laba/Rugi 5 Minggu Terakhir'
+                            : _selectedTrendFilter == TrendFilter.monthly
+                                ? 'Tren Laba/Rugi 6 Bulan Terakhir'
+                                : 'Tren Laba/Rugi 5 Tahun Terakhir',
+                      );
+                    },
+                    loading: () => const SkeletonChart(height: 160),
+                    error: (err, _) => const SizedBox(
+                      height: 160,
+                      child: Center(child: Text('Gagal memuat grafik', style: AppTheme.caption)),
                     ),
-                    const SizedBox(height: 24),
-                  ],
+                  ),
+                  const SizedBox(height: 24),
 
                   Text('Aksi Cepat', style: AppTheme.heading3),
                   const SizedBox(height: 12),
@@ -251,6 +282,38 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTrendFilterChip(String label, TrendFilter value) {
+    final isSelected = _selectedTrendFilter == value;
+    final colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTrendFilter = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colorScheme.primary.withValues(alpha: 0.1)
+              : colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? colorScheme.primary.withValues(alpha: 0.3)
+                : colorScheme.outlineVariant,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
     );
   }
 }

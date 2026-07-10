@@ -9,6 +9,7 @@ import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/skeleton_widgets.dart';
 import '../../core/widgets/trend_chart.dart';
 import '../../data/local/models/business_model.dart';
+import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/transaction_provider.dart';
@@ -20,6 +21,9 @@ import 'create_business_screen.dart';
 import 'user_management_panel.dart';
 import '../reports/owner_report_screen.dart';
 import '../transaction/transaction_sheet.dart';
+import '../settings/settings_screen.dart';
+import '../category/category_management_screen.dart';
+import 'manage_businesses_screen.dart';
 
 class OwnerDashboardTab extends ConsumerStatefulWidget {
   final dynamic user;
@@ -39,6 +43,8 @@ class OwnerDashboardTab extends ConsumerStatefulWidget {
 }
 
 class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
+  TrendFilter _selectedTrendFilter = TrendFilter.weekly;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -48,7 +54,10 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
       data: (businesses) {
         final allIds = businesses.map((b) => b.businessId).toList()..sort();
         final idsKey = allIds.join(',');
-        final trendAsync = ref.watch(allMonthlyNetProfitsProvider(idsKey));
+        final trendAsync = ref.watch(allBusinessesNetProfitsTrendProvider((
+          businessIdsKey: idsKey,
+          filter: _selectedTrendFilter,
+        )));
 
         return RefreshIndicator(
           onRefresh: () async {
@@ -56,7 +65,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
             for (final id in allIds) {
               ref.invalidate(businessSummaryProvider(id));
             }
-            ref.invalidate(allMonthlyNetProfitsProvider(idsKey));
+            ref.invalidate(allBusinessesNetProfitsTrendProvider);
           },
           child: ListView(
             padding: const EdgeInsets.all(16),
@@ -71,18 +80,46 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               _buildTotalNetProfit(businesses),
               const SizedBox(height: 24),
 
-              // === Trend Chart ===
-              if (trendAsync.hasValue &&
-                  trendAsync.value!.isNotEmpty) ...[
-                TrendChart(
-                  data: trendAsync.value!
-                      .map((d) => TrendDataPoint(
-                          month: d.month, netProfit: d.netProfit))
-                      .toList(),
-                  title: 'Tren Laba/Rugi Semua Bisnis',
+              // === Trend Chart dengan Filter ===
+              Text('Tren Keuangan', style: AppTheme.heading3),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  _buildTrendFilterChip('Mingguan', TrendFilter.weekly),
+                  const SizedBox(width: 8),
+                  _buildTrendFilterChip('Bulanan', TrendFilter.monthly),
+                  const SizedBox(width: 8),
+                  _buildTrendFilterChip('Tahunan', TrendFilter.yearly),
+                ],
+              ),
+              const SizedBox(height: 12),
+              trendAsync.when(
+                data: (trendData) {
+                  if (trendData.isEmpty) {
+                    return const SizedBox(
+                      height: 160,
+                      child: Center(child: Text('Belum ada data grafik', style: AppTheme.caption)),
+                    );
+                  }
+                  return TrendChart(
+                    data: trendData
+                        .map((d) => TrendDataPoint(
+                            month: d.period, netProfit: d.netProfit))
+                        .toList(),
+                    title: _selectedTrendFilter == TrendFilter.weekly
+                        ? 'Tren Laba/Rugi 5 Minggu Terakhir'
+                        : _selectedTrendFilter == TrendFilter.monthly
+                            ? 'Tren Laba/Rugi 6 Bulan Terakhir'
+                            : 'Tren Laba/Rugi 5 Tahun Terakhir',
+                  );
+                },
+                loading: () => const SkeletonChart(height: 160),
+                error: (err, _) => const SizedBox(
+                  height: 160,
+                  child: Center(child: Text('Gagal memuat grafik', style: AppTheme.caption)),
                 ),
-                const SizedBox(height: 24),
-              ],
+              ),
+              const SizedBox(height: 24),
 
               Text('Bisnis Saya', style: AppTheme.heading3),
               const SizedBox(height: 12),
@@ -139,23 +176,36 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: QuickActionButton(
-                      icon: Icons.add_business_rounded,
-                      label: 'Tambah\nBisnis',
+                      icon: Icons.store_rounded,
+                      label: 'Kelola\nBisnis',
                       color: AppTheme.profitColor,
                       onTap: () async {
-                        final result = await Navigator.of(context).push<bool>(
+                        await Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const CreateBusinessScreen(),
+                            builder: (_) => const ManageBusinessesScreen(),
                           ),
                         );
-                        if (result == true) {
-                          ref.invalidate(allBusinessesProvider);
-                          ref.invalidate(transactionRefreshProvider);
-                        }
+                        ref.invalidate(allBusinessesProvider);
+                        ref.invalidate(transactionRefreshProvider);
                       },
                     ),
                   ),
                   const SizedBox(width: 12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.category_rounded,
+                      label: 'Kelola\nKategori',
+                      color: AppTheme.warningColor,
+                      onTap: () {
+                        _pickBusinessAndManageCategories(context, businesses);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.people_rounded,
@@ -170,28 +220,6 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.assessment_rounded,
-                      label: 'Laporan',
-                      color: AppTheme.profitColor,
-                      onTap: () => widget.onTabSwitch?.call(3),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.settings_rounded,
-                      label: 'Pengaturan',
-                      color: AppTheme.infoColor,
-                      onTap: () => widget.onTabSwitch?.call(4),
-                    ),
-                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: QuickActionButton(
@@ -202,6 +230,21 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const QrisUploadScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.settings_rounded,
+                      label: 'Pengaturan',
+                      color: AppTheme.infoColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SettingsScreen(),
                           ),
                         );
                       },
@@ -382,6 +425,88 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
             child: const Text('Batal'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _pickBusinessAndManageCategories(BuildContext context, List<BusinessModel> businesses) {
+    if (businesses.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tambahkan bisnis terlebih dahulu')),
+      );
+      return;
+    }
+    if (businesses.length == 1) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CategoryManagementScreen(business: businesses.first),
+        ),
+      );
+      return;
+    }
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Pilih Bisnis'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: businesses.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (_, i) => ListTile(
+              leading: const Icon(Icons.store_rounded),
+              title: Text(businesses[i].name),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => CategoryManagementScreen(business: businesses[i]),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrendFilterChip(String label, TrendFilter value) {
+    final isSelected = _selectedTrendFilter == value;
+    final colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTrendFilter = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colorScheme.primary.withValues(alpha: 0.1)
+              : colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? colorScheme.primary.withValues(alpha: 0.3)
+                : colorScheme.outlineVariant,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }

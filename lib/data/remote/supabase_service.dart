@@ -134,6 +134,34 @@ class SupabaseService {
     });
   }
 
+  /// Update an existing business name and description.
+  Future<BusinessModel> updateBusiness({
+    required int businessId,
+    required String name,
+    String? description,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('businesses').update({
+        'name': name,
+        'description': description ?? '',
+      }).eq('id', businessId).select().single();
+
+      return BusinessModel(
+        businessId: response['id'] as int,
+        name: response['name'] as String,
+        description: response['description'] as String?,
+        qrisImageUrl: response['qris_image_url'] as String?,
+      );
+    });
+  }
+
+  /// Delete a business.
+  Future<void> deleteBusiness(int businessId) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('businesses').delete().eq('id', businessId);
+    });
+  }
+
   // ==================== Category Operations ====================
 
   Future<List<CategoryModel>> getCategoriesByBusiness(int businessId) async {
@@ -148,6 +176,56 @@ class SupabaseService {
             name: c['name'] as String,
             type: c['type'] as String,
           )).toList();
+    });
+  }
+
+  /// Create a new category.
+  Future<CategoryModel> createCategory({
+    required int businessId,
+    required String name,
+    required String type,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('categories').insert({
+        'business_id': businessId,
+        'name': name,
+        'type': type,
+      }).select().single();
+
+      return CategoryModel(
+        categoryId: response['id'] as int,
+        businessId: response['business_id'] as int,
+        name: response['name'] as String,
+        type: response['type'] as String,
+      );
+    });
+  }
+
+  /// Update an existing category.
+  Future<CategoryModel> updateCategory({
+    required int categoryId,
+    required String name,
+    required String type,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('categories').update({
+        'name': name,
+        'type': type,
+      }).eq('id', categoryId).select().single();
+
+      return CategoryModel(
+        categoryId: response['id'] as int,
+        businessId: response['business_id'] as int,
+        name: response['name'] as String,
+        type: response['type'] as String,
+      );
+    });
+  }
+
+  /// Delete a category.
+  Future<void> deleteCategory(int categoryId) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('categories').delete().eq('id', categoryId);
     });
   }
 
@@ -501,4 +579,107 @@ class SupabaseService {
       return cat?.name ?? 'Kategori #$categoryId';
     });
   }
+
+  /// Get net profit trend based on the TrendFilter (weekly, monthly, yearly).
+  /// Works for single or multiple businesses.
+  Future<List<({String period, double netProfit})>> getNetProfitsTrend({
+    required List<int> businessIds,
+    required TrendFilter filter,
+  }) async {
+    if (businessIds.isEmpty) return [];
+    return ErrorHandler.guard(() async {
+      final now = DateTime.now();
+      String startStr;
+      String endStr;
+
+      if (filter == TrendFilter.weekly) {
+        final currentMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+        final startWeek = currentMonday.subtract(const Duration(days: 28)); // Monday of 4 weeks ago
+        startStr = '${startWeek.year}-${startWeek.month.toString().padLeft(2, '0')}-${startWeek.day.toString().padLeft(2, '0')}';
+        endStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      } else if (filter == TrendFilter.monthly) {
+        const months = 6;
+        final startMonth = DateTime(now.year, now.month - months + 1, 1);
+        startStr = '${startMonth.year}-${startMonth.month.toString().padLeft(2, '0')}-01';
+        endStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
+      } else {
+        // yearly
+        final startYear = now.year - 4;
+        startStr = '$startYear-01-01';
+        endStr = '${now.year}-12-31';
+      }
+
+      final data = await _supabase
+          .from('transactions')
+          .select()
+          .inFilter('business_id', businessIds)
+          .gte('transaction_date', startStr)
+          .lte('transaction_date', endStr)
+          .order('transaction_date', ascending: true);
+
+      final transactions = _parseTransactions(data as List);
+
+      final Map<String, double> incomeMap = {};
+      final Map<String, double> expenseMap = {};
+
+      for (final tx in transactions) {
+        String key;
+        final txDate = DateTime.parse(tx.transactionDate);
+
+        if (filter == TrendFilter.weekly) {
+          final txMonday = DateTime(txDate.year, txDate.month, txDate.day).subtract(Duration(days: txDate.weekday - 1));
+          key = '${txMonday.year}-${txMonday.month.toString().padLeft(2, '0')}-${txMonday.day.toString().padLeft(2, '0')}';
+        } else if (filter == TrendFilter.monthly) {
+          key = tx.transactionDate.length >= 7
+              ? tx.transactionDate.substring(0, 7)
+              : tx.transactionDate;
+        } else {
+          key = '${txDate.year}';
+        }
+
+        if (tx.type == 'income') {
+          incomeMap.update(key, (v) => v + tx.amount, ifAbsent: () => tx.amount);
+        } else {
+          expenseMap.update(key, (v) => v + tx.amount, ifAbsent: () => tx.amount);
+        }
+      }
+
+      final result = <({String period, double netProfit})>[];
+
+      if (filter == TrendFilter.weekly) {
+        final currentMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+        final startWeek = currentMonday.subtract(const Duration(days: 28));
+        for (int i = 0; i < 5; i++) {
+          final d = startWeek.add(Duration(days: i * 7));
+          final key = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+          final income = incomeMap[key] ?? 0;
+          final expense = expenseMap[key] ?? 0;
+          final label = '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+          result.add((period: label, netProfit: income - expense));
+        }
+      } else if (filter == TrendFilter.monthly) {
+        const months = 6;
+        for (int i = 0; i < months; i++) {
+          final d = DateTime(now.year, now.month - months + 1 + i, 1);
+          final key = '${d.year}-${d.month.toString().padLeft(2, '0')}';
+          final income = incomeMap[key] ?? 0;
+          final expense = expenseMap[key] ?? 0;
+          result.add((period: key, netProfit: income - expense));
+        }
+      } else {
+        // yearly
+        for (int i = 0; i < 5; i++) {
+          final year = now.year - 4 + i;
+          final key = '$year';
+          final income = incomeMap[key] ?? 0;
+          final expense = expenseMap[key] ?? 0;
+          result.add((period: key, netProfit: income - expense));
+        }
+      }
+
+      return result;
+    });
+  }
 }
+
+enum TrendFilter { weekly, monthly, yearly }
