@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -27,12 +26,7 @@ class NotificationService {
   /// Inisialisasi plugin notifikasi.
   Future<void> init() async {
     tz_data.initializeTimeZones();
-    try {
-      final timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timeZoneName));
-    } catch (_) {
-      tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
-    }
+    tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
 
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
