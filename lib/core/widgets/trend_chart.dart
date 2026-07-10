@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../utils/format_helpers.dart';
 
@@ -85,11 +86,20 @@ class TrendChart extends StatelessWidget {
                           if (idx < 0 || idx >= data.length) {
                             return const SizedBox.shrink();
                           }
-                          final monthStr = data[idx].month;
-                          final parts = monthStr.split('-');
-                          final label = parts.length >= 2
-                              ? _shortMonth(int.parse(parts[1]))
-                              : monthStr;
+                          final period = data[idx].month;
+                          String label;
+                          try {
+                            final date = DateTime.parse(period);
+                            if (period.length == 10) {
+                              label = DateFormat('dd MMM', 'id_ID').format(date);
+                            } else if (period.length == 7) {
+                              label = DateFormat('MMM', 'id_ID').format(date);
+                            } else {
+                              label = period;
+                            }
+                          } catch (_) {
+                            label = period;
+                          }
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
@@ -129,11 +139,24 @@ class TrendChart extends StatelessWidget {
                       getTooltipItems: (touchedSpots) =>
                           touchedSpots.map((spot) {
                         final idx = spot.x.toInt();
-                        final monthLabel = idx >= 0 && idx < data.length
+                        final period = idx >= 0 && idx < data.length
                             ? data[idx].month
                             : '';
+                        String tooltipLabel;
+                        try {
+                          DateTime.parse(period);
+                          if (period.length == 10) {
+                            tooltipLabel = FormatHelpers.displayDate(period);
+                          } else if (period.length == 7) {
+                            tooltipLabel = FormatHelpers.displayPeriod(period);
+                          } else {
+                            tooltipLabel = period;
+                          }
+                        } catch (_) {
+                          tooltipLabel = period;
+                        }
                         return LineTooltipItem(
-                          '$monthLabel\n${FormatHelpers.rupiah(spot.y)}',
+                          '$tooltipLabel\n${FormatHelpers.rupiah(spot.y)}',
                           TextStyle(
                             color: spot.y >= 0
                                 ? AppTheme.profitColorTheme(context)
@@ -179,14 +202,6 @@ class TrendChart extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _shortMonth(int month) {
-    const months = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
-    ];
-    return month >= 1 && month <= 12 ? months[month] : '$month';
   }
 
   String _compactAmount(double amount) {

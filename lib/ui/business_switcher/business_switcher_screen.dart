@@ -4,7 +4,6 @@ import '../../core/utils/error_handler.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
@@ -96,11 +95,7 @@ class BusinessSwitcherScreen extends ConsumerWidget {
               },
             );
           },
-          loading: () => const SingleChildScrollView(
-            physics: NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.all(16),
-            child: SkeletonBusinessList(),
-          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => ErrorRetryWidget(
             message: ErrorHandler.classify(error).userMessage,
             onRetry: () => ref.invalidate(accessibleBusinessesProvider),

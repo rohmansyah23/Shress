@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
@@ -21,7 +23,8 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
   List<BusinessModel> _businesses = [];
   bool _isLoading = true;
   bool _isUploading = false;
-  File? _selectedImage;
+  Uint8List? _selectedImageBytes;
+  String? _selectedMimeType;
   String? _previewUrl;
   final _urlController = TextEditingController();
   bool _useUrl = false;
@@ -66,8 +69,10 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
         maxHeight: 1024,
       );
       if (picked != null) {
+        final bytes = await picked.readAsBytes();
         setState(() {
-          _selectedImage = File(picked.path);
+          _selectedImageBytes = bytes;
+          _selectedMimeType = picked.mimeType ?? _inferMimeType(bytes);
           _previewUrl = picked.path;
           _useUrl = false;
         });
@@ -77,6 +82,33 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
         ErrorSnackbar.showMessage(context, 'Gagal memilih gambar');
       }
     }
+  }
+
+  String _inferMimeType(Uint8List bytes) {
+    if (bytes.length >= 4 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return 'image/png';
+    }
+    if (bytes.length >= 2 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8) {
+      return 'image/jpeg';
+    }
+    if (bytes.length >= 12 &&
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
+      return 'image/webp';
+    }
+    return 'image/png';
   }
 
   Future<void> _uploadQris() async {
@@ -92,7 +124,7 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
           return;
         }
       } else {
-        if (_selectedImage == null) {
+        if (_selectedImageBytes == null) {
           ErrorSnackbar.showMessage(
               context, 'Pilih gambar atau masukkan URL');
           setState(() => _isUploading = false);
@@ -100,29 +132,44 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
         }
 
         final supabase = Supabase.instance.client;
-        final ext = _selectedImage!.path.split('.').last;
+        final ext = _selectedMimeType == 'image/jpeg' ? 'jpg' : 'png';
         final fileName = 'qris_shared.$ext';
-        final contentType = ext == 'png'
-            ? 'image/png'
-            : ext == 'jpg' || ext == 'jpeg'
-                ? 'image/jpeg'
-                : 'image/webp';
+
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/$fileName');
+        await tempFile.writeAsBytes(_selectedImageBytes!);
+
+        // Hapus file QRIS lama (semua ekstensi) sebelum upload baru
+        try {
+          final oldFiles = await supabase.storage.from('qris-images').list();
+          final oldQrisFiles = oldFiles
+              .where((f) => f.name.startsWith('qris_shared'))
+              .map((f) => f.name)
+              .toList();
+          if (oldQrisFiles.isNotEmpty) {
+            await supabase.storage.from('qris-images').remove(oldQrisFiles);
+          }
+        } catch (_) {}
 
         try {
           await supabase.storage.from('qris-images').upload(
             fileName,
-            _selectedImage!,
+            tempFile,
             fileOptions: FileOptions(
-              contentType: contentType,
+              contentType: _selectedMimeType!,
               upsert: true,
             ),
           );
+          try {
+            await tempFile.delete();
+          } catch (_) {}
         } catch (e) {
           if (!mounted) return;
           setState(() => _isUploading = false);
+          final msg = e.toString();
           ErrorSnackbar.showMessage(
             context,
-            'Gagal upload ke penyimpanan. Gunakan opsi URL manual.',
+            'Gagal upload: ${msg.length > 120 ? msg.substring(0, 120) : msg}',
           );
           return;
         }
@@ -142,13 +189,8 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
 
       if (!mounted) return;
       setState(() => _isUploading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('QRIS berhasil diperbarui untuk semua bisnis'),
-          backgroundColor: AppTheme.profitColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.showSuccess(
+          context, 'QRIS berhasil diperbarui untuk semua bisnis');
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
@@ -245,8 +287,8 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
                           ? ClipRRect(
                               borderRadius:
                                   BorderRadius.circular(12),
-                              child: Image.file(
-                                _selectedImage!,
+                              child: Image.memory(
+                                _selectedImageBytes!,
                                 fit: BoxFit.contain,
                                 width: double.infinity,
                                 height: double.infinity,

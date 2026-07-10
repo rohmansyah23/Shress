@@ -81,9 +81,8 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                 ref.invalidate(allBusinessesProvider);
                 ref.invalidate(transactionRefreshProvider);
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Bisnis berhasil diperbarui')),
-                  );
+                  ErrorSnackbar.showSuccess(
+                      context, 'Bisnis berhasil diperbarui');
                 }
               } catch (e) {
                 if (mounted) {
@@ -128,9 +127,8 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                 ref.invalidate(allBusinessesProvider);
                 ref.invalidate(transactionRefreshProvider);
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Bisnis berhasil dihapus')),
-                  );
+                  ErrorSnackbar.showSuccess(
+                      context, 'Bisnis berhasil dihapus');
                 }
               } catch (e) {
                 if (mounted) {

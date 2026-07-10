@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../providers/transaction_provider.dart';
@@ -116,22 +117,12 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     setState(() => _isSaving = false);
 
     if (result.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.message ?? 'Berhasil diperbarui'),
-          backgroundColor: AppTheme.profitColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.showSuccess(
+          context, result.message ?? 'Berhasil diperbarui');
       Navigator.of(context).pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.message ?? 'Gagal memperbarui'),
-          backgroundColor: AppTheme.lossColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.showError(
+          context, result.message ?? 'Gagal memperbarui');
     }
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
+import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/category_model.dart';
@@ -196,11 +197,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
   }
 
   String _formatDate(DateTime date) {
-    final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+    return FormatHelpers.displayDate(
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}');
   }
 
   String _formatDateIso(DateTime date) {
@@ -210,9 +208,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih kategori terlebih dahulu')),
-      );
+      ErrorSnackbar.showWarning(
+          context, 'Pilih kategori terlebih dahulu');
       return;
     }
 
@@ -221,9 +218,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
     final user = ref.read(currentUserProvider);
     if (user == null) {
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sesi tidak valid, silakan login ulang')),
-      );
+      ErrorSnackbar.showError(
+          context, 'Sesi tidak valid, silakan login ulang');
       return;
     }
 
@@ -255,21 +251,11 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
     if (result.success) {
       triggerTransactionRefresh(ref);
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.message ?? 'Berhasil'),
-          backgroundColor: AppTheme.profitColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.showSuccess(
+          context, result.message ?? 'Berhasil');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.message ?? 'Gagal'),
-          backgroundColor: AppTheme.lossColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.showError(
+          context, result.message ?? 'Gagal');
     }
   }
 

@@ -458,119 +458,6 @@ class SupabaseService {
 
   // ==================== Monthly Trend ====================
 
-  /// Get net profit trend for the last [months] months.
-  /// Returns list sorted chronologically, newest last.
-  Future<List<({String month, double netProfit})>> getMonthlyNetProfits(
-    int businessId, {
-    int months = 6,
-  }) async {
-    return ErrorHandler.guard(() async {
-      final now = DateTime.now();
-      final startMonth = DateTime(now.year, now.month - months + 1, 1);
-      final startStr =
-          '${startMonth.year}-${startMonth.month.toString().padLeft(2, '0')}-01';
-      final endStr =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
-
-      final data = await _supabase
-          .from('transactions')
-          .select()
-          .eq('business_id', businessId)
-          .gte('transaction_date', startStr)
-          .lte('transaction_date', endStr)
-          .order('transaction_date', ascending: true);
-
-      final transactions = _parseTransactions(data as List);
-
-      // Group by YYYY-MM
-      final Map<String, double> incomeByMonth = {};
-      final Map<String, double> expenseByMonth = {};
-
-      for (final tx in transactions) {
-        final monthKey = tx.transactionDate.length >= 7
-            ? tx.transactionDate.substring(0, 7)
-            : tx.transactionDate;
-
-        if (tx.type == 'income') {
-          incomeByMonth.update(
-              monthKey, (v) => v + tx.amount, ifAbsent: () => tx.amount);
-        } else {
-          expenseByMonth.update(
-              monthKey, (v) => v + tx.amount, ifAbsent: () => tx.amount);
-        }
-      }
-
-      // Build result for all months in range (even if no data)
-      final result = <({String month, double netProfit})>[];
-      for (int i = 0; i < months; i++) {
-        final d = DateTime(now.year, now.month - months + 1 + i, 1);
-        final key =
-            '${d.year}-${d.month.toString().padLeft(2, '0')}';
-        final income = incomeByMonth[key] ?? 0;
-        final expense = expenseByMonth[key] ?? 0;
-        result.add((month: key, netProfit: income - expense));
-      }
-
-      return result;
-    });
-  }
-
-  /// Get combined monthly net profits across multiple businesses.
-  Future<List<({String month, double netProfit})>> getAllMonthlyNetProfits(
-    List<int> businessIds, {
-    int months = 6,
-  }) async {
-    if (businessIds.isEmpty) return [];
-    return ErrorHandler.guard(() async {
-      final now = DateTime.now();
-      final startMonth = DateTime(now.year, now.month - months + 1, 1);
-      final startStr =
-          '${startMonth.year}-${startMonth.month.toString().padLeft(2, '0')}-01';
-      final endStr =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
-
-      final data = await _supabase
-          .from('transactions')
-          .select()
-          .inFilter('business_id', businessIds)
-          .gte('transaction_date', startStr)
-          .lte('transaction_date', endStr)
-          .order('transaction_date', ascending: true);
-
-      final transactions = _parseTransactions(data as List);
-
-      final Map<String, double> incomeByMonth = {};
-      final Map<String, double> expenseByMonth = {};
-
-      for (final tx in transactions) {
-        final monthKey = tx.transactionDate.length >= 7
-            ? tx.transactionDate.substring(0, 7)
-            : tx.transactionDate;
-
-        if (tx.type == 'income') {
-          incomeByMonth.update(
-              monthKey, (v) => v + tx.amount, ifAbsent: () => tx.amount);
-        } else {
-          expenseByMonth.update(
-              monthKey, (v) => v + tx.amount, ifAbsent: () => tx.amount);
-        }
-      }
-
-      final result = <({String month, double netProfit})>[];
-      for (int i = 0; i < months; i++) {
-        final d = DateTime(now.year, now.month - months + 1 + i, 1);
-        final key =
-            '${d.year}-${d.month.toString().padLeft(2, '0')}';
-        final income = incomeByMonth[key] ?? 0;
-        final expense = expenseByMonth[key] ?? 0;
-        result.add((month: key, netProfit: income - expense));
-      }
-
-      return result;
-    });
-  }
-
-
 
   // ==================== Category Name Lookup ====================
 
@@ -594,7 +481,11 @@ class SupabaseService {
       String startStr;
       String endStr;
 
-      if (filter == TrendFilter.weekly) {
+      if (filter == TrendFilter.daily) {
+        final startDay = now.subtract(const Duration(days: 6));
+        startStr = '${startDay.year}-${startDay.month.toString().padLeft(2, '0')}-${startDay.day.toString().padLeft(2, '0')}';
+        endStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      } else if (filter == TrendFilter.weekly) {
         final currentMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
         final startWeek = currentMonday.subtract(const Duration(days: 28)); // Monday of 4 weeks ago
         startStr = '${startWeek.year}-${startWeek.month.toString().padLeft(2, '0')}-${startWeek.day.toString().padLeft(2, '0')}';
@@ -628,7 +519,9 @@ class SupabaseService {
         String key;
         final txDate = DateTime.parse(tx.transactionDate);
 
-        if (filter == TrendFilter.weekly) {
+        if (filter == TrendFilter.daily) {
+          key = '${txDate.year}-${txDate.month.toString().padLeft(2, '0')}-${txDate.day.toString().padLeft(2, '0')}';
+        } else if (filter == TrendFilter.weekly) {
           final txMonday = DateTime(txDate.year, txDate.month, txDate.day).subtract(Duration(days: txDate.weekday - 1));
           key = '${txMonday.year}-${txMonday.month.toString().padLeft(2, '0')}-${txMonday.day.toString().padLeft(2, '0')}';
         } else if (filter == TrendFilter.monthly) {
@@ -648,7 +541,16 @@ class SupabaseService {
 
       final result = <({String period, double netProfit})>[];
 
-      if (filter == TrendFilter.weekly) {
+      if (filter == TrendFilter.daily) {
+        final startDay = now.subtract(const Duration(days: 6));
+        for (int i = 0; i < 7; i++) {
+          final d = startDay.add(Duration(days: i));
+          final key = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+          final income = incomeMap[key] ?? 0;
+          final expense = expenseMap[key] ?? 0;
+          result.add((period: key, netProfit: income - expense));
+        }
+      } else if (filter == TrendFilter.weekly) {
         final currentMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
         final startWeek = currentMonday.subtract(const Duration(days: 28));
         for (int i = 0; i < 5; i++) {
@@ -656,8 +558,7 @@ class SupabaseService {
           final key = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
-          final label = '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
-          result.add((period: label, netProfit: income - expense));
+          result.add((period: key, netProfit: income - expense));
         }
       } else if (filter == TrendFilter.monthly) {
         const months = 6;
@@ -684,4 +585,4 @@ class SupabaseService {
   }
 }
 
-enum TrendFilter { weekly, monthly, yearly }
+enum TrendFilter { daily, weekly, monthly, yearly }

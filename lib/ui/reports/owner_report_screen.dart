@@ -8,11 +8,11 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/transaction_provider.dart';
 
 enum OwnerPeriodFilter {
   today('Hari Ini'),
@@ -48,6 +48,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
   List<BusinessModel> _businesses = [];
   bool _isLoading = true;
   AppError? _error;
+  int? _lastRefresh;
   OwnerPeriodFilter _selectedPeriod = OwnerPeriodFilter.thisMonth;
   DateTime? _customStart;
   DateTime? _customEnd;
@@ -69,6 +70,16 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
       _selectedBusinessId = widget.initialBusinessId;
     }
     _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final refresh = ref.watch(transactionRefreshProvider);
+    if (_lastRefresh != null && _lastRefresh != refresh) {
+      _loadSummary();
+    }
+    _lastRefresh ??= refresh;
   }
 
   String _fmt(DateTime d) =>
@@ -295,7 +306,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                   const SizedBox(height: 16),
 
                   if (_isLoading)
-                    const SkeletonReportFull()
+                    const Center(child: CircularProgressIndicator())
                   else if (_error != null)
                     const SizedBox.shrink()
                   else ...[

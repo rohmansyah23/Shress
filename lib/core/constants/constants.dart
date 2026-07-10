@@ -37,6 +37,6 @@ class AppConstants {
   // Date Format
   static const String dateFormat = 'yyyy-MM-dd';
   static const String periodFormat = 'yyyy-MM';
-  static const String displayDateFormat = 'dd MMM yyyy';
+  static const String displayDateFormat = 'dd MMMM yyyy';
   static const String displayPeriodFormat = 'MMMM yyyy';
 }

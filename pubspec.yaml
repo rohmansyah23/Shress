@@ -35,12 +35,6 @@ dependencies:
   # Charts & Visualization
   fl_chart: ^0.69.2
 
-  # PDF Generation
-  pdf: ^3.11.1
-
-  # File Sharing
-  share_plus: ^10.1.4
-
   # Image Picker (QRIS Upload)
   image_picker: ^1.2.3
 
@@ -52,6 +46,7 @@ dependencies:
   flutter_local_notifications: ^22.0.1
   shared_preferences: ^2.5.5
   timezone: ^0.11.1
+  flutter_native_timezone: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

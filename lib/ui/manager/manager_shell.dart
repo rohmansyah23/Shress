@@ -5,6 +5,7 @@ import '../../data/remote/supabase_service.dart';
 import '../../data/local/models/business_model.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/error_widgets.dart';
 import '../dashboard/qris_display_screen.dart';
 import '../transaction/transaction_sheet.dart';
 import '../transaction/transaction_history_screen.dart';
@@ -157,9 +158,8 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
 
   void _showAddTransactionSheet() {
     if (_selectedBusiness == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih usaha terlebih dahulu')),
-      );
+      ErrorSnackbar.showWarning(
+          context, 'Pilih usaha terlebih dahulu');
       return;
     }
     TransactionSheet.show(context, _selectedBusiness!);

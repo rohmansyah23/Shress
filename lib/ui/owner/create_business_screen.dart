@@ -54,15 +54,7 @@ class _CreateBusinessScreenState
       if (!mounted) return;
       ref.invalidate(allBusinessesProvider);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bisnis berhasil dibuat'),
-          backgroundColor: AppTheme.profitColor,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12))),
-        ),
-      );
+      ErrorSnackbar.showSuccess(context, 'Bisnis berhasil dibuat');
       Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {

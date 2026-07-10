@@ -6,11 +6,11 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/business_providers.dart';
+import '../../providers/transaction_provider.dart';
 import '../transaction/transaction_sheet.dart';
 
 class ManagerDashboardScreen extends ConsumerStatefulWidget {
@@ -76,6 +76,9 @@ class _ManagerDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(transactionRefreshProvider, (prev, next) {
+      if (prev != null && prev != next) _loadRecentTransactions();
+    });
     final cs = Theme.of(context).colorScheme;
     final summaryAsync = ref.watch(
         businessSummaryProvider(widget.selectedBusiness.businessId));
@@ -105,33 +108,7 @@ class _ManagerDashboardScreenState
   }
 
   Widget _buildLoadingState(ColorScheme cs) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      children: [
-        _buildBusinessHeader(cs),
-        const SizedBox(height: 24),
-        const SkeletonNetProfitCardRow(),
-        const SizedBox(height: 16),
-        Text('Aksi Cepat', style: AppTheme.heading3),
-        const SizedBox(height: 12),
-        Row(
-          children: List.generate(
-            3,
-            (_) => const Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
-                child: SkeletonActionButton(),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text('Transaksi Terbaru', style: AppTheme.heading3),
-        const SizedBox(height: 12),
-        ...List.generate(3, (_) => const SkeletonTransactionItem()),
-      ],
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   Widget _buildContent(
@@ -196,7 +173,7 @@ class _ManagerDashboardScreenState
           Text('Transaksi Terbaru', style: AppTheme.heading3),
           const SizedBox(height: 12),
           if (_recentLoading)
-            ...List.generate(3, (_) => const SkeletonTransactionItem())
+            ...List.generate(3, (_) => const Center(child: CircularProgressIndicator()))
           else if (_recentTransactions.isEmpty)
             Card(
               child: Padding(

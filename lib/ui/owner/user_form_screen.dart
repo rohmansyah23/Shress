@@ -88,13 +88,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         }
 
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User berhasil diperbarui'),
-            backgroundColor: AppTheme.profitColor,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ErrorSnackbar.showSuccess(context, 'User berhasil diperbarui');
       } else {
         // Create
         await repo.createUser(
@@ -106,13 +100,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         );
 
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User berhasil ditambahkan'),
-            backgroundColor: AppTheme.profitColor,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ErrorSnackbar.showSuccess(context, 'User berhasil ditambahkan');
       }
 
       if (mounted) {

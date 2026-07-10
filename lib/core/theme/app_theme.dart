@@ -308,7 +308,6 @@ class AppTheme {
   static const TextStyle caption = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.normal,
-    color: Colors.grey,
   );
 
   static const TextStyle amountLarge = TextStyle(
@@ -326,7 +325,6 @@ class AppTheme {
   static const TextStyle labelSmall = TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w500,
-    color: Colors.grey,
     letterSpacing: 0.5,
   );
 }

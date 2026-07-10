@@ -139,64 +139,98 @@ class OfflineBanner extends StatelessWidget {
   }
 }
 
-/// Inline error snackbar helper
+/// Inline snackbar helper with theme-aware colors
 class ErrorSnackbar {
-  static void show(BuildContext context, AppError error) {
+  static void _show(
+    BuildContext context, {
+    required String message,
+    required Color backgroundColor,
+    required IconData icon,
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            Icon(
-              error.isOffline
-                  ? Icons.wifi_off_rounded
-                  : Icons.error_outline_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
+            Icon(icon, color: Colors.white, size: 18),
             const SizedBox(width: 8),
-            Expanded(child: Text(error.userMessage)),
+            Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: error.isOffline
-            ? AppTheme.warningColor
-            : AppTheme.lossColor,
+        backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        action: SnackBarAction(
-          label: 'Tutup',
-          textColor: Colors.white,
-          onPressed: () {},
-        ),
+        action: actionLabel != null
+            ? SnackBarAction(
+                label: actionLabel,
+                textColor: Colors.white,
+                onPressed: onAction ?? () {},
+              )
+            : null,
       ),
+    );
+  }
+
+  static void show(BuildContext context, AppError error) {
+    _show(
+      context,
+      message: error.userMessage,
+      backgroundColor: error.isOffline
+          ? AppTheme.warningColorTheme(context)
+          : AppTheme.lossColorTheme(context),
+      icon: error.isOffline
+          ? Icons.wifi_off_rounded
+          : Icons.error_outline_rounded,
+      actionLabel: 'Tutup',
     );
   }
 
   static void showMessage(BuildContext context, String message,
       {bool isError = true}) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              isError ? Icons.error_outline_rounded : Icons.check_circle_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor:
-            isError ? AppTheme.lossColor : AppTheme.profitColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
+    if (isError) {
+      showError(context, message);
+    } else {
+      showSuccess(context, message);
+    }
+  }
+
+  static void showSuccess(BuildContext context, String message) {
+    _show(
+      context,
+      message: message,
+      backgroundColor: AppTheme.profitColorTheme(context),
+      icon: Icons.check_circle_rounded,
+    );
+  }
+
+  static void showError(BuildContext context, String message) {
+    _show(
+      context,
+      message: message,
+      backgroundColor: AppTheme.lossColorTheme(context),
+      icon: Icons.error_outline_rounded,
+    );
+  }
+
+  static void showWarning(BuildContext context, String message) {
+    _show(
+      context,
+      message: message,
+      backgroundColor: AppTheme.warningColorTheme(context),
+      icon: Icons.warning_amber_rounded,
+    );
+  }
+
+  static void showInfo(BuildContext context, String message) {
+    _show(
+      context,
+      message: message,
+      backgroundColor: AppTheme.infoColorTheme(context),
+      icon: Icons.info_outline_rounded,
     );
   }
 }

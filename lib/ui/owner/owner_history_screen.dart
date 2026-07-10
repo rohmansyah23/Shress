@@ -6,13 +6,11 @@ import '../../core/utils/error_handler.dart';
 import 'dart:async';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
-import '../transaction/transaction_sheet.dart';
 import '../transaction/edit_transaction_page.dart';
 import '../dashboard/qris_display_screen.dart';
 
@@ -26,6 +24,15 @@ enum OwnerDateFilter {
 
   final String label;
   const OwnerDateFilter(this.label);
+}
+
+enum OwnerTypeFilter {
+  all('Semua'),
+  income('Uang Masuk'),
+  expense('Uang Keluar');
+
+  final String label;
+  const OwnerTypeFilter(this.label);
 }
 
 class OwnerHistoryScreen extends ConsumerStatefulWidget {
@@ -55,6 +62,7 @@ class _OwnerHistoryScreenState
   List<TransactionModel> _filtered = [];
   bool _isLoading = true;
   OwnerDateFilter _selectedFilter = OwnerDateFilter.all;
+  OwnerTypeFilter _selectedType = OwnerTypeFilter.all;
   DateTime? _customStart;
   DateTime? _customEnd;
 
@@ -76,18 +84,6 @@ class _OwnerHistoryScreenState
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  int? _lastRefresh;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final refresh = ref.watch(transactionRefreshProvider);
-    if (_lastRefresh != null && _lastRefresh != refresh) {
-      _loadTransactions();
-    }
-    _lastRefresh ??= refresh;
   }
 
   Future<void> _loadInitial() async {
@@ -207,7 +203,7 @@ class _OwnerHistoryScreenState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Hapus Transaksi'),
         content: Text(
-          'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${tx.transactionDate}?',
+          'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDate(tx.transactionDate)}?',
         ),
         actions: [
           TextButton(
@@ -233,22 +229,12 @@ class _OwnerHistoryScreenState
           await _loadTransactions();
           triggerTransactionRefresh(ref);
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message ?? 'Berhasil dihapus'),
-              backgroundColor: AppTheme.profitColor,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          ErrorSnackbar.showSuccess(
+              context, result.message ?? 'Berhasil dihapus');
         } else {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message ?? 'Gagal menghapus'),
-              backgroundColor: AppTheme.lossColor,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          ErrorSnackbar.showError(
+              context, result.message ?? 'Gagal menghapus');
         }
       } catch (e) {
         if (!mounted) return;
@@ -312,33 +298,57 @@ class _OwnerHistoryScreenState
               ),
             ),
           ),
-          // Date filter chips
+          // Date filter + Type filter dropdowns
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final filter in OwnerDateFilter.values)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: FilterChip(
-                        label: Text(filter.label,
-                            style: const TextStyle(fontSize: 12)),
-                        selected: _selectedFilter == filter,
-                        onSelected: (selected) {
-                          if (filter == OwnerDateFilter.custom) {
-                            _pickCustomRange();
-                          } else {
-                            setState(
-                                () => _selectedFilter = filter);
-                            _applyFilter();
-                          }
-                        },
-                      ),
+            child: Row(
+              children: [
+                // ignore: deprecated_member_use
+                Expanded(
+                  child: DropdownButtonFormField<OwnerDateFilter>(
+                    value: _selectedFilter,
+                    isDense: true,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(),
+                      isDense: true,
                     ),
-                ],
-              ),
+                    items: OwnerDateFilter.values.map((f) =>
+                      DropdownMenuItem(value: f, child: Text(f.label, style: const TextStyle(fontSize: 12))),
+                    ).toList(),
+                    onChanged: (value) {
+                      if (value == null) return;
+                      if (value == OwnerDateFilter.custom) {
+                        _pickCustomRange();
+                      } else {
+                        setState(() => _selectedFilter = value);
+                        _applyFilter();
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // ignore: deprecated_member_use
+                Expanded(
+                  child: DropdownButtonFormField<OwnerTypeFilter>(
+                    value: _selectedType,
+                    isDense: true,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    items: OwnerTypeFilter.values.map((f) =>
+                      DropdownMenuItem(value: f, child: Text(f.label, style: const TextStyle(fontSize: 12))),
+                    ).toList(),
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => _selectedType = value);
+                      _applyFilter();
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
           // Search bar
@@ -374,10 +384,7 @@ class _OwnerHistoryScreenState
           // Transaction list
           Expanded(
             child: _isLoading
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: SkeletonTransactionList(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : _filtered.isEmpty
                     ? Center(
                         child: Column(
@@ -531,29 +538,15 @@ class _OwnerHistoryScreenState
                       ),
         ],
         ),
-        if (_selectedBusinessId != null)
-          Positioned(
-            right: 16,
-            bottom: 16,
-            child: FloatingActionButton(
-              heroTag: 'owner_add_tx',
-              onPressed: () {
-                final biz = _businesses.cast<BusinessModel?>().firstWhere(
-                    (b) => b?.businessId == _selectedBusinessId,
-                    orElse: () => null);
-                if (biz != null) {
-                  TransactionSheet.show(context, biz);
-                }
-              },
-              child: const Icon(Icons.add_rounded),
-            ),
-          ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(transactionRefreshProvider, (prev, next) {
+      if (prev != null && prev != next) _loadTransactions();
+    });
     final body = _buildBody(context);
     if (!widget.showAppBar) return body;
 
@@ -647,6 +640,13 @@ class _OwnerHistoryScreenState
           final txDay = DateTime(txDate.year, txDate.month, txDate.day);
           return !txDay.isBefore(start!) && !txDay.isAfter(end!);
         });
+      }
+
+      // Apply type filter
+      if (_selectedType == OwnerTypeFilter.income) {
+        filtered = filtered.where((t) => t.type == AppConstants.typeIncome);
+      } else if (_selectedType == OwnerTypeFilter.expense) {
+        filtered = filtered.where((t) => t.type == AppConstants.typeExpense);
       }
 
       if (_searchQuery.isNotEmpty) {

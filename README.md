@@ -17,8 +17,7 @@ Aplikasi ini dirancang dengan alur kerja keuangan modern dan pembagian peran yan
 * 📊 **Multi-Tenant Dashboard**: Rekapitulasi laba kotor, HPP (COGS), total pendapatan, pengeluaran operasional, serta laba/rugi bersih per bisnis secara waktu nyata (*real-time*).
 * 💼 **Manajemen Multi-Bisnis**: Kemampuan bagi *Owner* untuk mengelola banyak cabang usaha (*multi-business switcher*) secara *seamless* dalam satu akun.
 * 👥 **Manajemen Pengguna Terintegrasi**: Panel kontrol pengguna lengkap dengan penetapan hak akses/role (*Owner*, *Manager*, *Staff*) dan pembatasan visibilitas cabang.
-* 📈 **Laporan Laba/Rugi (P&L) Interaktif**: Analisis periodik (Mingguan, Bulanan, Tahunan) dengan visualisasi grafik garis & batang interaktif (*fl_chart*).
-* 📑 **Ekspor Laporan Profesional**: Mendukung ekspor ringkasan keuangan langsung ke berkas format **CSV** dan dokumen cetak **PDF** berkualitas tinggi yang siap dibagikan melalui sistem lembar berbagi perangkat (*native share sheet*).
+* 📈 **Laporan Laba/Rugi (P&L) Interaktif**: Analisis periodik (Harian, Mingguan, Bulanan, Tahunan) dengan visualisasi grafik garis & batang interaktif (*fl_chart*).
 * 📸 **Integrasi QRIS Statis**: Unggah dan kelola gambar kode QRIS per bisnis menggunakan Supabase Storage untuk pembayaran digital yang cepat di setiap cabang.
 * 🎨 **Desain Modern & Responsif**: Tema kustom berbasis Material 3 dengan dukungan penuh *Light/Dark Mode* yang dirancang secara ergonomis untuk visibilitas dan kenyamanan maksimal.
 
@@ -32,7 +31,6 @@ Aplikasi ini dirancang dengan alur kerja keuangan modern dan pembagian peran yan
 | **State Management** | `Flutter Riverpod 2.x` | Manajemen state deklaratif, aman tipe data, dan mudah diuji. |
 | **Backend / Database** | `Supabase Flutter` | Integrasi Auth, database PostgreSQL, dan penyimpanan Cloud Storage. |
 | **Visualisasi Data** | `fl_chart 0.69.x` | Library grafik performa tinggi untuk visualisasi tren profitabilitas. |
-| **Generasi Dokumen** | `pdf 3.x` & `share_plus` | Mesin pembuat file PDF dan penanganan berbagi data lokal. |
 | **Error & Crash Tracking** | `Sentry Flutter 9.x` | Pemantauan error secara real-time langsung ke dashboard Sentry. |
 | **Konektivitas** | `connectivity_plus` | Pendeteksi status jaringan aktif demi kelancaran sinkronisasi data cloud. |
 
@@ -48,7 +46,6 @@ lib/
 ├── core/
 │   ├── config/                # Validasi variabel lingkungan (.env)
 │   ├── constants/             # Magic strings, keys, dan parameter aplikasi
-│   ├── export/                # Modul ekspor laporan (CSV & PDF engines)
 │   ├── network/               # Monitoring status konektivitas internet
 │   ├── qris/                  # Layanan resolver dan pengunggah gambar QRIS
 │   ├── services/              # Integrasi SDK eksternal (seperti Sentry)
@@ -67,9 +64,8 @@ lib/
     ├── business_switcher/     # Halaman pemilih bisnis/cabang aktif
     ├── category/              # Kelola kategori pemasukan & pengeluaran (CRUD)
     ├── dashboard/             # Antarmuka dasbor utama & panel QRIS
-    ├── ledger/                # Lembar perhitungan laba/rugi interaktif
     ├── owner/                 # Panel khusus Owner (User management & Business CRUD)
-    ├── reports/               # Layar filter laporan dan penanganan PDF/CSV ekspor
+    ├── reports/               # Layar filter laporan keuangan
     ├── settings/              # Preferensi aplikasi dan konfigurasi akun
     └── transaction/           # Alur input transaksi baru dan riwayat mutasi
 ```

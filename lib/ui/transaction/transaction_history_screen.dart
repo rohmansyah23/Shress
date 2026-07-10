@@ -6,13 +6,11 @@ import '../../core/utils/error_handler.dart';
 import 'dart:async';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
-import 'transaction_sheet.dart';
 import 'edit_transaction_page.dart';
 import '../dashboard/qris_display_screen.dart';
 
@@ -26,6 +24,15 @@ enum DateFilter {
 
   final String label;
   const DateFilter(this.label);
+}
+
+enum TypeFilter {
+  all('Semua'),
+  income('Uang Masuk'),
+  expense('Uang Keluar');
+
+  final String label;
+  const TypeFilter(this.label);
 }
 
 class TransactionHistoryScreen extends ConsumerStatefulWidget {
@@ -50,8 +57,8 @@ class _TransactionHistoryScreenState
   List<TransactionModel> _all = [];
   List<TransactionModel> _filtered = [];
   bool _isLoading = true;
-  bool _initialLoadDone = false;
   DateFilter _selectedFilter = DateFilter.all;
+  TypeFilter _selectedType = TypeFilter.all;
   DateTime? _customStart;
   DateTime? _customEnd;
 
@@ -62,16 +69,6 @@ class _TransactionHistoryScreenState
   void initState() {
     super.initState();
     _loadTransactions();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    ref.watch(transactionRefreshProvider);
-    if (_initialLoadDone) {
-      _loadTransactions();
-    }
-    _initialLoadDone = true;
   }
 
   @override
@@ -173,6 +170,13 @@ class _TransactionHistoryScreenState
         });
       }
 
+      // Apply type filter
+      if (_selectedType == TypeFilter.income) {
+        filtered = filtered.where((t) => t.type == AppConstants.typeIncome);
+      } else if (_selectedType == TypeFilter.expense) {
+        filtered = filtered.where((t) => t.type == AppConstants.typeExpense);
+      }
+
       // Apply search query
       if (_searchQuery.isNotEmpty) {
         filtered = filtered.where(_matchesSearch);
@@ -228,7 +232,7 @@ class _TransactionHistoryScreenState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Hapus Transaksi'),
         content: Text(
-          'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${tx.transactionDate}?',
+          'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDate(tx.transactionDate)}?',
         ),
         actions: [
           TextButton(
@@ -254,22 +258,12 @@ class _TransactionHistoryScreenState
           await _loadTransactions();
           triggerTransactionRefresh(ref);
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message ?? 'Berhasil dihapus'),
-              backgroundColor: AppTheme.profitColor,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          ErrorSnackbar.showSuccess(
+              context, result.message ?? 'Berhasil dihapus');
         } else {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message ?? 'Gagal menghapus'),
-              backgroundColor: AppTheme.lossColor,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          ErrorSnackbar.showError(
+              context, result.message ?? 'Gagal menghapus');
         }
       } catch (e) {
         if (!mounted) return;
@@ -285,6 +279,9 @@ class _TransactionHistoryScreenState
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(transactionRefreshProvider, (prev, next) {
+      if (prev != null && prev != next) _loadTransactions();
+    });
     final user = ref.watch(currentUserProvider);
     final canEdit = user != null &&
         (user.role == AppConstants.roleManager ||
@@ -299,28 +296,54 @@ class _TransactionHistoryScreenState
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (final filter in DateFilter.values)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: FilterChip(
-                          label: Text(filter.label, style: const TextStyle(fontSize: 12)),
-                          selected: _selectedFilter == filter,
-                          onSelected: (selected) {
-                            if (filter == DateFilter.custom) {
-                              _pickCustomRange();
-                            } else {
-                              setState(() => _selectedFilter = filter);
-                              _applyFilter();
-                            }
-                          },
-                        ),
+              child: Row(
+                children: [
+                  // ignore: deprecated_member_use
+                  Expanded(
+                    child: DropdownButtonFormField<DateFilter>(
+                      value: _selectedFilter,
+                      isDense: true,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(),
+                        isDense: true,
                       ),
-                  ],
-                ),
+                      items: DateFilter.values.map((f) =>
+                        DropdownMenuItem(value: f, child: Text(f.label, style: const TextStyle(fontSize: 12))),
+                      ).toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        if (value == DateFilter.custom) {
+                          _pickCustomRange();
+                        } else {
+                          setState(() => _selectedFilter = value);
+                          _applyFilter();
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // ignore: deprecated_member_use
+                  Expanded(
+                    child: DropdownButtonFormField<TypeFilter>(
+                      value: _selectedType,
+                      isDense: true,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      items: TypeFilter.values.map((f) =>
+                        DropdownMenuItem(value: f, child: Text(f.label, style: const TextStyle(fontSize: 12))),
+                      ).toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _selectedType = value);
+                        _applyFilter();
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -358,10 +381,7 @@ class _TransactionHistoryScreenState
           const SliverToBoxAdapter(child: SizedBox(height: 4)),
           if (_isLoading)
             const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(12),
-                child: SkeletonTransactionList(),
-              ),
+              child: Center(child: CircularProgressIndicator()),
             )
           else
             SliverList(
@@ -498,11 +518,6 @@ class _TransactionHistoryScreenState
             onPressed: _loadTransactions,
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'add_transaction',
-        onPressed: () => TransactionSheet.show(context, widget.business),
-        child: const Icon(Icons.add_rounded),
       ),
       body: body,
     );

@@ -143,9 +143,8 @@ class BusinessDetailScreen extends StatelessWidget {
                     .eq('id', business.businessId);
                 if (!ctx.mounted) return;
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Bisnis berhasil diperbarui')),
-                );
+                ErrorSnackbar.showSuccess(
+                    context, 'Bisnis berhasil diperbarui');
               } catch (e) {
                 ErrorSnackbar.show(context, ErrorHandler.classify(e));
               }
@@ -189,9 +188,8 @@ class BusinessDetailScreen extends StatelessWidget {
                     .eq('id', business.businessId);
                 if (!ctx.mounted) return;
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('QRIS berhasil disimpan')),
-                );
+                ErrorSnackbar.showSuccess(
+                    context, 'QRIS berhasil disimpan');
               } catch (e) {
                 ErrorSnackbar.show(context, ErrorHandler.classify(e));
               }

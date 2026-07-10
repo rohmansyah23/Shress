@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/app_config.dart';
@@ -67,6 +68,9 @@ Future<void> _runApp() async {
     // ignore: avoid_print
     print('⚠️  $configError');
   }
+
+  // Initialize locale data for Indonesian date formatting
+  await initializeDateFormatting('id_ID');
 
   // Initialize Supabase
   try {

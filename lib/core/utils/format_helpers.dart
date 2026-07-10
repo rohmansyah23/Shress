@@ -17,11 +17,11 @@ class FormatHelpers {
     return formatter.format(amount);
   }
 
-  /// Format date string (YYYY-MM-DD) to display format (dd MMM yyyy)
+  /// Format date string (YYYY-MM-DD) to display format (dd MMMM yyyy)
   static String displayDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
-      return DateFormat('dd MMM yyyy', 'id_ID').format(date);
+      return DateFormat('dd MMMM yyyy', 'id_ID').format(date);
     } catch (_) {
       return dateStr;
     }

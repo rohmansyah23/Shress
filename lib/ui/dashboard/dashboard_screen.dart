@@ -4,7 +4,6 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../core/widgets/trend_chart.dart';
 import '../../core/network/connectivity_service.dart';
 import '../../data/local/models/business_model.dart';
@@ -33,7 +32,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  TrendFilter _selectedTrendFilter = TrendFilter.weekly;
+  TrendFilter _selectedTrendFilter = TrendFilter.daily;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +49,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final isTrendLoading = trendAsync.isLoading;
         return _buildContent(summary, trendAsync, isTrendLoading);
       },
-      loading: () => const SkeletonDashboard(),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) {
         final appError =
             error is AppError ? error : ErrorHandler.classify(error);
@@ -202,6 +201,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
+                      _buildTrendFilterChip('Harian', TrendFilter.daily),
+                      const SizedBox(width: 8),
                       _buildTrendFilterChip('Mingguan', TrendFilter.weekly),
                       const SizedBox(width: 8),
                       _buildTrendFilterChip('Bulanan', TrendFilter.monthly),
@@ -223,14 +224,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             .map((d) => TrendDataPoint(
                                 month: d.period, netProfit: d.netProfit))
                             .toList(),
-                        title: _selectedTrendFilter == TrendFilter.weekly
-                            ? 'Tren Laba/Rugi 5 Minggu Terakhir'
-                            : _selectedTrendFilter == TrendFilter.monthly
-                                ? 'Tren Laba/Rugi 6 Bulan Terakhir'
-                                : 'Tren Laba/Rugi 5 Tahun Terakhir',
+                        title: _selectedTrendFilter == TrendFilter.daily
+                            ? 'Tren Laba/Rugi 7 Hari Terakhir'
+                            : _selectedTrendFilter == TrendFilter.weekly
+                                ? 'Tren Laba/Rugi 5 Minggu Terakhir'
+                                : _selectedTrendFilter == TrendFilter.monthly
+                                    ? 'Tren Laba/Rugi 6 Bulan Terakhir'
+                                    : 'Tren Laba/Rugi 5 Tahun Terakhir',
                       );
                     },
-                    loading: () => const SkeletonChart(height: 160),
+                    loading: () => const Center(child: CircularProgressIndicator()),
                     error: (err, _) => const SizedBox(
                       height: 160,
                       child: Center(child: Text('Gagal memuat grafik', style: AppTheme.caption)),

@@ -6,7 +6,6 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -183,7 +182,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
         return 'Tahun ${DateTime.now().year}';
       case PeriodFilter.custom:
         if (_customStart == null || _customEnd == null) return 'Pilih Tanggal';
-        return '${_customStart!.day}/${_customStart!.month} - ${_customEnd!.day}/${_customEnd!.month}';
+        return '${FormatHelpers.displayDate('${_customStart!.year}-${_customStart!.month.toString().padLeft(2, '0')}-${_customStart!.day.toString().padLeft(2, '0')}')} - ${FormatHelpers.displayDate('${_customEnd!.year}-${_customEnd!.month.toString().padLeft(2, '0')}-${_customEnd!.day.toString().padLeft(2, '0')}')}';
     }
   }
 
@@ -223,7 +222,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
 
     final body = reportAsync.when(
       data: (data) => _buildSummary(data, colorScheme),
-      loading: () => const SkeletonReport(),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) => ErrorRetryWidget.fromAppError(
         ErrorHandler.classify(error),
         onRetry: () => ref.invalidate(managerReportProvider(params)),

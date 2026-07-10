@@ -6,7 +6,6 @@ import '../../core/utils/format_helpers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../core/widgets/trend_chart.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -16,11 +15,12 @@ import '../../providers/transaction_provider.dart';
 import '../auth/login_screen.dart';
 import '../dashboard/qris_upload_screen.dart';
 import '../onboarding/onboarding_screen.dart';
-import 'business_owner_shell.dart';
+import '../dashboard/dashboard_screen.dart';
 import 'create_business_screen.dart';
 import 'user_management_panel.dart';
 import '../reports/owner_report_screen.dart';
 import '../transaction/transaction_sheet.dart';
+import '../transaction/transaction_history_screen.dart';
 import '../settings/settings_screen.dart';
 import '../category/category_management_screen.dart';
 import 'manage_businesses_screen.dart';
@@ -43,7 +43,7 @@ class OwnerDashboardTab extends ConsumerStatefulWidget {
 }
 
 class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
-  TrendFilter _selectedTrendFilter = TrendFilter.weekly;
+  TrendFilter _selectedTrendFilter = TrendFilter.daily;
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +66,12 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               ref.invalidate(businessSummaryProvider(id));
             }
             ref.invalidate(allBusinessesNetProfitsTrendProvider);
+            ref.invalidate(combinedBusinessSummaryProvider);
           },
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text('Halo, ${widget.user.username}',
+              Text('Halo, ${widget.user.displayName ?? widget.user.username}',
                   style: AppTheme.heading2),
               const SizedBox(height: 4),
               Text('Owner • ${businesses.length} bisnis',
@@ -85,6 +86,8 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               const SizedBox(height: 8),
               Row(
                 children: [
+                  _buildTrendFilterChip('Harian', TrendFilter.daily),
+                  const SizedBox(width: 8),
                   _buildTrendFilterChip('Mingguan', TrendFilter.weekly),
                   const SizedBox(width: 8),
                   _buildTrendFilterChip('Bulanan', TrendFilter.monthly),
@@ -106,14 +109,16 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                         .map((d) => TrendDataPoint(
                             month: d.period, netProfit: d.netProfit))
                         .toList(),
-                    title: _selectedTrendFilter == TrendFilter.weekly
-                        ? 'Tren Laba/Rugi 5 Minggu Terakhir'
-                        : _selectedTrendFilter == TrendFilter.monthly
-                            ? 'Tren Laba/Rugi 6 Bulan Terakhir'
-                            : 'Tren Laba/Rugi 5 Tahun Terakhir',
+                    title: _selectedTrendFilter == TrendFilter.daily
+                        ? 'Tren Laba/Rugi 7 Hari Terakhir'
+                        : _selectedTrendFilter == TrendFilter.weekly
+                            ? 'Tren Laba/Rugi 5 Minggu Terakhir'
+                            : _selectedTrendFilter == TrendFilter.monthly
+                                ? 'Tren Laba/Rugi 6 Bulan Terakhir'
+                                : 'Tren Laba/Rugi 5 Tahun Terakhir',
                   );
                 },
-                loading: () => const SkeletonChart(height: 160),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, _) => const SizedBox(
                   height: 160,
                   child: Center(child: Text('Gagal memuat grafik', style: AppTheme.caption)),
@@ -136,8 +141,19 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => BusinessOwnerShell(
+                            builder: (_) => DashboardScreen(
                               business: businesses[i],
+                              showAppBar: true,
+                              onNavigateToRiwayat: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => TransactionHistoryScreen(
+                                      business: businesses[i],
+                                      showAppBar: true,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         );
@@ -315,7 +331,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
           title: 'Total Laba / Rugi Bersih',
         );
       },
-      loading: () => const SkeletonNetProfitCardRow(),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) => const SizedBox.shrink(),
     );
   }
@@ -431,9 +447,8 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
 
   void _pickBusinessAndManageCategories(BuildContext context, List<BusinessModel> businesses) {
     if (businesses.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tambahkan bisnis terlebih dahulu')),
-      );
+      ErrorSnackbar.showWarning(
+          context, 'Tambahkan bisnis terlebih dahulu');
       return;
     }
     if (businesses.length == 1) {

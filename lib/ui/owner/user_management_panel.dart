@@ -5,7 +5,6 @@ import '../../core/utils/error_handler.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/skeleton_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/user_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -91,14 +90,8 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Role ${user.username} diubah ke ${_roleLabel(newRole)}'),
-          backgroundColor: AppTheme.profitColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.showSuccess(
+          context, 'Role ${user.username} diubah ke ${_roleLabel(newRole)}');
     } catch (e) {
       if (!mounted) return;
       ErrorSnackbar.show(context, ErrorHandler.classify(e));
@@ -117,13 +110,8 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
       ref.invalidate(allUsersProvider);
       ref.invalidate(userBusinessIdsProvider(user.userId));
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Akses bisnis untuk ${user.username} diperbarui'),
-          backgroundColor: AppTheme.profitColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.showSuccess(
+          context, 'Akses bisnis untuk ${user.username} diperbarui');
     } catch (e) {
       if (!mounted) return;
       ErrorSnackbar.show(context, ErrorHandler.classify(e));
@@ -163,13 +151,8 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
       await repo.deleteUser(user.userId);
       if (!mounted) return;
       ref.invalidate(allUsersProvider);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('User "${user.username}" berhasil dihapus'),
-          backgroundColor: AppTheme.profitColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ErrorSnackbar.showSuccess(
+          context, 'User "${user.username}" berhasil dihapus');
     } catch (e) {
       if (!mounted) return;
       ErrorSnackbar.show(context, ErrorHandler.classify(e));
@@ -296,7 +279,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                   ),
                 );
               },
-              loading: () => const SkeletonUserList(),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => ErrorRetryWidget(
                 message: ErrorHandler.classify(error).userMessage,
                 onRetry: () => ref.invalidate(allUsersProvider),
