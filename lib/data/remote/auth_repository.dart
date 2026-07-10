@@ -31,12 +31,12 @@ class AuthRepository {
   /// Sign in with email and password.
   /// Returns the authenticated UserModel on success.
   Future<UserModel> signIn({
-    required String email,
+    required String identifier,
     required String password,
   }) async {
     try {
       final result = await _supabase.rpc('verify_public_password', params: {
-        'p_email': email,
+        'p_identifier': identifier,
         'p_password': password,
       });
 
@@ -53,7 +53,7 @@ class AuthRepository {
 
       final user = UserModel(
         userId: userId,
-        username: profileData['username'] as String? ?? email.split('@').first,
+        username: profileData['username'] as String? ?? identifier.split('@').first,
         role: profileData['role'] as String? ?? 'staff',
         displayName: profileData['display_name'] as String?,
       );

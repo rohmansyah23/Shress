@@ -85,14 +85,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> login({
-    required String email,
+    required String identifier,
     required String password,
   }) async {
     state = state.copyWith(errorMessage: null);
 
     try {
       final user = await _authRepo.signIn(
-        email: email,
+        identifier: identifier,
         password: password,
       );
 
