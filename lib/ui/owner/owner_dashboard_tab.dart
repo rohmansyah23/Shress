@@ -13,7 +13,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/transaction_provider.dart';
 import '../auth/login_screen.dart';
-import '../dashboard/qris_upload_screen.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import 'create_business_screen.dart';
@@ -239,21 +238,6 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: QuickActionButton(
-                      icon: Icons.qr_code_rounded,
-                      label: 'Upload\nQRIS',
-                      color: AppTheme.infoColor,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const QrisUploadScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: QuickActionButton(
                       icon: Icons.settings_rounded,
                       label: 'Pengaturan',
                       color: AppTheme.infoColor,
@@ -286,16 +270,6 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
       appBar: AppBar(
         title: Text(AppConstants.appName),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_rounded),
-            tooltip: 'Upload QRIS',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (_) => const QrisUploadScreen()),
-              );
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             tooltip: 'Keluar',

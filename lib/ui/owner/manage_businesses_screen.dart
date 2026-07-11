@@ -7,6 +7,7 @@ import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
+import '../../ui/dashboard/qris_upload_screen.dart';
 import 'create_business_screen.dart';
 
 class ManageBusinessesScreen extends ConsumerStatefulWidget {
@@ -145,6 +146,17 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
     );
   }
 
+  void _openQrisUpload(BusinessModel business) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => QrisUploadScreen(business: business),
+      ),
+    );
+    if (result == true) {
+      ref.invalidate(allBusinessesProvider);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final businessesAsync = ref.watch(allBusinessesProvider);
@@ -245,6 +257,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                           return _BusinessItemCard(
                             business: b,
                             onEdit: () => _showEditDialog(b),
+                            onQris: () => _openQrisUpload(b),
                             onDelete: () => _confirmDelete(b),
                           );
                         },
@@ -276,11 +289,13 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
 class _BusinessItemCard extends StatelessWidget {
   final BusinessModel business;
   final VoidCallback onEdit;
+  final VoidCallback onQris;
   final VoidCallback onDelete;
 
   const _BusinessItemCard({
     required this.business,
     required this.onEdit,
+    required this.onQris,
     required this.onDelete,
   });
 
@@ -297,12 +312,14 @@ class _BusinessItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final hasQris = business.qrisImageUrl != null &&
+        business.qrisImageUrl!.isNotEmpty;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 4, 16),
         child: Row(
           children: [
             CircleAvatar(
@@ -330,18 +347,80 @@ class _BusinessItemCard extends StatelessWidget {
                       style: AppTheme.caption,
                     ),
                   ],
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        hasQris ? Icons.qr_code_2_rounded : Icons.qr_code_2_outlined,
+                        size: 14,
+                        color: hasQris ? AppTheme.profitColor : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        hasQris ? 'QRIS aktif' : 'Belum ada QRIS',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: hasQris ? AppTheme.profitColor : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.edit_outlined, size: 20, color: AppTheme.infoColor),
-              tooltip: 'Edit Bisnis',
-              onPressed: onEdit,
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppTheme.lossColor),
-              tooltip: 'Hapus Bisnis',
-              onPressed: onDelete,
+            PopupMenuButton<String>(
+              icon: Icon(
+                Icons.more_vert_rounded,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              onSelected: (value) {
+                switch (value) {
+                  case 'edit':
+                    onEdit();
+                    break;
+                  case 'qris':
+                    onQris();
+                    break;
+                  case 'delete':
+                    onDelete();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: ListTile(
+                    leading: Icon(Icons.edit_outlined),
+                    title: Text('Edit Bisnis'),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'qris',
+                  child: ListTile(
+                    leading: Icon(Icons.qr_code_2_rounded),
+                    title: Text('Kelola QRIS'),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuDivider(),
+                PopupMenuItem<String>(
+                  value: 'delete',
+                  child: ListTile(
+                    leading: Icon(Icons.delete_outline_rounded,
+                        color: AppTheme.lossColor),
+                    title: Text('Hapus Bisnis',
+                        style: TextStyle(color: AppTheme.lossColor)),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

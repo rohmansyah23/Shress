@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
+import '../../ui/dashboard/qris_upload_screen.dart';
 import '../transaction/transaction_history_screen.dart';
 
 class BusinessDetailScreen extends StatelessWidget {
@@ -157,46 +158,9 @@ class BusinessDetailScreen extends StatelessWidget {
   }
 
   void _showQrisDialog(BuildContext context) {
-    final ctrl =
-        TextEditingController(text: business.qrisImageUrl ?? '');
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Upload QRIS'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(
-            labelText: 'Image URL',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final url = ctrl.text.trim();
-              try {
-                await Supabase.instance.client
-                    .from('businesses')
-                    .update({
-                      'qris_image_url': url.isEmpty ? null : url,
-                    })
-                    .eq('id', business.businessId);
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx);
-                ErrorSnackbar.showSuccess(
-                    context, 'QRIS berhasil disimpan');
-              } catch (e) {
-                ErrorSnackbar.show(context, ErrorHandler.classify(e));
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => QrisUploadScreen(business: business),
       ),
     );
   }

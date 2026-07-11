@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
+import '../../data/local/models/category_model.dart';
 import '../../data/local/models/transaction_model.dart';
+import '../../data/remote/supabase_service.dart';
 import '../../providers/transaction_provider.dart';
 
 class EditTransactionPage extends StatefulWidget {
@@ -30,6 +33,9 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
   bool _isFormattingAmount = false;
   bool _isFormattingCogs = false;
 
+  List<CategoryModel> _categories = [];
+  CategoryModel? _selectedCategory;
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +44,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     _descController.text = widget.transaction.description ?? '';
     _amountController.addListener(_onAmountChanged);
     _cogsController.addListener(_onCogsChanged);
+    _loadCategories();
   }
 
   @override
@@ -48,6 +55,41 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     _cogsController.dispose();
     _descController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final isIncome = widget.transaction.type == AppConstants.typeIncome;
+      final categories = await SupabaseService.instance.getCategoriesByType(
+        widget.business.businessId,
+        isIncome ? AppConstants.typeIncome : AppConstants.typeExpense,
+      );
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+          _selectedCategory = _categories.firstWhere(
+            (c) => c.categoryId == widget.transaction.categoryId,
+            orElse: () => _categories.isNotEmpty
+                ? _categories.first
+                : CategoryModel(
+                    categoryId: 0,
+                    businessId: 0,
+                    name: '',
+                    type: '',
+                  ),
+          );
+          if (_selectedCategory!.categoryId == 0) {
+            _selectedCategory =
+                _categories.isNotEmpty ? _categories.first : null;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        final error = ErrorHandler.classify(e);
+        ErrorSnackbar.show(context, error);
+      }
+    }
   }
 
   void _onAmountChanged() {
@@ -96,6 +138,10 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedCategory == null) {
+      ErrorSnackbar.showWarning(context, 'Pilih kategori terlebih dahulu');
+      return;
+    }
     setState(() => _isSaving = true);
 
     final amountStr = _amountController.text.replaceAll('.', '');
@@ -106,6 +152,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
     final result = await updateTransaction(
       transactionId: widget.transaction.transactionId!,
+      categoryId: _selectedCategory!.categoryId,
       amount: amount,
       cogs: isIncome ? cogs : null,
       description: _descController.text.trim().isEmpty
@@ -208,6 +255,29 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 ),
               ),
               const SizedBox(height: 24),
+
+              const Text('Kategori',
+                  style: TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<CategoryModel>(
+                value: _selectedCategory,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.category_outlined),
+                ),
+                items: _categories.map((cat) {
+                  return DropdownMenuItem(
+                    value: cat,
+                    child: Text(cat.name),
+                  );
+                }).toList(),
+                onChanged: (value) =>
+                    setState(() => _selectedCategory = value),
+                validator: (value) =>
+                    value == null ? 'Pilih kategori' : null,
+              ),
+
+              const SizedBox(height: 20),
 
               const Text('Jumlah (Rp)',
                   style: TextStyle(
