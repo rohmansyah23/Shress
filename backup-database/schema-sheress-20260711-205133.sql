@@ -13,8 +13,9 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 
-COMMENT ON SCHEMA "public" IS 'standard public schema';
 
+
+ALTER SCHEMA "public" OWNER TO "postgres";
 
 
 CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
@@ -45,24 +46,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 
 
-CREATE OR REPLACE FUNCTION "public"."compare_financial_periods"("p_business_id" integer, "p_p1" character varying, "p_p2" character varying) RETURNS "jsonb"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
-    AS $$
-    DECLARE r1 jsonb; r2 jsonb; v_ic decimal(15,2); v_nc decimal(15,2); v_ip decimal(5,2); v_np decimal(5,2);
-    BEGIN
-      r1:=public.generate_financial_report(p_business_id,p_p1); r2:=public.generate_financial_report(p_business_id,p_p2);
-      v_ic:=(r2->>'total_income')::decimal(15,2)-(r1->>'total_income')::decimal(15,2);
-      v_nc:=(r2->>'net_profit')::decimal(15,2)-(r1->>'net_profit')::decimal(15,2);
-      v_ip:=CASE WHEN (r1->>'total_income')::decimal(15,2)!=0 THEN (v_ic/(r1->>'total_income')::decimal(15,2))*100 ELSE 0 END;
-      v_np:=CASE WHEN (r1->>'net_profit')::decimal(15,2)!=0 THEN (v_nc/(r1->>'net_profit')::decimal(15,2))*100 ELSE 0 END;
-      RETURN jsonb_build_object('period_1',jsonb_build_object('period',p_p1,'total_income',r1->>'total_income','total_cogs',r1->>'total_cogs','gross_profit',r1->>'gross_profit','total_expense',r1->>'total_expense','net_profit',r1->>'net_profit','status',r1->>'status'),'period_2',jsonb_build_object('period',p_p2,'total_income',r2->>'total_income','total_cogs',r2->>'total_cogs','gross_profit',r2->>'gross_profit','total_expense',r2->>'total_expense','net_profit',r2->>'net_profit','status',r2->>'status'),'changes',jsonb_build_object('income_change',v_ic,'income_change_pct',v_ip,'net_profit_change',v_nc,'net_profit_change_pct',v_np));
-    END; $$;
-
-
-ALTER FUNCTION "public"."compare_financial_periods"("p_business_id" integer, "p_p1" character varying, "p_p2" character varying) OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."create_public_user"("p_email" "text", "p_username" "text", "p_role" "text", "p_password" "text") RETURNS "uuid"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -84,49 +67,6 @@ $$;
 
 
 ALTER FUNCTION "public"."create_public_user"("p_email" "text", "p_username" "text", "p_role" "text", "p_password" "text") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."generate_financial_report"("p_business_id" integer, "p_period" character varying) RETURNS "jsonb"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
-    AS $$
-    DECLARE v_ti decimal(15,2):=0; v_tc decimal(15,2):=0; v_gp decimal(15,2):=0; v_te decimal(15,2):=0; v_np decimal(15,2):=0; v_st varchar(10):='rugi'; v_rid int;
-    BEGIN
-      SELECT COALESCE(SUM(CASE WHEN type='income' THEN amount ELSE 0 END),0),
-             COALESCE(SUM(CASE WHEN type='income' THEN cogs ELSE 0 END),0),
-             COALESCE(SUM(CASE WHEN type='expense' THEN amount ELSE 0 END),0)
-        INTO v_ti, v_tc, v_te FROM public.transactions
-        WHERE business_id=p_business_id AND to_char(transaction_date,'YYYY-MM')=p_period;
-      v_gp:=v_ti-v_tc; v_np:=v_gp-v_te; v_st:=CASE WHEN v_np>=0 THEN 'laba' ELSE 'rugi' END;
-      INSERT INTO public.financial_reports(business_id,period,total_income,total_cogs,gross_profit,total_expense,net_profit,status)
-      VALUES(p_business_id,p_period,v_ti,v_tc,v_gp,v_te,v_np,v_st)
-      ON CONFLICT(business_id,period) DO UPDATE SET total_income=EXCLUDED.total_income,total_cogs=EXCLUDED.total_cogs,
-        gross_profit=EXCLUDED.gross_profit,total_expense=EXCLUDED.total_expense,net_profit=EXCLUDED.net_profit,
-        status=EXCLUDED.status,updated_at=now() RETURNING id INTO v_rid;
-      RETURN jsonb_build_object('report_id',v_rid,'total_income',v_ti,'total_cogs',v_tc,'gross_profit',v_gp,'total_expense',v_te,'net_profit',v_np,'status',v_st);
-    END; $$;
-
-
-ALTER FUNCTION "public"."generate_financial_report"("p_business_id" integer, "p_period" character varying) OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."generate_financial_report_range"("p_business_id" integer, "p_start_date" "date", "p_end_date" "date") RETURNS "jsonb"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO ''
-    AS $$
-    DECLARE v_ti decimal(15,2):=0; v_tc decimal(15,2):=0; v_gp decimal(15,2):=0; v_te decimal(15,2):=0; v_np decimal(15,2):=0; v_st varchar(10):='rugi';
-    BEGIN
-      SELECT COALESCE(SUM(CASE WHEN type='income' THEN amount ELSE 0 END),0),
-             COALESCE(SUM(CASE WHEN type='income' THEN cogs ELSE 0 END),0),
-             COALESCE(SUM(CASE WHEN type='expense' THEN amount ELSE 0 END),0)
-        INTO v_ti, v_tc, v_te FROM public.transactions
-        WHERE business_id=p_business_id AND transaction_date>=p_start_date AND transaction_date<=p_end_date;
-      v_gp:=v_ti-v_tc; v_np:=v_gp-v_te; v_st:=CASE WHEN v_np>=0 THEN 'laba' ELSE 'rugi' END;
-      RETURN jsonb_build_object('start_date',p_start_date,'end_date',p_end_date,'total_income',v_ti,'total_cogs',v_tc,'gross_profit',v_gp,'total_expense',v_te,'net_profit',v_np,'status',v_st);
-    END; $$;
-
-
-ALTER FUNCTION "public"."generate_financial_report_range"("p_business_id" integer, "p_start_date" "date", "p_end_date" "date") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_current_user_role"() RETURNS character varying
@@ -236,7 +176,7 @@ ALTER TABLE "public"."businesses" OWNER TO "postgres";
 
 ALTER TABLE "public"."businesses" ALTER COLUMN "id" ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME "public"."businesses_id_seq"
-    START WITH 1
+    START WITH 4
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -261,37 +201,7 @@ ALTER TABLE "public"."categories" OWNER TO "postgres";
 
 ALTER TABLE "public"."categories" ALTER COLUMN "id" ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME "public"."categories_id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
-CREATE TABLE IF NOT EXISTS "public"."financial_reports" (
-    "id" integer NOT NULL,
-    "business_id" integer NOT NULL,
-    "period" character varying(7) NOT NULL,
-    "total_income" numeric(15,2) DEFAULT 0.00 NOT NULL,
-    "total_cogs" numeric(15,2) DEFAULT 0.00 NOT NULL,
-    "gross_profit" numeric(15,2) DEFAULT 0.00 NOT NULL,
-    "total_expense" numeric(15,2) DEFAULT 0.00 NOT NULL,
-    "net_profit" numeric(15,2) DEFAULT 0.00 NOT NULL,
-    "status" character varying(10) NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "financial_reports_status_check" CHECK ((("status")::"text" = ANY (ARRAY[('laba'::character varying)::"text", ('rugi'::character varying)::"text"])))
-);
-
-
-ALTER TABLE "public"."financial_reports" OWNER TO "postgres";
-
-
-ALTER TABLE "public"."financial_reports" ALTER COLUMN "id" ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME "public"."financial_reports_id_seq"
-    START WITH 1
+    START WITH 25
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -327,7 +237,7 @@ ALTER TABLE "public"."transactions" OWNER TO "postgres";
 
 ALTER TABLE "public"."transactions" ALTER COLUMN "id" ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME "public"."transactions_id_seq"
-    START WITH 1
+    START WITH 108
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -349,7 +259,7 @@ ALTER TABLE "public"."user_businesses" OWNER TO "postgres";
 
 ALTER TABLE "public"."user_businesses" ALTER COLUMN "id" ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME "public"."user_businesses_id_seq"
-    START WITH 1
+    START WITH 19
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -386,16 +296,6 @@ ALTER TABLE ONLY "public"."categories"
 
 
 
-ALTER TABLE ONLY "public"."financial_reports"
-    ADD CONSTRAINT "financial_reports_business_id_period_key" UNIQUE ("business_id", "period");
-
-
-
-ALTER TABLE ONLY "public"."financial_reports"
-    ADD CONSTRAINT "financial_reports_pkey" PRIMARY KEY ("id");
-
-
-
 ALTER TABLE ONLY "public"."transactions"
     ADD CONSTRAINT "transactions_pkey" PRIMARY KEY ("id");
 
@@ -421,10 +321,6 @@ CREATE INDEX "idx_categories_business_id" ON "public"."categories" USING "btree"
 
 
 CREATE INDEX "idx_categories_type" ON "public"."categories" USING "btree" ("type");
-
-
-
-CREATE INDEX "idx_financial_reports_business_period" ON "public"."financial_reports" USING "btree" ("business_id", "period");
 
 
 
@@ -488,10 +384,6 @@ CREATE OR REPLACE TRIGGER "set_categories_updated_at" BEFORE UPDATE ON "public".
 
 
 
-CREATE OR REPLACE TRIGGER "set_financial_reports_updated_at" BEFORE UPDATE ON "public"."financial_reports" FOR EACH ROW EXECUTE FUNCTION "public"."set_updated_at"();
-
-
-
 CREATE OR REPLACE TRIGGER "set_transactions_updated_at" BEFORE UPDATE ON "public"."transactions" FOR EACH ROW EXECUTE FUNCTION "public"."set_updated_at"();
 
 
@@ -502,11 +394,6 @@ CREATE OR REPLACE TRIGGER "set_users_updated_at" BEFORE UPDATE ON "public"."user
 
 ALTER TABLE ONLY "public"."categories"
     ADD CONSTRAINT "categories_business_id_fkey" FOREIGN KEY ("business_id") REFERENCES "public"."businesses"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."financial_reports"
-    ADD CONSTRAINT "financial_reports_business_id_fkey" FOREIGN KEY ("business_id") REFERENCES "public"."businesses"("id") ON DELETE CASCADE;
 
 
 
@@ -535,13 +422,30 @@ ALTER TABLE ONLY "public"."user_businesses"
 
 
 
+CREATE POLICY "anon_all" ON "public"."businesses" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "anon_all" ON "public"."categories" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "anon_all" ON "public"."transactions" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "anon_all" ON "public"."user_businesses" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "anon_all" ON "public"."users" USING (true) WITH CHECK (true);
+
+
+
 ALTER TABLE "public"."businesses" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."categories" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."financial_reports" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."transactions" ENABLE ROW LEVEL SECURITY;
@@ -558,10 +462,10 @@ ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
-GRANT USAGE ON SCHEMA "public" TO "postgres";
-GRANT USAGE ON SCHEMA "public" TO "anon";
-GRANT USAGE ON SCHEMA "public" TO "authenticated";
-GRANT USAGE ON SCHEMA "public" TO "service_role";
+REVOKE USAGE ON SCHEMA "public" FROM PUBLIC;
+GRANT ALL ON SCHEMA "public" TO "anon";
+GRANT ALL ON SCHEMA "public" TO "authenticated";
+GRANT ALL ON SCHEMA "public" TO "service_role";
 
 
 
@@ -709,30 +613,12 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 
 
-
-
-
-GRANT ALL ON FUNCTION "public"."compare_financial_periods"("p_business_id" integer, "p_p1" character varying, "p_p2" character varying) TO "anon";
-GRANT ALL ON FUNCTION "public"."compare_financial_periods"("p_business_id" integer, "p_p1" character varying, "p_p2" character varying) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."compare_financial_periods"("p_business_id" integer, "p_p1" character varying, "p_p2" character varying) TO "service_role";
 
 
 
 GRANT ALL ON FUNCTION "public"."create_public_user"("p_email" "text", "p_username" "text", "p_role" "text", "p_password" "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."create_public_user"("p_email" "text", "p_username" "text", "p_role" "text", "p_password" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."create_public_user"("p_email" "text", "p_username" "text", "p_role" "text", "p_password" "text") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."generate_financial_report"("p_business_id" integer, "p_period" character varying) TO "anon";
-GRANT ALL ON FUNCTION "public"."generate_financial_report"("p_business_id" integer, "p_period" character varying) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."generate_financial_report"("p_business_id" integer, "p_period" character varying) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."generate_financial_report_range"("p_business_id" integer, "p_start_date" "date", "p_end_date" "date") TO "anon";
-GRANT ALL ON FUNCTION "public"."generate_financial_report_range"("p_business_id" integer, "p_start_date" "date", "p_end_date" "date") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."generate_financial_report_range"("p_business_id" integer, "p_start_date" "date", "p_end_date" "date") TO "service_role";
 
 
 
@@ -817,18 +703,6 @@ GRANT ALL ON SEQUENCE "public"."categories_id_seq" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."financial_reports" TO "anon";
-GRANT ALL ON TABLE "public"."financial_reports" TO "authenticated";
-GRANT ALL ON TABLE "public"."financial_reports" TO "service_role";
-
-
-
-GRANT ALL ON SEQUENCE "public"."financial_reports_id_seq" TO "anon";
-GRANT ALL ON SEQUENCE "public"."financial_reports_id_seq" TO "authenticated";
-GRANT ALL ON SEQUENCE "public"."financial_reports_id_seq" TO "service_role";
-
-
-
 GRANT ALL ON TABLE "public"."transactions" TO "anon";
 GRANT ALL ON TABLE "public"."transactions" TO "authenticated";
 GRANT ALL ON TABLE "public"."transactions" TO "service_role";
@@ -859,36 +733,6 @@ GRANT ALL ON TABLE "public"."users" TO "service_role";
 
 
 
-
-
-
-
-
-
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "anon";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "authenticated";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "service_role";
-
-
-
-
-
-
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "anon";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "authenticated";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "service_role";
-
-
-
-
-
-
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
 
 
 

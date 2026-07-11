@@ -57,7 +57,6 @@ Setelah migrasi berhasil, pastikan tabel-tabel berikut muncul di Supabase Table 
 | `user_businesses` | Bridge akses user ke bisnis |
 | `categories` | Kategori income/expense per bisnis |
 | `transactions` | Transaksi keuangan |
-| `financial_reports` | Laporan laba/rugi (pre-calculated) |
 
 ## Troubleshooting
 

@@ -1,5 +1,3 @@
-import 'models/financial_report_model.dart';
-
 /// LocalDatabase — V1 Cloud-Only.
 /// Offline/local storage is deferred to V2.
 /// All data operations use SupabaseService directly.
@@ -22,6 +20,4 @@ class LocalDatabase {
   // ==================== Stub Methods ====================
 
   int getUnsyncedTransactions() => 0;
-
-  List<FinancialReportModel> getReportsByBusiness(int businessId) => const [];
 }
