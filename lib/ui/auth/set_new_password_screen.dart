@@ -74,15 +74,11 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                       ? Icons.check_circle_rounded
                       : Icons.lock_reset_rounded,
                   size: 72,
-                  color: _success
-                      ? AppTheme.profitColor
-                      : colorScheme.primary,
+                  color: _success ? AppTheme.profitColor : colorScheme.primary,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _success
-                      ? 'Password Berhasil Diubah'
-                      : 'Buat Password Baru',
+                  _success ? 'Password Berhasil Diubah' : 'Buat Password Baru',
                   textAlign: TextAlign.center,
                   style: AppTheme.heading2,
                 ),
@@ -92,9 +88,7 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                       ? 'Password Anda telah berhasil diubah. Silakan login dengan password baru.'
                       : 'Masukkan password baru untuk akun Anda.',
                   textAlign: TextAlign.center,
-                  style: AppTheme.bodyText.copyWith(
-                    height: 1.5,
-                  ),
+                  style: AppTheme.bodyText.copyWith(height: 1.5),
                 ),
                 const SizedBox(height: 32),
 
@@ -118,8 +112,9 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                                     : Icons.visibility_outlined,
                               ),
                               onPressed: () => setState(
-                                  () => _obscureNewPassword =
-                                      !_obscureNewPassword),
+                                () =>
+                                    _obscureNewPassword = !_obscureNewPassword,
+                              ),
                             ),
                           ),
                           validator: (value) {
@@ -148,8 +143,9 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                                     : Icons.visibility_outlined,
                               ),
                               onPressed: () => setState(
-                                  () => _obscureConfirmPassword =
-                                      !_obscureConfirmPassword),
+                                () => _obscureConfirmPassword =
+                                    !_obscureConfirmPassword,
+                              ),
                             ),
                           ),
                           validator: (value) {
@@ -166,8 +162,7 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                         SizedBox(
                           height: 52,
                           child: FilledButton(
-                            onPressed:
-                                _isLoading ? null : _handleResetPassword,
+                            onPressed: _isLoading ? null : _handleResetPassword,
                             child: _isLoading
                                 ? const SizedBox(
                                     width: 24,
@@ -197,7 +192,8 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                              builder: (_) => const LoginScreen()),
+                            builder: (_) => const LoginScreen(),
+                          ),
                           (route) => false,
                         );
                       },

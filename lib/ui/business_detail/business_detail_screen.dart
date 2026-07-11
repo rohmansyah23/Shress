@@ -35,8 +35,7 @@ class BusinessDetailScreen extends StatelessWidget {
                         business.description!.isNotEmpty)
                       Text(business.description!, style: AppTheme.bodyText),
                     const SizedBox(height: 8),
-                    Text('ID: ${business.businessId}',
-                        style: AppTheme.caption),
+                    Text('ID: ${business.businessId}', style: AppTheme.caption),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -81,8 +80,9 @@ class BusinessDetailScreen extends StatelessWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => TransactionHistoryScreen(
-                                  business: business,
-                                  isOwnerView: true),
+                                business: business,
+                                isOwnerView: true,
+                              ),
                             ),
                           );
                         },
@@ -101,8 +101,7 @@ class BusinessDetailScreen extends StatelessWidget {
 
   void _showEditDialog(BuildContext context) {
     final nameCtrl = TextEditingController(text: business.name);
-    final descCtrl =
-        TextEditingController(text: business.description ?? '');
+    final descCtrl = TextEditingController(text: business.description ?? '');
 
     showDialog(
       context: context,
@@ -137,15 +136,14 @@ class BusinessDetailScreen extends StatelessWidget {
               try {
                 await Supabase.instance.client
                     .from('businesses')
-                    .update({
-                      'name': name,
-                      'description': descCtrl.text.trim(),
-                    })
+                    .update({'name': name, 'description': descCtrl.text.trim()})
                     .eq('id', business.businessId);
                 if (!ctx.mounted) return;
                 Navigator.pop(ctx);
                 ErrorSnackbar.showSuccess(
-                    context, 'Bisnis berhasil diperbarui');
+                  context,
+                  'Bisnis berhasil diperbarui',
+                );
               } catch (e) {
                 ErrorSnackbar.show(context, ErrorHandler.classify(e));
               }
@@ -159,9 +157,7 @@ class BusinessDetailScreen extends StatelessWidget {
 
   void _showQrisDialog(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => QrisUploadScreen(business: business),
-      ),
+      MaterialPageRoute(builder: (_) => QrisUploadScreen(business: business)),
     );
   }
 }

@@ -12,8 +12,7 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
       _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState
-    extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isLoading = false;
@@ -30,10 +29,9 @@ class _ForgotPasswordScreenState
 
     setState(() => _isLoading = true);
 
-    final error =
-        await ref.read(authProvider.notifier).sendPasswordResetEmail(
-              _emailController.text.trim(),
-            );
+    final error = await ref
+        .read(authProvider.notifier)
+        .sendPasswordResetEmail(_emailController.text.trim());
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -50,9 +48,7 @@ class _ForgotPasswordScreenState
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lupa Password'),
-      ),
+      appBar: AppBar(title: const Text('Lupa Password')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -81,9 +77,7 @@ class _ForgotPasswordScreenState
                       ? 'Kami telah mengirimkan tautan reset password ke:\n${_emailController.text.trim()}\n\nCek kotak masuk email Anda dan ikuti petunjuk untuk mengatur ulang password.'
                       : 'Masukkan email yang terdaftar. Kami akan mengirimkan tautan untuk mereset password Anda.',
                   textAlign: TextAlign.center,
-                  style: AppTheme.bodyText.copyWith(
-                    height: 1.5,
-                  ),
+                  style: AppTheme.bodyText.copyWith(height: 1.5),
                 ),
                 const SizedBox(height: 32),
 
