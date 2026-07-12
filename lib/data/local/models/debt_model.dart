@@ -11,6 +11,7 @@ class DebtModel {
   final String status;
   final String debtDate;
   final String? dueDate;
+  final int? expenseTransactionId;
   final DateTime? createdAt;
 
   DebtModel({
@@ -24,6 +25,7 @@ class DebtModel {
     this.status = 'unpaid',
     required this.debtDate,
     this.dueDate,
+    this.expenseTransactionId,
     this.createdAt,
   });
 
@@ -42,6 +44,7 @@ class DebtModel {
         'status': status,
         'debt_date': debtDate,
         'due_date': dueDate,
+        'expense_transaction_id': expenseTransactionId,
         'created_at': createdAt?.toIso8601String(),
       };
 
@@ -56,6 +59,7 @@ class DebtModel {
         status: map['status'] as String? ?? 'unpaid',
         debtDate: map['debt_date'] as String,
         dueDate: map['due_date'] as String?,
+        expenseTransactionId: map['expense_transaction_id'] as int?,
         createdAt: map['created_at'] != null
             ? DateTime.parse(map['created_at'] as String)
             : null,

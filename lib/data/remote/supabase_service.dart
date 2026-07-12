@@ -515,6 +515,30 @@ class SupabaseService {
 
   Future<void> deleteDebtor(int debtorId) async {
     return ErrorHandler.guard(() async {
+      final debtsData = await _supabase
+          .from('debts')
+          .select('id, expense_transaction_id')
+          .eq('debtor_id', debtorId);
+
+      for (final d in debtsData) {
+        final expenseTxId = d['expense_transaction_id'] as int?;
+        if (expenseTxId != null) {
+          await _supabase.from('transactions').delete().eq('id', expenseTxId);
+        }
+
+        final paymentsData = await _supabase
+            .from('debt_payments')
+            .select('income_transaction_id')
+            .eq('debt_id', d['id'] as int);
+
+        for (final p in paymentsData) {
+          final incomeTxId = p['income_transaction_id'] as int?;
+          if (incomeTxId != null) {
+            await _supabase.from('transactions').delete().eq('id', incomeTxId);
+          }
+        }
+      }
+
       await _supabase.from('debtors').delete().eq('id', debtorId);
     });
   }
@@ -555,8 +579,28 @@ class SupabaseService {
     String? description,
     String? dueDate,
     String? debtDate,
+    int? expenseCategoryId,
   }) async {
     return ErrorHandler.guard(() async {
+      int? expenseTxId;
+      if (expenseCategoryId != null) {
+        final debtorData = await _supabase
+            .from('debtors')
+            .select('name')
+            .eq('id', debtorId)
+            .single();
+        final debtorName = debtorData['name'] as String;
+        expenseTxId = await createTransaction(
+          businessId: businessId,
+          categoryId: expenseCategoryId,
+          userId: userId,
+          type: AppConstants.typeExpense,
+          amount: amount,
+          description: 'Piutang: $debtorName${description != null ? ' - $description' : ''}',
+          transactionDate: debtDate ?? DateTime.now().toIso8601String().substring(0, 10),
+        );
+      }
+
       final response = await _supabase.from('debts').insert({
         'debtor_id': debtorId,
         'business_id': businessId,
@@ -566,6 +610,7 @@ class SupabaseService {
         'status': AppConstants.debtUnpaid,
         'debt_date': debtDate,
         'due_date': dueDate,
+        if (expenseTxId != null) 'expense_transaction_id': expenseTxId,
       }).select('id').single();
       return response['id'] as int;
     });
@@ -579,7 +624,20 @@ class SupabaseService {
 
   Future<void> deleteDebt(int debtId) async {
     return ErrorHandler.guard(() async {
+      final debtData = await _supabase
+          .from('debts')
+          .select('expense_transaction_id')
+          .eq('id', debtId)
+          .maybeSingle();
+
       await _supabase.from('debts').delete().eq('id', debtId);
+
+      if (debtData != null) {
+        final expenseTxId = debtData['expense_transaction_id'] as int?;
+        if (expenseTxId != null) {
+          await _supabase.from('transactions').delete().eq('id', expenseTxId);
+        }
+      }
     });
   }
 
@@ -612,14 +670,40 @@ class SupabaseService {
     required String userId,
     String? notes,
     String? paymentDate,
+    int? incomeCategoryId,
   }) async {
     return ErrorHandler.guard(() async {
+      int? incomeTxId;
+      if (incomeCategoryId != null) {
+        final debtWithDebtor = await _supabase
+            .from('debts')
+            .select('debtor_id, business_id')
+            .eq('id', debtId)
+            .single();
+        final debtorData = await _supabase
+            .from('debtors')
+            .select('name')
+            .eq('id', debtWithDebtor['debtor_id'] as int)
+            .single();
+        final debtorName = debtorData['name'] as String;
+        incomeTxId = await createTransaction(
+          businessId: debtWithDebtor['business_id'] as int,
+          categoryId: incomeCategoryId,
+          userId: userId,
+          type: AppConstants.typeIncome,
+          amount: amount,
+          description: 'Pembayaran piutang: $debtorName${notes != null ? ' - $notes' : ''}',
+          transactionDate: paymentDate ?? DateTime.now().toIso8601String().substring(0, 10),
+        );
+      }
+
       final response = await _supabase.from('debt_payments').insert({
         'debt_id': debtId,
         'amount': amount,
         'user_id': userId,
         'notes': notes,
         'payment_date': paymentDate,
+        if (incomeTxId != null) 'income_transaction_id': incomeTxId,
       }).select('id').single();
 
       // Update paid_amount and status on the debt
@@ -717,8 +801,57 @@ class SupabaseService {
 
   Future<void> deleteDebtPayment(int paymentId) async {
     return ErrorHandler.guard(() async {
+      final paymentData = await _supabase
+          .from('debt_payments')
+          .select('income_transaction_id, debt_id')
+          .eq('id', paymentId)
+          .maybeSingle();
+
       await _supabase.from('debt_payments').delete().eq('id', paymentId);
+
+      if (paymentData != null) {
+        final incomeTxId = paymentData['income_transaction_id'] as int?;
+        if (incomeTxId != null) {
+          await _supabase.from('transactions').delete().eq('id', incomeTxId);
+        }
+        await _recalculateDebtStatus(paymentData['debt_id'] as int);
+      }
     });
+  }
+
+  Future<void> _recalculateDebtStatus(int debtId) async {
+    final debtData = await _supabase
+        .from('debts')
+        .select('amount')
+        .eq('id', debtId)
+        .maybeSingle();
+    if (debtData == null) return;
+
+    final paymentsData = await _supabase
+        .from('debt_payments')
+        .select('amount')
+        .eq('debt_id', debtId);
+
+    double totalPaid = 0;
+    for (final p in paymentsData) {
+      totalPaid += (p['amount'] as num).toDouble();
+    }
+
+    final totalAmount = (debtData['amount'] as num).toDouble();
+
+    String newStatus;
+    if (totalPaid >= totalAmount) {
+      newStatus = AppConstants.debtPaid;
+    } else if (totalPaid > 0) {
+      newStatus = AppConstants.debtPartial;
+    } else {
+      newStatus = AppConstants.debtUnpaid;
+    }
+
+    await _supabase.from('debts').update({
+      'paid_amount': totalPaid,
+      'status': newStatus,
+    }).eq('id', debtId);
   }
 
   Future<bool> areAllDebtsPaid(int debtorId) async {
@@ -748,20 +881,7 @@ class SupabaseService {
     });
   }
 
-  Future<void> resetDebtorData(int debtorId) async {
-    return ErrorHandler.guard(() async {
-      final paymentIds = await _supabase
-          .from('debt_payments')
-          .select('id')
-          .inFilter('debt_id',
-              (await _supabase.from('debts').select('id').eq('debtor_id', debtorId) as List).map((d) => d['id']).toList());
-      for (final p in paymentIds as List) {
-        await _supabase.from('debt_payments').delete().eq('id', p['id']);
-      }
-      await _supabase.from('debts').delete().eq('debtor_id', debtorId);
-      await _supabase.from('debtors').delete().eq('id', debtorId);
-    });
-  }
+
 
   // ==================== Consignor Operations ====================
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
@@ -10,6 +11,7 @@ import '../../data/local/models/debtor_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/debt_consignment_provider.dart';
+import '../../providers/transaction_provider.dart';
 
 class AddDebtScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
@@ -185,6 +187,13 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
       final amountStr = _amountController.text.replaceAll('.', '');
       final amount = double.tryParse(amountStr) ?? 0;
 
+      final expenseCategoryId =
+          await SupabaseService.instance.getOrCreateCategoryForBusiness(
+        widget.business.businessId,
+        AppConstants.categoryPiutang,
+        AppConstants.typeExpense,
+      );
+
       await SupabaseService.instance.createDebt(
         debtorId: debtorId,
         businessId: widget.business.businessId,
@@ -195,12 +204,14 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
             : _descriptionController.text.trim(),
         debtDate: _formatDateIso(_debtDate),
         dueDate: _dueDate != null ? _formatDateIso(_dueDate!) : null,
+        expenseCategoryId: expenseCategoryId,
       );
 
       setState(() => _isSaving = false);
 
       if (!mounted) return;
       triggerDebtRefresh(ref);
+      triggerTransactionRefresh(ref);
       Navigator.of(context).pop(true);
       ErrorSnackbar.showSuccess(context, 'Hutang berhasil disimpan');
     } catch (e) {

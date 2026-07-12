@@ -45,6 +45,7 @@ class AppConstants {
   // Consignment Categories
   static const String categoryKomisiTitipan = 'Komisi Titipan';
   static const String categoryBayarTitipan = 'Bayar Titipan';
+  static const String categoryPiutang = 'Piutang';
 
   // Sync
   static const int syncIntervalSeconds = 30;

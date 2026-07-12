@@ -369,73 +369,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
     );
   }
 
-  Future<void> _checkAndAutoReset() async {
-    final allPaid =
-        await SupabaseService.instance.areAllDebtsPaid(widget.debtor.id);
-    if (!allPaid || !mounted) return;
 
-    final totalPaid =
-        await SupabaseService.instance.getTotalPaidByDebtor(widget.debtor.id);
-    if (totalPaid <= 0 || !mounted) return;
-
-    final categories = await SupabaseService.instance
-        .getCategoriesByType(widget.business.businessId, AppConstants.typeIncome);
-    if (categories.isEmpty || !mounted) return;
-
-    final user = ref.read(currentUserProvider);
-    if (user == null) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Semua Hutang Lunas'),
-        content: Text(
-          'Total pembayaran ${FormatHelpers.rupiah(totalPaid)} akan ditambahkan ke pemasukan. Data penghutang akan dihapus.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Nanti Saja'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Proses'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    try {
-      await SupabaseService.instance.createTransaction(
-        businessId: widget.business.businessId,
-        categoryId: categories.first.categoryId,
-        userId: user.userId,
-        type: AppConstants.typeIncome,
-        amount: totalPaid,
-        description:
-            'Pelunasan hutang ${_debtor?.name ?? widget.debtor.name}',
-        transactionDate:
-            '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}',
-      );
-
-      await SupabaseService.instance.resetDebtorData(widget.debtor.id);
-
-      if (!mounted) return;
-      triggerDebtRefresh(ref);
-      triggerTransactionRefresh(ref);
-      Navigator.of(context).pop();
-      ErrorSnackbar.showSuccess(
-        context,
-        'Hutang lunas! ${FormatHelpers.rupiah(totalPaid)} ditambahkan ke pemasukan',
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ErrorSnackbar.show(context, ErrorHandler.classify(e));
-    }
-  }
 
   String _statusLabel(String status) {
     switch (status) {
@@ -465,8 +399,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
       if (prev != null && prev != next) _loadData();
     });
 
-    final allPaid = _debts.isNotEmpty &&
-        _debts.every((d) => d.status == AppConstants.debtPaid);
+
 
     return Scaffold(
       appBar: AppBar(
@@ -588,50 +521,34 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
         child: SizedBox(
           width: double.infinity,
           height: 52,
-          child: allPaid
-              ? FilledButton.icon(
-                  onPressed: _checkAndAutoReset,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.profitColor,
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: const Icon(Icons.check_circle_rounded),
-                  label: const Text(
-                    'Semua Lunas - Proses ke Pemasukan',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                )
-              : FilledButton.icon(
-                  onPressed: () async {
-                    final result = await Navigator.of(context).push<bool>(
-                      MaterialPageRoute(
-                        builder: (_) => AddDebtScreen(
-                          business: widget.business,
-                          existingDebtor: _debtor,
-                        ),
-                      ),
-                    );
-                    if (result == true) {
-                      _loadData();
-                      triggerDebtRefresh(ref);
-                    }
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.infoColor,
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text(
-                    'Tambah Hutang',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+          child: FilledButton.icon(
+            onPressed: () async {
+              final result = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (_) => AddDebtScreen(
+                    business: widget.business,
+                    existingDebtor: _debtor,
                   ),
                 ),
+              );
+              if (result == true) {
+                _loadData();
+                triggerDebtRefresh(ref);
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.infoColor,
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.add_rounded),
+            label: const Text(
+              'Tambah Hutang',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -1435,6 +1352,13 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                                     final amount =
                                         double.tryParse(amountStr) ?? 0;
                                     try {
+                                      final incomeCategoryId = await SupabaseService
+                                          .instance
+                                          .getOrCreateCategoryForBusiness(
+                                        widget.business.businessId,
+                                        AppConstants.categoryPiutang,
+                                        AppConstants.typeIncome,
+                                      );
                                       await SupabaseService.instance
                                           .createDebtPayment(
                                         debtId: widget.debt.id,
@@ -1446,12 +1370,14 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                                                 : notesController.text.trim(),
                                         paymentDate:
                                             formatDateIso(selectedDate),
+                                        incomeCategoryId: incomeCategoryId,
                                       );
                                       if (!mounted) return;
                                       Navigator.of(context).pop();
                                       _refreshPayments();
                                       _refreshDebt();
                                       widget.onPaymentAdded();
+                                      triggerTransactionRefresh(ref);
                                       ErrorSnackbar.showSuccess(
                                           context,
                                           'Pembayaran berhasil dicatat');

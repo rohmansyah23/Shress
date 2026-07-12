@@ -5,6 +5,7 @@ class DebtPaymentModel {
   final String paymentDate;
   final String userId;
   final String? notes;
+  final int? incomeTransactionId;
   final DateTime? createdAt;
 
   DebtPaymentModel({
@@ -14,6 +15,7 @@ class DebtPaymentModel {
     required this.paymentDate,
     required this.userId,
     this.notes,
+    this.incomeTransactionId,
     this.createdAt,
   });
 
@@ -24,6 +26,7 @@ class DebtPaymentModel {
         'payment_date': paymentDate,
         'user_id': userId,
         'notes': notes,
+        'income_transaction_id': incomeTransactionId,
         'created_at': createdAt?.toIso8601String(),
       };
 
@@ -35,6 +38,7 @@ class DebtPaymentModel {
         paymentDate: map['payment_date'] as String,
         userId: map['user_id'] as String,
         notes: map['notes'] as String?,
+        incomeTransactionId: map['income_transaction_id'] as int?,
         createdAt: map['created_at'] != null
             ? DateTime.parse(map['created_at'] as String)
             : null,
