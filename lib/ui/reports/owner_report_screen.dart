@@ -269,7 +269,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
             )
           : SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppTheme.s16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -284,16 +284,15 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                       children: [
                         for (final period in OwnerPeriodFilter.values)
                           Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: FilterChip(
-                              label: Text(period.label),
-                              selected: _selectedPeriod == period,
-                              onSelected: (selected) {
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _buildFilterChip(
+                              label: period.label,
+                              isSelected: _selectedPeriod == period,
+                              onTap: () {
                                 if (period == OwnerPeriodFilter.custom) {
                                   _pickCustomRange();
-                                } else if (selected) {
-                                  setState(
-                                      () => _selectedPeriod = period);
+                                } else {
+                                  setState(() => _selectedPeriod = period);
                                   _loadSummary();
                                 }
                               },
@@ -303,7 +302,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.s16),
 
                   if (_isLoading)
                     const Center(child: CircularProgressIndicator())
@@ -317,7 +316,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                           ? 'Total Laba / Rugi Bersih'
                           : 'Laba / Rugi Bersih',
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppTheme.s12),
 
                     // Detail cards
                     Row(
@@ -330,7 +329,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                             color: AppTheme.profitColorTheme(context),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: AppTheme.s12),
                         Expanded(
                           child: SummaryCard(
                             title: 'HPP',
@@ -341,7 +340,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppTheme.s12),
                     Row(
                       children: [
                         Expanded(
@@ -352,7 +351,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                             color: AppTheme.infoColorTheme(context),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: AppTheme.s12),
                         Expanded(
                           child: SummaryCard(
                             title: 'Pengeluaran',
@@ -375,37 +374,71 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          FilterChip(
-            label: const Text('Semua'),
-            selected: _filterAllBusinesses,
-            onSelected: (selected) {
-              if (selected) {
-                setState(() {
-                  _filterAllBusinesses = true;
-                  _selectedBusinessId = null;
-                });
-                _loadSummary();
-              }
+          _buildFilterChip(
+            label: 'Semua',
+            isSelected: _filterAllBusinesses,
+            onTap: () {
+              setState(() {
+                _filterAllBusinesses = true;
+                _selectedBusinessId = null;
+              });
+              _loadSummary();
             },
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           ..._businesses.map((b) => Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                    label: Text(
-                        b.name.length > 15 ? '${b.name.substring(0, 15)}...' : b.name),
-                    selected: _selectedBusinessId == b.businessId,
-                    onSelected: (selected) {
-                      setState(() {
-                        _filterAllBusinesses = false;
-                        _selectedBusinessId =
-                            selected ? b.businessId : null;
-                      });
-                      _loadSummary();
-                    },
-                  ),
-                )),
+                padding: const EdgeInsets.only(right: 8),
+                child: _buildFilterChip(
+                  label: b.name.length > 15 ? '${b.name.substring(0, 15)}...' : b.name,
+                  isSelected: _selectedBusinessId == b.businessId,
+                  onTap: () {
+                    setState(() {
+                      _filterAllBusinesses = false;
+                      _selectedBusinessId = b.businessId;
+                    });
+                    _loadSummary();
+                  },
+                ),
+              )),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.1))
+              : colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? (isLight ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.3))
+                : colorScheme.outlineVariant,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected
+                ? (isLight ? Theme.of(context).cardColor : colorScheme.primary)
+                : colorScheme.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }

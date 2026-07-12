@@ -307,7 +307,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.s16),
 
             // Segmented tab
             Padding(
@@ -334,7 +334,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: AppTheme.s20),
 
             // Scrollable form
             Expanded(
@@ -344,7 +344,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _FormLabel('Kategori'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppTheme.s8),
                     DropdownButtonFormField<CategoryModel>(
                       initialValue: _selectedCategory,
                       decoration: const InputDecoration(
@@ -362,10 +362,10 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           value == null ? 'Pilih kategori' : null,
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppTheme.s20),
 
                     _FormLabel('Tanggal Transaksi'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppTheme.s8),
                     TextFormField(
                       controller: _dateTextController,
                       readOnly: true,
@@ -378,7 +378,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           value == null || value.isEmpty ? 'Pilih tanggal' : null,
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppTheme.s20),
 
                     // Amount with IDR formatting
                     _FormLabel(
@@ -387,7 +387,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           ? 'Pendapatan'
                           : 'Pengeluaran',
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppTheme.s8),
                     TextFormField(
                       controller: _amountController,
                       keyboardType: TextInputType.number,
@@ -420,12 +420,12 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 20),
+                                const SizedBox(height: AppTheme.s20),
                                 _FormLabel(
                                   'HPP (Harga Pokok Penjualan)',
                                   subtitle: 'Modal barang yang terjual',
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: AppTheme.s8),
                                 TextFormField(
                                   controller: _cogsController,
                                   keyboardType: TextInputType.number,
@@ -444,10 +444,10 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           : const SizedBox.shrink(),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppTheme.s20),
 
                     _FormLabel('Metode Pembayaran'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppTheme.s8),
                     DropdownButtonFormField<String>(
                       initialValue: _paymentMethod,
                       decoration: const InputDecoration(
@@ -459,7 +459,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           child: Row(
                             children: [
                               Icon(Icons.money_rounded, size: 18),
-                              SizedBox(width: 8),
+                              SizedBox(width: AppTheme.s8),
                               Text('Tunai'),
                             ],
                           ),
@@ -469,7 +469,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           child: Row(
                             children: [
                               Icon(Icons.account_balance_rounded, size: 18),
-                              SizedBox(width: 8),
+                              SizedBox(width: AppTheme.s8),
                               Text('Transfer Bank'),
                             ],
                           ),
@@ -479,7 +479,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           child: Row(
                             children: [
                               Icon(Icons.qr_code_rounded, size: 18),
-                              SizedBox(width: 8),
+                              SizedBox(width: AppTheme.s8),
                               Text('QRIS'),
                             ],
                           ),
@@ -489,7 +489,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           child: Row(
                             children: [
                               Icon(Icons.more_horiz_rounded, size: 18),
-                              SizedBox(width: 8),
+                              SizedBox(width: AppTheme.s8),
                               Text('Lainnya'),
                             ],
                           ),
@@ -502,10 +502,10 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       },
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppTheme.s20),
 
                     _FormLabel('Deskripsi (opsional)'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppTheme.s8),
                     TextFormField(
                       controller: _descriptionController,
                       maxLines: 3,
@@ -528,12 +528,12 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       child: FilledButton.icon(
                         onPressed: _isSaving ? null : _handleSave,
                         icon: _isSaving
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                 ),
                               )
                             : Icon(

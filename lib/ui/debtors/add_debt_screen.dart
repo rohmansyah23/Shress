@@ -239,9 +239,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
             children: [
               if (!_hasExistingDebtor) ...[
                 Text('Data Penghutang', style: AppTheme.heading3),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppTheme.s16),
                 _FormLabel('Nama Penghutang *'),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppTheme.s8),
                 TextFormField(
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
@@ -256,9 +256,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppTheme.s20),
                 _FormLabel('Nomor Telepon (opsional)'),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppTheme.s8),
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
@@ -267,9 +267,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     hintText: '08xxxxxxxxxx',
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppTheme.s20),
                 _FormLabel('Catatan (opsional)'),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppTheme.s8),
                 TextFormField(
                   controller: _notesController,
                   maxLines: 2,
@@ -277,9 +277,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     hintText: 'Catatan tentang penghutang...',
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppTheme.s24),
                 const Divider(),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppTheme.s16),
               ],
               if (_hasExistingDebtor) ...[
                 Container(
@@ -287,7 +287,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.infoColorTheme(context)
                         .withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Row(
                     children: [
@@ -320,12 +320,12 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppTheme.s24),
               ],
               Text('Detail Hutang', style: AppTheme.heading3),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               _FormLabel('Jumlah Hutang (Rp) *'),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
@@ -349,9 +349,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
               _FormLabel('Deskripsi (opsional)'),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 2,
@@ -359,9 +359,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   hintText: 'Deskripsi hutang...',
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
               _FormLabel('Tanggal Hutang'),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _debtDateController,
                 readOnly: true,
@@ -371,7 +371,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   suffixIcon: Icon(Icons.arrow_drop_down),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
               Row(
                 children: [
                   Expanded(
@@ -389,7 +389,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _dueDateController,
                 readOnly: true,
@@ -400,7 +400,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   hintText: 'Pilih jatuh tempo (opsional)',
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppTheme.s32),
               SizedBox(
                 width: double.infinity,
                 height: 52,

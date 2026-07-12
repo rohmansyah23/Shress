@@ -91,7 +91,7 @@ class AppErrorScreen extends StatelessWidget {
       child: Container(
         color: AppTheme.lightTheme.scaffoldBackgroundColor,
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(AppTheme.s32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -100,14 +100,14 @@ class AppErrorScreen extends StatelessWidget {
                 size: 72,
                 color: AppTheme.lossColor.withValues(alpha: 0.6),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.s24),
               Text(
                 'Terjadi Kesalahan',
                 style: AppTheme.heading2.copyWith(
                   color: AppTheme.lossColor,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               Text(
                 appError.userMessage,
                 textAlign: TextAlign.center,
@@ -115,14 +115,14 @@ class AppErrorScreen extends StatelessWidget {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               if (appError.isOffline)
                 Text(
                   'Periksa koneksi internet Anda',
                   textAlign: TextAlign.center,
                   style: AppTheme.caption,
                 ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppTheme.s32),
               FilledButton.icon(
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: const Text('Muat Ulang'),
@@ -135,11 +135,11 @@ class AppErrorScreen extends StatelessWidget {
                 ),
               ),
               if (kDebugMode) ...[
-                const SizedBox(height: 24),                  Container(
+                const SizedBox(height: AppTheme.s24),                  Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                     ),
                   child: Text(
                     errorDetails.exception.toString(),
@@ -221,10 +221,10 @@ class _SplashRedirectorState extends State<_SplashRedirector> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.refresh_rounded, size: 48, color: Colors.grey),
-                    SizedBox(height: 16),
+                    Icon(Icons.refresh_rounded, size: 48, color: AppTheme.secondaryText),
+                    SizedBox(height: AppTheme.s16),
                     Text('Aplikasi dimuat ulang...'),
-                    SizedBox(height: 16),
+                    SizedBox(height: AppTheme.s16),
                     CircularProgressIndicator(),
                   ],
                 ),
@@ -280,9 +280,8 @@ AppErrorObserver initGlobalErrorHandlers({
           color: Colors.yellow.shade50,
           padding: const EdgeInsets.all(8),
           child: Row(
-            children: [
-              const Icon(Icons.bug_report_rounded, color: Colors.orange, size: 18),
-              const SizedBox(width: 8),
+            children: [                  const Icon(Icons.bug_report_rounded, color: AppTheme.warningColor, size: 18),
+              const SizedBox(width: AppTheme.s8),
               Expanded(
                 child: Text(
                   '${details.exception.runtimeType}: ${details.exception}',

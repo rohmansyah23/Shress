@@ -39,8 +39,7 @@ class OwnerDashboardTab extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<OwnerDashboardTab> createState() =>
-      _OwnerDashboardTabState();
+  ConsumerState<OwnerDashboardTab> createState() => _OwnerDashboardTabState();
 }
 
 class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
@@ -55,10 +54,12 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
       data: (businesses) {
         final allIds = businesses.map((b) => b.businessId).toList()..sort();
         final idsKey = allIds.join(',');
-        final trendAsync = ref.watch(allBusinessesNetProfitsTrendProvider((
-          businessIdsKey: idsKey,
-          filter: _selectedTrendFilter,
-        )));
+        final trendAsync = ref.watch(
+          allBusinessesNetProfitsTrendProvider((
+            businessIdsKey: idsKey,
+            filter: _selectedTrendFilter,
+          )),
+        );
 
         return RefreshIndicator(
           onRefresh: () async {
@@ -72,11 +73,15 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text('Halo, ${widget.user.displayName ?? widget.user.username}',
-                  style: AppTheme.heading2),
+              Text(
+                'Halo, ${widget.user.displayName ?? widget.user.username}',
+                style: AppTheme.heading2,
+              ),
               const SizedBox(height: 4),
-              Text('Owner • ${businesses.length} bisnis',
-                  style: AppTheme.caption),
+              Text(
+                'Owner • ${businesses.length} bisnis',
+                style: AppTheme.caption,
+              ),
               const SizedBox(height: 24),
 
               _buildTotalNetProfit(businesses),
@@ -100,29 +105,40 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               trendAsync.when(
                 data: (trendData) {
                   if (trendData.isEmpty) {
-                    return const SizedBox(
+                    return SizedBox(
                       height: 160,
-                      child: Center(child: Text('Belum ada data grafik', style: AppTheme.caption)),
+                      child: Center(
+                        child: Text(
+                          'Belum ada data grafik',
+                          style: AppTheme.caption,
+                        ),
+                      ),
                     );
                   }
                   return TrendChart(
                     data: trendData
-                        .map((d) => TrendDataPoint(
-                            month: d.period, netProfit: d.netProfit))
+                        .map(
+                          (d) => TrendDataPoint(
+                            month: d.period,
+                            netProfit: d.netProfit,
+                          ),
+                        )
                         .toList(),
                     title: _selectedTrendFilter == TrendFilter.daily
                         ? 'Tren Laba/Rugi 7 Hari Terakhir'
                         : _selectedTrendFilter == TrendFilter.weekly
-                            ? 'Tren Laba/Rugi 5 Minggu Terakhir'
-                            : _selectedTrendFilter == TrendFilter.monthly
-                                ? 'Tren Laba/Rugi 6 Bulan Terakhir'
-                                : 'Tren Laba/Rugi 5 Tahun Terakhir',
+                        ? 'Tren Laba/Rugi 5 Minggu Terakhir'
+                        : _selectedTrendFilter == TrendFilter.monthly
+                        ? 'Tren Laba/Rugi 6 Bulan Terakhir'
+                        : 'Tren Laba/Rugi 5 Tahun Terakhir',
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => const SizedBox(
+                error: (err, _) => SizedBox(
                   height: 160,
-                  child: Center(child: Text('Gagal memuat grafik', style: AppTheme.caption)),
+                  child: Center(
+                    child: Text('Gagal memuat grafik', style: AppTheme.caption),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -186,7 +202,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: QuickActionButton(
                       icon: Icons.add_circle_rounded,
                       label: 'Tambah\nTransaksi',
-                      color: AppTheme.infoColor,
+                      color: AppTheme.infoColorTheme(context),
                       onTap: () {
                         _pickBusinessAndAdd(context, businesses);
                       },
@@ -197,7 +213,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: QuickActionButton(
                       icon: Icons.receipt_long_rounded,
                       label: 'Piutang',
-                      color: AppTheme.warningColor,
+                      color: AppTheme.warningColorTheme(context),
                       onTap: () {
                         _pickBusinessForPiutang(context, businesses);
                       },
@@ -207,8 +223,8 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.inventory_2_rounded,
-                       label: 'Titipan',
-                      color: AppTheme.secondaryColor,
+                      label: 'Titipan',
+                      color: AppTheme.secondaryColorTheme(context),
                       onTap: () {
                         _pickBusinessForTitipan(context, businesses);
                       },
@@ -223,7 +239,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: QuickActionButton(
                       icon: Icons.store_rounded,
                       label: 'Kelola\nBisnis',
-                      color: AppTheme.profitColor,
+                      color: AppTheme.profitColorTheme(context),
                       onTap: () async {
                         await Navigator.of(context).push(
                           MaterialPageRoute(
@@ -240,7 +256,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: QuickActionButton(
                       icon: Icons.category_rounded,
                       label: 'Kelola\nKategori',
-                      color: AppTheme.warningColor,
+                      color: AppTheme.warningColorTheme(context),
                       onTap: () {
                         _pickBusinessAndManageCategories(context, businesses);
                       },
@@ -251,7 +267,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: QuickActionButton(
                       icon: Icons.people_rounded,
                       label: 'Kelola\nUser',
-                      color: AppTheme.infoColor,
+                      color: AppTheme.infoColorTheme(context),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -270,7 +286,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: QuickActionButton(
                       icon: Icons.settings_rounded,
                       label: 'Pengaturan',
-                      color: AppTheme.infoColor,
+                      color: AppTheme.infoColorTheme(context),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -307,8 +323,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               await ref.read(authProvider.notifier).logout();
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                      builder: (_) => const LoginScreen()),
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
                   (route) => false,
                 );
               }
@@ -362,10 +377,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
             const SizedBox(height: 16),
             const Text(
               'Selamat datang di Sheress!',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
@@ -412,7 +424,10 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     );
   }
 
-  void _pickBusinessAndAdd(BuildContext context, List<BusinessModel> businesses) {
+  void _pickBusinessAndAdd(
+    BuildContext context,
+    List<BusinessModel> businesses,
+  ) {
     if (businesses.isEmpty) return;
     if (businesses.length == 1) {
       TransactionSheet.show(context, businesses.first);
@@ -449,10 +464,12 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     );
   }
 
-  void _pickBusinessAndManageCategories(BuildContext context, List<BusinessModel> businesses) {
+  void _pickBusinessAndManageCategories(
+    BuildContext context,
+    List<BusinessModel> businesses,
+  ) {
     if (businesses.isEmpty) {
-      ErrorSnackbar.showWarning(
-          context, 'Tambahkan bisnis terlebih dahulu');
+      ErrorSnackbar.showWarning(context, 'Tambahkan bisnis terlebih dahulu');
       return;
     }
     if (businesses.length == 1) {
@@ -481,7 +498,8 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                 Navigator.pop(ctx);
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => CategoryManagementScreen(business: businesses[i]),
+                    builder: (_) =>
+                        CategoryManagementScreen(business: businesses[i]),
                   ),
                 );
               },
@@ -507,22 +525,24 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
       children: [
         Expanded(
           child: FutureBuilder<Map<String, dynamic>>(
-            future: Future.wait(allIds.map((id) =>
-                    SupabaseService.instance.getDebtSummary(id)))
-                .then((summaries) {
-              double totalOwed = 0;
-              int activeCount = 0;
-              for (final s in summaries) {
-                totalOwed += (s['totalOwed'] as num?)?.toDouble() ?? 0;
-                activeCount += (s['activeCount'] as int?) ?? 0;
-              }
-              return {'totalOwed': totalOwed, 'activeCount': activeCount};
-            }),
+            future:
+                Future.wait(
+                  allIds.map(
+                    (id) => SupabaseService.instance.getDebtSummary(id),
+                  ),
+                ).then((summaries) {
+                  double totalOwed = 0;
+                  int activeCount = 0;
+                  for (final s in summaries) {
+                    totalOwed += (s['totalOwed'] as num?)?.toDouble() ?? 0;
+                    activeCount += (s['activeCount'] as int?) ?? 0;
+                  }
+                  return {'totalOwed': totalOwed, 'activeCount': activeCount};
+                }),
             builder: (context, snapshot) {
               final totalOwed =
                   (snapshot.data?['totalOwed'] as num?)?.toDouble() ?? 0;
-              final activeCount =
-                  (snapshot.data?['activeCount'] as int?) ?? 0;
+              final activeCount = (snapshot.data?['activeCount'] as int?) ?? 0;
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -531,19 +551,27 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.receipt_long_rounded,
-                              size: 18, color: AppTheme.warningColor),
-                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.receipt_long_rounded,
+                            size: 18,
+                            color: AppTheme.warningColorTheme(context),
+                          ),
+                          const SizedBox(width: AppTheme.s8),
                           Text('Piutang Aktif', style: AppTheme.labelSmall),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(FormatHelpers.rupiah(totalOwed),
-                          style: AppTheme.amountMedium
-                              .copyWith(color: AppTheme.warningColor)),
+                      const SizedBox(height: AppTheme.s8),
+                      Text(
+                        FormatHelpers.rupiah(totalOwed),
+                        style: AppTheme.amountMedium.copyWith(
+                          color: AppTheme.warningColorTheme(context),
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text('$activeCount hutang aktif',
-                          style: AppTheme.caption),
+                      Text(
+                        '$activeCount hutang aktif',
+                        style: AppTheme.caption,
+                      ),
                     ],
                   ),
                 ),
@@ -554,22 +582,24 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
         const SizedBox(width: 12),
         Expanded(
           child: FutureBuilder<Map<String, dynamic>>(
-            future: Future.wait(allIds.map((id) =>
-                    SupabaseService.instance.getConsignmentSummary(id)))
-                .then((summaries) {
-              double totalOwed = 0;
-              int activeCount = 0;
-              for (final s in summaries) {
-                totalOwed += (s['totalOwed'] as num?)?.toDouble() ?? 0;
-                activeCount += (s['activeCount'] as int?) ?? 0;
-              }
-              return {'totalOwed': totalOwed, 'activeCount': activeCount};
-            }),
+            future:
+                Future.wait(
+                  allIds.map(
+                    (id) => SupabaseService.instance.getConsignmentSummary(id),
+                  ),
+                ).then((summaries) {
+                  double totalOwed = 0;
+                  int activeCount = 0;
+                  for (final s in summaries) {
+                    totalOwed += (s['totalOwed'] as num?)?.toDouble() ?? 0;
+                    activeCount += (s['activeCount'] as int?) ?? 0;
+                  }
+                  return {'totalOwed': totalOwed, 'activeCount': activeCount};
+                }),
             builder: (context, snapshot) {
               final totalOwed =
                   (snapshot.data?['totalOwed'] as num?)?.toDouble() ?? 0;
-              final activeCount =
-                  (snapshot.data?['activeCount'] as int?) ?? 0;
+              final activeCount = (snapshot.data?['activeCount'] as int?) ?? 0;
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -578,20 +608,27 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.inventory_2_rounded,
-                              size: 18, color: AppTheme.secondaryColor),
-                          const SizedBox(width: 6),
-                          Text('Titipan Aktif',
-                              style: AppTheme.labelSmall),
+                          Icon(
+                            Icons.inventory_2_rounded,
+                            size: 18,
+                            color: AppTheme.secondaryColorTheme(context),
+                          ),
+                          const SizedBox(width: AppTheme.s8),
+                          Text('Titipan Aktif', style: AppTheme.labelSmall),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(FormatHelpers.rupiah(totalOwed),
-                          style: AppTheme.amountMedium
-                              .copyWith(color: AppTheme.secondaryColor)),
+                      Text(
+                        FormatHelpers.rupiah(totalOwed),
+                        style: AppTheme.amountMedium.copyWith(
+                          color: AppTheme.secondaryColorTheme(context),
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text('$activeCount titipan aktif',
-                          style: AppTheme.caption),
+                      Text(
+                        '$activeCount titipan aktif',
+                        style: AppTheme.caption,
+                      ),
                     ],
                   ),
                 ),
@@ -604,7 +641,9 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
   }
 
   void _pickBusinessForPiutang(
-      BuildContext context, List<BusinessModel> businesses) {
+    BuildContext context,
+    List<BusinessModel> businesses,
+  ) {
     if (businesses.isEmpty) return;
     if (businesses.length == 1) {
       Navigator.of(context).push(
@@ -632,8 +671,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                 Navigator.pop(ctx);
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) =>
-                        DebtorsScreen(business: businesses[i]),
+                    builder: (_) => DebtorsScreen(business: businesses[i]),
                   ),
                 );
               },
@@ -651,7 +689,9 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
   }
 
   void _pickBusinessForTitipan(
-      BuildContext context, List<BusinessModel> businesses) {
+    BuildContext context,
+    List<BusinessModel> businesses,
+  ) {
     if (businesses.isEmpty) return;
     if (businesses.length == 1) {
       Navigator.of(context).push(
@@ -679,8 +719,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                 Navigator.pop(ctx);
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) =>
-                        ConsignorsScreen(business: businesses[i]),
+                    builder: (_) => ConsignorsScreen(business: businesses[i]),
                   ),
                 );
               },
@@ -700,6 +739,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
   Widget _buildTrendFilterChip(String label, TrendFilter value) {
     final isSelected = _selectedTrendFilter == value;
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return GestureDetector(
       onTap: () => setState(() => _selectedTrendFilter = value),
       child: AnimatedContainer(
@@ -707,12 +747,12 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? colorScheme.primary.withValues(alpha: 0.1)
+              ? (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.2))
               : colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? colorScheme.primary.withValues(alpha: 0.3)
+                ? (isLight ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.3))
                 : colorScheme.outlineVariant,
             width: 1,
           ),
@@ -722,7 +762,9 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+            color: isSelected
+                ? (isLight ? Theme.of(context).cardColor : colorScheme.primary)
+                : colorScheme.onSurfaceVariant,
           ),
         ),
       ),
@@ -745,7 +787,9 @@ class _BusinessCardWithSummary extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summaryAsync = ref.watch(businessSummaryProvider(business.businessId));
+    final summaryAsync = ref.watch(
+      businessSummaryProvider(business.businessId),
+    );
 
     final netProfit = summaryAsync.asData?.value['netProfit'] as num?;
     final isLoading = summaryAsync.isLoading;
@@ -766,8 +810,10 @@ class _BusinessCardWithSummary extends ConsumerWidget {
                   color: colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.store_rounded,
-                    color: colorScheme.primary),
+                child: Icon(
+                  Icons.store_rounded,
+                  color: colorScheme.onPrimaryContainer,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -777,8 +823,7 @@ class _BusinessCardWithSummary extends ConsumerWidget {
                     Text(business.name, style: AppTheme.heading3),
                     const SizedBox(height: 4),
                     if (isLoading)
-                      const Text('Memuat...',
-                          style: TextStyle(fontSize: 12))
+                      const Text('Memuat...', style: TextStyle(fontSize: 12))
                     else
                       Row(
                         children: [
@@ -788,8 +833,8 @@ class _BusinessCardWithSummary extends ConsumerWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isProfit
-                                  ? AppTheme.profitColor
-                                  : AppTheme.lossColor,
+                                  ? AppTheme.profitColorTheme(context)
+                                  : AppTheme.lossColorTheme(context),
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -800,8 +845,8 @@ class _BusinessCardWithSummary extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 12,
                               color: isProfit
-                                  ? AppTheme.profitColor
-                                  : AppTheme.lossColor,
+                                  ? AppTheme.profitColorTheme(context)
+                                  : AppTheme.lossColorTheme(context),
                             ),
                           ),
                         ],
@@ -810,13 +855,17 @@ class _BusinessCardWithSummary extends ConsumerWidget {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.bar_chart_rounded,
-                    color: AppTheme.profitColor),
+                icon: Icon(
+                  Icons.bar_chart_rounded,
+                  color: AppTheme.profitColor,
+                ),
                 tooltip: 'Laporan',
                 onPressed: onLaporan,
               ),
-              Icon(Icons.chevron_right_rounded,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ],
           ),
         ),
@@ -824,5 +873,3 @@ class _BusinessCardWithSummary extends ConsumerWidget {
     );
   }
 }
-
-

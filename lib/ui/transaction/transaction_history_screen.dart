@@ -185,7 +185,7 @@ class _TransactionHistoryScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Hapus Transaksi'),
         content: Text(
           'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDate(tx.transactionDate)}?',
@@ -270,15 +270,33 @@ class _TransactionHistoryScreenState
                   // ignore: deprecated_member_use
                   Expanded(
                     child: DropdownButtonFormField<DateFilter>(
-                      value: _selectedFilter,
+                      initialValue: _selectedFilter,
                       isDense: true,
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        border: OutlineInputBorder(),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                        ),
                         isDense: true,
+                        filled: true,
                       ),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      dropdownColor: Theme.of(context).colorScheme.surface,
                       items: DateFilter.values.map((f) =>
-                        DropdownMenuItem(value: f, child: Text(f.label, style: const TextStyle(fontSize: 12))),
+                        DropdownMenuItem(
+                          value: f,
+                          child: Text(
+                            f.label,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
                       ).toList(),
                       onChanged: (value) {
                         if (value == null) return;
@@ -291,19 +309,36 @@ class _TransactionHistoryScreenState
                       },
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  // ignore: deprecated_member_use
+                  const SizedBox(width: AppTheme.s8),
                   Expanded(
                     child: DropdownButtonFormField<TypeFilter>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       isDense: true,
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        border: OutlineInputBorder(),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                        ),
                         isDense: true,
+                        filled: true,
                       ),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      dropdownColor: Theme.of(context).colorScheme.surface,
                       items: TypeFilter.values.map((f) =>
-                        DropdownMenuItem(value: f, child: Text(f.label, style: const TextStyle(fontSize: 12))),
+                        DropdownMenuItem(
+                          value: f,
+                          child: Text(
+                            f.label,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
                       ).toList(),
                       onChanged: (value) {
                         if (value == null) return;
@@ -343,7 +378,7 @@ class _TransactionHistoryScreenState
               ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 4)),
+          const SliverToBoxAdapter(child: SizedBox(height: AppTheme.s4)),
           if (listState.isLoading && listState.items.isEmpty)
             const SliverToBoxAdapter(
               child: Center(
@@ -364,7 +399,7 @@ class _TransactionHistoryScreenState
                       Icon(Icons.receipt_long_rounded,
                           size: 64,
                           color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppTheme.s12),
                       Text('Tidak ada transaksi',
                           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontSize: 18,
@@ -372,7 +407,7 @@ class _TransactionHistoryScreenState
                             color: Theme.of(context).colorScheme.onSurfaceVariant,
                           )),
                       if (listState.error != null) ...[
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.s8),
                         Text(listState.error!, style: TextStyle(color: AppTheme.lossColor, fontSize: 12)),
                       ],
                     ],
@@ -386,7 +421,7 @@ class _TransactionHistoryScreenState
                 (context, index) {
                   if (index >= listState.items.length) {
                     return const Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: EdgeInsets.all(AppTheme.s16),
                       child: Center(child: CircularProgressIndicator()),
                     );
                   }
@@ -402,7 +437,7 @@ class _TransactionHistoryScreenState
                     ),
                     child: Card(
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         onTap: () => _showTransactionDetail(tx),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
@@ -413,14 +448,14 @@ class _TransactionHistoryScreenState
                                 decoration: BoxDecoration(
                                   color: (isIncome ? AppTheme.profitColor : AppTheme.lossColor)
                                       .withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                                 ),
                                 child: Icon(
                                   isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded,
                                   color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: AppTheme.s12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,7 +464,7 @@ class _TransactionHistoryScreenState
                                       FormatHelpers.displayDate(tx.transactionDate),
                                       style: AppTheme.caption.copyWith(fontSize: 11),
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: AppTheme.s4),
                                     Text(
                                       FormatHelpers.rupiah(tx.amount),
                                       style: TextStyle(
@@ -494,7 +529,7 @@ class _TransactionHistoryScreenState
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: Row(
           children: [
             Icon(
@@ -503,7 +538,7 @@ class _TransactionHistoryScreenState
                   : Icons.trending_down_rounded,
               color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppTheme.s8),
             Text(isIncome ? 'Uang Masuk' : 'Uang Keluar'),
           ],
         ),

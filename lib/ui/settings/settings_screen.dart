@@ -90,7 +90,7 @@ class SettingsScreen extends ConsumerWidget {
                         isDark
                             ? Icons.dark_mode_rounded
                             : Icons.light_mode_rounded,
-                        color: isDark ? Colors.amber : Colors.orange,
+                        color: AppTheme.warningColorTheme(context),
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -412,7 +412,7 @@ class _NotificationReminderCardState
                       Text(
                         'Dapatkan notifikasi setiap hari\n'
                         'untuk mencatat transaksi',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 12, color: AppTheme.secondaryText),
                       ),
                     ],
                   ),
@@ -450,7 +450,7 @@ class _NotificationReminderCardState
               const SizedBox(height: 16),
               Row(
                 children: [
-                  const Icon(Icons.schedule_rounded, size: 18, color: Colors.grey),
+                  Icon(Icons.schedule_rounded, size: 18, color: AppTheme.secondaryText),
                   const SizedBox(width: 8),
                   Text('Waktu pengingat',
                       style: AppTheme.caption),

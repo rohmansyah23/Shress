@@ -21,23 +21,23 @@ class QrisDisplayScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppTheme.s24),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.qr_code, size: 48, color: AppTheme.primaryColor),
-                  const SizedBox(height: 16),
+                  Icon(Icons.qr_code, size: 48, color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(height: AppTheme.s16),
                   Text(business.name, style: AppTheme.heading2, textAlign: TextAlign.center),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.s8),
                   Text(
                     'Scan QRIS untuk melakukan pembayaran',
                     style: AppTheme.caption,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppTheme.s24),
 
                   if (qrisSource != null) ...[
                     Container(
@@ -45,11 +45,11 @@ class QrisDisplayScreen extends StatelessWidget {
                       height: 250,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         child: isLocal
                             ? SvgPicture.asset(
                                 qrisSource,
@@ -75,12 +75,12 @@ class QrisDisplayScreen extends StatelessWidget {
                       height: 250,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
                       ),
                       child: _buildFallback(),
                     ),
-                    const SizedBox(height: 16),                      Text(
+                    const SizedBox(height: AppTheme.s16),                      Text(
                       'QRIS belum tersedia untuk bisnis ini',
                       style: AppTheme.caption.copyWith(color: AppTheme.warningColor),
                       textAlign: TextAlign.center,
@@ -101,10 +101,10 @@ class QrisDisplayScreen extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.qr_code, size: 80, color: Colors.grey.shade300),
-        const SizedBox(height: 8),
+        Icon(Icons.qr_code, size: 80, color: AppTheme.secondaryText),
+        const SizedBox(height: AppTheme.s8),
         Text('QRIS Tidak Tersedia',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
+            style: TextStyle(fontSize: 12, color: AppTheme.secondaryText)),
       ],
     );
   }

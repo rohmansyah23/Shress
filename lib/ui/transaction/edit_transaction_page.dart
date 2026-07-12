@@ -197,19 +197,19 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppTheme.s20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppTheme.s16),
                 decoration: BoxDecoration(
                   color: (isIncome
                           ? AppTheme.profitColor
                           : AppTheme.lossColor)
                       .withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   border: Border.all(
                     color: (isIncome
                             ? AppTheme.profitColor
@@ -229,7 +229,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                           : AppTheme.lossColor,
                       size: 28,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppTheme.s12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -254,14 +254,14 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.s24),
 
               const Text('Kategori',
                   style: TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               DropdownButtonFormField<CategoryModel>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.category_outlined),
                 ),
@@ -277,12 +277,12 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                     value == null ? 'Pilih kategori' : null,
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
 
               const Text('Jumlah (Rp)',
                   style: TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
@@ -306,11 +306,11 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
               ),
 
               if (isIncome) ...[
-                const SizedBox(height: 20),
+                const SizedBox(height: AppTheme.s20),
                 const Text('HPP (Harga Pokok Penjualan)',
                     style: TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppTheme.s8),
                 TextFormField(
                   controller: _cogsController,
                   keyboardType: TextInputType.number,
@@ -323,11 +323,11 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 ),
               ],
 
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
               const Text('Deskripsi (opsional)',
                   style: TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _descController,
                 maxLines: 3,

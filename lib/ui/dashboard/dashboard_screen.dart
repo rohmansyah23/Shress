@@ -121,43 +121,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   NetProfitCard(
                     netProfit: netProfit,
                     style: NetProfitCardStyle.accentBar,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                          child: SummaryCard(
-                              title: 'Pendapatan',
-                              amount: summary['totalIncome'] ?? 0,
-                              icon: Icons.trending_up_rounded,
-                              color: AppTheme.profitColorTheme(context))),
-                      const SizedBox(width: 12),
-                      Expanded(
-                          child: SummaryCard(
-                              title: 'HPP (COGS)',
-                              amount: summary['totalCogs'] ?? 0,
-                              icon: Icons.inventory_rounded,
-                              color: AppTheme.warningColorTheme(context))),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                          child: SummaryCard(
-                              title: 'Laba Kotor',
-                              amount: summary['grossProfit'] ?? 0,
-                              icon: Icons.monetization_on_rounded,
-                              color: AppTheme.infoColorTheme(context))),
-                      const SizedBox(width: 12),
-                      Expanded(
-                          child: SummaryCard(
-                              title: 'Pengeluaran',
-                              amount: summary['totalExpense'] ?? 0,
-                              icon: Icons.trending_down_rounded,
-                              color: AppTheme.lossColorTheme(context))),
-                    ],
-                  ),
+                  ),                          const SizedBox(height: AppTheme.s12),
+                          Row(
+                            children: [
+                              Expanded(
+                                  child: SummaryCard(
+                                      title: 'Pendapatan',
+                                      amount: summary['totalIncome'] ?? 0,
+                                      icon: Icons.trending_up_rounded,
+                                      color: AppTheme.profitColorTheme(context))),
+                              const SizedBox(width: AppTheme.s12),
+                              Expanded(
+                                  child: SummaryCard(
+                                      title: 'HPP (COGS)',
+                                      amount: summary['totalCogs'] ?? 0,
+                                      icon: Icons.inventory_rounded,
+                                      color: AppTheme.warningColorTheme(context))),
+                            ],
+                          ),
+                          const SizedBox(height: AppTheme.s12),
+                          Row(
+                            children: [
+                              Expanded(
+                                  child: SummaryCard(
+                                      title: 'Laba Kotor',
+                                      amount: summary['grossProfit'] ?? 0,
+                                      icon: Icons.monetization_on_rounded,
+                                      color: AppTheme.infoColorTheme(context))),
+                              const SizedBox(width: AppTheme.s12),
+                              Expanded(
+                                  child: SummaryCard(
+                                      title: 'Pengeluaran',
+                                      amount: summary['totalExpense'] ?? 0,
+                                      icon: Icons.trending_down_rounded,
+                                      color: AppTheme.lossColorTheme(context))),
+                            ],
+                          ),
                   const SizedBox(height: 24),
 
                   // === Trend Chart dengan Filter ===
@@ -178,7 +177,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   trendAsync.when(
                     data: (trendData) {
                       if (trendData.isEmpty) {
-                        return const SizedBox(
+                        return SizedBox(
                           height: 160,
                           child: Center(child: Text('Belum ada data grafik', style: AppTheme.caption)),
                         );
@@ -198,7 +197,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       );
                     },
                     loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (err, _) => const SizedBox(
+                    error: (err, _) => SizedBox(
                       height: 160,
                       child: Center(child: Text('Gagal memuat grafik', style: AppTheme.caption)),
                     ),
@@ -255,6 +254,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget _buildTrendFilterChip(String label, TrendFilter value) {
     final isSelected = _selectedTrendFilter == value;
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return GestureDetector(
       onTap: () => setState(() => _selectedTrendFilter = value),
       child: AnimatedContainer(
@@ -262,12 +262,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? colorScheme.primary.withValues(alpha: 0.1)
+              ? (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.2))
               : colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? colorScheme.primary.withValues(alpha: 0.3)
+                ? (isLight ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.3))
                 : colorScheme.outlineVariant,
             width: 1,
           ),
@@ -277,7 +277,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+            color: isSelected
+                ? (isLight ? Theme.of(context).cardColor : colorScheme.primary)
+                : colorScheme.onSurfaceVariant,
           ),
         ),
       ),

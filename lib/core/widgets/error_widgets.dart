@@ -98,27 +98,27 @@ class OfflineBanner extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s12, vertical: AppTheme.s8),
       decoration: BoxDecoration(
-        color: AppTheme.warningColor.withValues(alpha: 0.12),
+        color: AppTheme.warning.withValues(alpha: 0.12),
         border: Border(
           bottom: BorderSide(
-            color: AppTheme.warningColor.withValues(alpha: 0.3),
+            color: AppTheme.warning.withValues(alpha: 0.3),
           ),
         ),
       ),
       child: Row(
         children: [
           Icon(Icons.wifi_off_rounded,
-              size: 16, color: AppTheme.warningColor),
-          const SizedBox(width: 8),
+              size: 16, color: AppTheme.warning),
+          const SizedBox(width: AppTheme.s8),
           Expanded(
             child: Text(
               'Tidak ada koneksi internet',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: AppTheme.warningColor,
+                color: AppTheme.warning,
               ),
             ),
           ),
@@ -126,7 +126,7 @@ class OfflineBanner extends StatelessWidget {
             TextButton(
               onPressed: onRetry,
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: AppTheme.s8),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),

@@ -86,7 +86,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               height: 96,
               decoration: BoxDecoration(
                 color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
               ),
               child: Icon(
                 Icons.account_balance_rounded,
@@ -94,25 +94,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 color: colorScheme.primary,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppTheme.s24),
             Text(
               AppConstants.appName,
               style: AppTheme.heading1.copyWith(
                 color: colorScheme.primary,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             Text(
               'Multi-tenant Financial Reports',
               style: AppTheme.caption.copyWith(fontSize: 13),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: AppTheme.s48),
 
             if (authState.status == AuthStatus.unknown)
-              const Column(
+              Column(
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: AppTheme.s16),
                   Text(
                     'Memeriksa sesi...',
                     style: AppTheme.caption,

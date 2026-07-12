@@ -125,15 +125,15 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
         title: const Text('Laporkan Penjualan'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         children: [
           _buildConsignorInfo(),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.s16),
           ...List.generate(
               widget.items.length, (index) => _buildItemCard(index)),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.s16),
           _buildSummaryCard(),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppTheme.s32),
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -158,10 +158,10 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
 
   Widget _buildConsignorInfo() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppTheme.s16),
       decoration: BoxDecoration(
         color: AppTheme.primaryColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         border: Border.all(
             color: AppTheme.primaryColor.withValues(alpha: 0.2)),
       ),
@@ -169,7 +169,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
         children: [
           Icon(Icons.person_outline_rounded,
               color: AppTheme.primaryColor, size: 20),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppTheme.s12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,7 +210,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -229,7 +229,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             Row(
               children: [
                 Expanded(
@@ -237,7 +237,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Terjual', style: AppTheme.labelSmall),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppTheme.s4),
                       TextFormField(
                         controller: _qtyControllers[index],
                         keyboardType: TextInputType.number,
@@ -269,13 +269,13 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppTheme.s16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Dikembalikan', style: AppTheme.labelSmall),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppTheme.s4),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 14),
@@ -300,9 +300,9 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             const Divider(height: 1),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             Row(
               children: [
                 Expanded(
@@ -346,18 +346,18 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
     return Card(
       color: AppTheme.primaryColor.withValues(alpha: 0.05),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppTheme.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Ringkasan', style: AppTheme.labelSmall),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             _buildSummaryRow(
               'Total Pendapatan',
               FormatHelpers.rupiah(_totalFromSales),
               AppTheme.profitColorTheme(context),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             _buildSummaryRow(
               'Total ke Pihak Penitip',
               FormatHelpers.rupiah(_totalPayment),

@@ -127,14 +127,14 @@ class _ManagerDashboardScreenState
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         children: [
           _buildBusinessHeader(cs),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.s24),
           _buildNetProfitCard(netProfit, isProfit),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.s16),
           Text('Aksi Cepat', style: AppTheme.heading3),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.s12),
           Row(
             children: [
               Expanded(
@@ -171,7 +171,7 @@ class _ManagerDashboardScreenState
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.s12),
           Row(
             children: [
               Expanded(
@@ -205,24 +205,24 @@ class _ManagerDashboardScreenState
               const Expanded(child: SizedBox()),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.s16),
           _buildDebtConsignmentSummary(widget.selectedBusiness.businessId),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.s24),
           Text('Transaksi Terbaru', style: AppTheme.heading3),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.s12),
           if (_recentLoading)
             ...List.generate(3, (_) => const Center(child: CircularProgressIndicator()))
           else if (_recentTransactions.isEmpty)
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(AppTheme.s24),
                 child: Center(
                   child: Column(
                     children: [
                       Icon(Icons.receipt_long_rounded,
                           size: 48,
                           color: cs.onSurfaceVariant.withValues(alpha: 0.4)),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppTheme.s12),
                       const Text(
                         'Belum ada transaksi',
                         style: TextStyle(
@@ -230,7 +230,7 @@ class _ManagerDashboardScreenState
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppTheme.s4),
                       Text(
                         'Tap tombol + untuk mencatat transaksi pertama',
                         style: AppTheme.caption,
@@ -275,7 +275,7 @@ class _ManagerDashboardScreenState
                             size: 20,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: AppTheme.s12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +312,7 @@ class _ManagerDashboardScreenState
               ),
             );
           }),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppTheme.s8),
           if (_recentTransactions.length >= 5)
             Center(
               child: TextButton.icon(
@@ -329,10 +329,10 @@ class _ManagerDashboardScreenState
   Widget _buildBusinessHeader(ColorScheme cs) {
     return InkWell(
       onTap: widget.businesses.length > 1 ? widget.onSwitchBusiness : null,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.s16),
           child: Row(
             children: [
               Container(
@@ -340,12 +340,12 @@ class _ManagerDashboardScreenState
                 height: 48,
                 decoration: BoxDecoration(
                   color: cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(Icons.store_rounded,
                     color: cs.primary, size: 24),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.s12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,7 +364,7 @@ class _ManagerDashboardScreenState
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppTheme.s4),
                     Row(
                       children: [
                         Container(
@@ -373,7 +373,7 @@ class _ManagerDashboardScreenState
                           decoration: BoxDecoration(
                             color: AppTheme.profitColor
                                 .withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
@@ -394,14 +394,14 @@ class _ManagerDashboardScreenState
                           ),
                         ),
                         if (widget.businesses.length > 1) ...[
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppTheme.s8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: cs.surfaceContainerHighest
                                   .withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -481,7 +481,7 @@ class _ManagerDashboardScreenState
                                     .copyWith(fontWeight: FontWeight.w600)),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppTheme.s4),
                         Text(FormatHelpers.rupiah(debtOwed),
                             style: TextStyle(
                                 fontSize: 14,
@@ -494,7 +494,7 @@ class _ManagerDashboardScreenState
                   ),
                 ),
               ),
-            if (debtOwed > 0 && consOwed > 0) const SizedBox(width: 8),
+            if (debtOwed > 0 && consOwed > 0) const SizedBox(width: AppTheme.s8),
             if (consOwed > 0)
               Expanded(
                 child: Card(
@@ -513,7 +513,7 @@ class _ManagerDashboardScreenState
                                     .copyWith(fontWeight: FontWeight.w600)),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppTheme.s4),
                         Text(FormatHelpers.rupiah(consOwed),
                             style: TextStyle(
                                 fontSize: 14,

@@ -261,7 +261,7 @@ class _OwnerHistoryScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Hapus Transaksi'),
         content: Text(
           'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDate(tx.transactionDate)}?',
@@ -313,6 +313,44 @@ class _OwnerHistoryScreenState
     });
   }
 
+  Widget _buildFilterChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.12))
+              : colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? (isLight ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.4))
+                : colorScheme.outlineVariant,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected
+                ? (isLight ? Theme.of(context).cardColor : colorScheme.primary)
+                : colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBody(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final canEdit = user != null &&
@@ -340,34 +378,29 @@ class _OwnerHistoryScreenState
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  FilterChip(
-                    label: const Text('Semua'),
-                    selected: _filterAllBusinesses,
-                    onSelected: (selected) {
-                      if (selected) {
-                        setState(() {
-                          _filterAllBusinesses = true;
-                          _selectedBusinessId = null;
-                        });
-                        _applyFilter();
-                      }
+                  _buildFilterChip(
+                    label: 'Semua',
+                    isSelected: _filterAllBusinesses,
+                    onTap: () {
+                      setState(() {
+                        _filterAllBusinesses = true;
+                        _selectedBusinessId = null;
+                      });
+                      _applyFilter();
                     },
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   ..._businesses.map((b) => Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: FilterChip(
-                          label: Text(b.name.length > 12
-                              ? '${b.name.substring(0, 12)}...'
-                              : b.name),
-                          selected:
-                              _selectedBusinessId == b.businessId,
-                          onSelected: (selected) {
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _buildFilterChip(
+                          label: b.name.length > 14
+                              ? '${b.name.substring(0, 14)}...'
+                              : b.name,
+                          isSelected: _selectedBusinessId == b.businessId,
+                          onTap: () {
                             setState(() {
                               _filterAllBusinesses = false;
-                              _selectedBusinessId = selected
-                                  ? b.businessId
-                                  : null;
+                              _selectedBusinessId = b.businessId;
                             });
                             _applyFilter();
                           },
@@ -382,18 +415,30 @@ class _OwnerHistoryScreenState
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: Row(
               children: [
-                // ignore: deprecated_member_use
                 Expanded(
                   child: DropdownButtonFormField<OwnerDateFilter>(
-                    value: _selectedFilter,
+                    initialValue: _selectedFilter,
                     isDense: true,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                     decoration: const InputDecoration(
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     items: OwnerDateFilter.values.map((f) =>
-                      DropdownMenuItem(value: f, child: Text(f.label, style: const TextStyle(fontSize: 12))),
+                      DropdownMenuItem(
+                        value: f,
+                        child: Text(
+                          f.label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
                     ).toList(),
                     onChanged: (value) {
                       if (value == null) return;
@@ -406,19 +451,31 @@ class _OwnerHistoryScreenState
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
-                // ignore: deprecated_member_use
+                const SizedBox(width: AppTheme.s8),
                 Expanded(
                   child: DropdownButtonFormField<OwnerTypeFilter>(
-                    value: _selectedType,
+                    initialValue: _selectedType,
                     isDense: true,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                     decoration: const InputDecoration(
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     items: OwnerTypeFilter.values.map((f) =>
-                      DropdownMenuItem(value: f, child: Text(f.label, style: const TextStyle(fontSize: 12))),
+                      DropdownMenuItem(
+                        value: f,
+                        child: Text(
+                          f.label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
                     ).toList(),
                     onChanged: (value) {
                       if (value == null) return;
@@ -456,7 +513,7 @@ class _OwnerHistoryScreenState
               onChanged: _onSearchChanged,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppTheme.s8),
           // Transaction list
           Expanded(
             child: listState.isLoading && listState.items.isEmpty
@@ -469,7 +526,7 @@ class _OwnerHistoryScreenState
                             Icon(Icons.receipt_long_rounded,
                                 size: 64,
                                 color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppTheme.s12),
                             Text('Tidak ada transaksi',
                                 style: TextStyle(
                                   fontSize: 18,
@@ -477,7 +534,7 @@ class _OwnerHistoryScreenState
                                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 )),
                             if (listState.error != null) ...[
-                              const SizedBox(height: 8),
+                              const SizedBox(height: AppTheme.s8),
                               Text(listState.error!, style: TextStyle(color: AppTheme.lossColor, fontSize: 12)),
                             ],
                           ],
@@ -490,11 +547,11 @@ class _OwnerHistoryScreenState
                           padding: const EdgeInsets.all(12),
                           itemCount: listState.items.length + (listState.isLoading ? 1 : 0),
                           separatorBuilder: (_, _) =>
-                              const SizedBox(height: 8),
+                              const SizedBox(height: AppTheme.s8),
                           itemBuilder: (context, index) {
                             if (index >= listState.items.length) {
                               return const Padding(
-                                padding: EdgeInsets.all(16),
+                                padding: EdgeInsets.all(AppTheme.s16),
                                 child: Center(child: CircularProgressIndicator()),
                               );
                             }
@@ -534,7 +591,7 @@ class _OwnerHistoryScreenState
                                             : AppTheme.lossColor,
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: AppTheme.s12),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -683,7 +740,7 @@ class _OwnerHistoryScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Pilih Bisnis'),
         content: SizedBox(
           width: double.maxFinite,

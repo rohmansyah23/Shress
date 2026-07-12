@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
@@ -10,6 +11,7 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../dashboard/qris_display_screen.dart';
 import '../settings/settings_screen.dart';
+import '../widgetbook/widgetbook_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   final bool showAppBar;
@@ -59,7 +61,7 @@ class ProfileScreen extends ConsumerWidget {
     final hasDisplayName = user.displayName?.isNotEmpty == true;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppTheme.s16),
       children: [
         // Avatar & Info
         Center(
@@ -79,7 +81,7 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               Text(
                 hasDisplayName ? user.displayName! : user.username,
                 style: AppTheme.heading2,
@@ -88,35 +90,35 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 2),
                 Text('@${user.username}', style: AppTheme.caption),
               ],
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               AppBadge.role(user.role, fontSize: 12),
             ],
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppTheme.s32),
 
         // Info Akun
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppTheme.s16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Informasi Akun', style: AppTheme.heading3),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppTheme.s16),
                 _InfoRow(
                     icon: Icons.badge_outlined,
                     label: 'Nama Tampilan',
                     value: user.displayName?.isNotEmpty == true ? user.displayName! : '-'),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppTheme.s12),
                 _InfoRow(icon: Icons.person_outlined, label: 'Username', value: user.username),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppTheme.s12),
                 _InfoRow(icon: Icons.badge_outlined, label: 'Role', value: user.role),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppTheme.s16),
 
         // Aksi Akun
         Card(
@@ -128,7 +130,28 @@ class ProfileScreen extends ConsumerWidget {
             onTap: () => _showEditDisplayNameDialog(context, ref, user),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppTheme.s16),
+
+        // WidgetBook (dev only)
+        if (kDebugMode) ...[
+          Card(
+            child: ListTile(
+              leading: Icon(Icons.widgets_outlined,
+                  color: AppTheme.infoColorTheme(context)),
+              title: const Text('WidgetBook'),
+              subtitle: const Text('Dokumentasi komponen design system'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const WidgetBookScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: AppTheme.s16),
+        ],
 
         // Menu Pengaturan
         Card(
@@ -160,7 +183,7 @@ class ProfileScreen extends ConsumerWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
           title: const Text('Ubah Nama Tampilan'),
           content: SizedBox(
             width: double.maxFinite,
@@ -259,7 +282,7 @@ class ProfileScreen extends ConsumerWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
           title: const Text('Pilih Bisnis'),
           content: SizedBox(
             width: double.maxFinite,
@@ -316,7 +339,7 @@ class _InfoRow extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppTheme.s12),
         Text('$label: ', style: AppTheme.caption),
         Expanded(
           child: Text(

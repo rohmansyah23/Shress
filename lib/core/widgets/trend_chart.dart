@@ -50,12 +50,12 @@ class TrendChart extends StatelessWidget {
               children: [
                 Icon(Icons.trending_up_rounded,
                     size: 18, color: AppTheme.infoColor),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.s8),
                 Text(title,
                     style: AppTheme.labelSmall.copyWith(fontSize: 12)),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppTheme.s20),
             SizedBox(
               height: 160,
               child: LineChart(
@@ -181,7 +181,7 @@ class TrendChart extends StatelessWidget {
                           final isProfit = data[index].netProfit >= 0;
                           return FlDotCirclePainter(
                             radius: 3.5,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             strokeWidth: 2.5,
                             strokeColor: isProfit
                                 ? AppTheme.profitColor

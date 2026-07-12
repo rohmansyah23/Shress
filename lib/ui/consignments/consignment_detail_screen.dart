@@ -69,6 +69,7 @@ class _ConsignmentDetailScreenState
   }
 
   Future<void> _handleReportSales() async {
+    if (!mounted) return;
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
@@ -117,12 +118,13 @@ class _ConsignmentDetailScreenState
       (sum, item) => sum + item.agreedPrice * item.quantitySold,
     );
 
+    final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
           title: const Text('Bayar ke Pihak Penitip'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -132,7 +134,7 @@ class _ConsignmentDetailScreenState
                 widget.consignor.name,
                 style: AppTheme.heading3,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               Text(
                 'Total dibayar: ${FormatHelpers.rupiah(totalPayment)}',
                 style: AppTheme.caption.copyWith(
@@ -140,9 +142,9 @@ class _ConsignmentDetailScreenState
                   color: AppTheme.lossColorTheme(context),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               Text('Metode bayar', style: AppTheme.labelSmall),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               _buildPaymentOption(
                 ctx,
                 setDialogState,
@@ -150,7 +152,7 @@ class _ConsignmentDetailScreenState
                 label: 'Cash',
                 icon: Icons.money_rounded,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppTheme.s4),
               _buildPaymentOption(
                 ctx,
                 setDialogState,
@@ -158,7 +160,7 @@ class _ConsignmentDetailScreenState
                 label: 'Transfer',
                 icon: Icons.account_balance_rounded,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppTheme.s4),
               _buildPaymentOption(
                 ctx,
                 setDialogState,
@@ -166,7 +168,7 @@ class _ConsignmentDetailScreenState
                 label: 'QRIS',
                 icon: Icons.qr_code_rounded,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -178,7 +180,7 @@ class _ConsignmentDetailScreenState
                   children: [
                     Icon(Icons.receipt_long_rounded,
                         size: 16, color: AppTheme.infoColorTheme(context)),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppTheme.s8),
                     Expanded(
                       child: Text(
                         'transaksi akan dibuat otomatis',
@@ -224,13 +226,40 @@ class _ConsignmentDetailScreenState
         if (!mounted) return;
         triggerDebtRefresh(ref);
         await _refreshConsignment();
+        if (!mounted) return;
         ErrorSnackbar.showSuccess(context, 'Pembayaran berhasil');
         if (mounted) {
           Navigator.of(context).pop(true);
         }
       } catch (e) {
         if (!mounted) return;
-        ErrorSnackbar.show(context, ErrorHandler.classify(e));
+        final appError = ErrorHandler.classify(e);
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(appError.isOffline
+                    ? Icons.wifi_off_rounded
+                    : Icons.error_outline_rounded,
+                    color: Theme.of(context).colorScheme.onError, size: 18),
+                const SizedBox(width: 8),
+                Expanded(child: Text(appError.userMessage)),
+              ],
+            ),                      backgroundColor: appError.isOffline
+                ? AppTheme.warningColor
+                : AppTheme.lossColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            action: SnackBarAction(
+              label: 'Tutup',
+              textColor: Theme.of(context).colorScheme.onError,
+              onPressed: () {},
+            ),
+          ),
+        );
       }
     }
   }
@@ -243,10 +272,10 @@ class _ConsignmentDetailScreenState
     required IconData icon,
   }) {
     final isSelected = _paymentMethod == value;
-    final textColor = Theme.of(ctx).textTheme.bodyMedium?.color ?? Colors.grey;
+    final textColor = Theme.of(ctx).textTheme.bodyMedium?.color ?? AppTheme.secondaryText;
     final subtleColor = Theme.of(ctx).brightness == Brightness.dark
-        ? Colors.white54
-        : (Theme.of(ctx).textTheme.bodySmall?.color ?? Colors.grey);
+        ? AppTheme.darkSecondaryText.withValues(alpha: 0.7)
+        : (Theme.of(ctx).textTheme.bodySmall?.color ?? AppTheme.secondaryText);
     return InkWell(
       onTap: () => setDialogState(() => _paymentMethod = value),
       borderRadius: BorderRadius.circular(8),
@@ -268,7 +297,7 @@ class _ConsignmentDetailScreenState
             Icon(icon,
                 size: 18,
                 color: isSelected ? AppTheme.primaryColor : subtleColor),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppTheme.s8),
             Text(
               label,
               style: TextStyle(
@@ -304,7 +333,7 @@ class _ConsignmentDetailScreenState
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
           title: const Text('Catat Pembayaran'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -317,7 +346,7 @@ class _ConsignmentDetailScreenState
                   color: AppTheme.warningColorTheme(context),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               TextField(
                 controller: amountCtrl,
                 keyboardType: TextInputType.number,
@@ -326,7 +355,7 @@ class _ConsignmentDetailScreenState
                   prefixText: 'Rp ',
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               InkWell(
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -342,7 +371,7 @@ class _ConsignmentDetailScreenState
                     });
                   }
                 },
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 child: InputDecorator(
                   decoration: const InputDecoration(
                     labelText: 'Tanggal Bayar',
@@ -351,7 +380,7 @@ class _ConsignmentDetailScreenState
                   child: Text(FormatHelpers.displayDate(settlementDate)),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               TextField(
                 controller: notesCtrl,
                 decoration: const InputDecoration(
@@ -424,7 +453,7 @@ class _ConsignmentDetailScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Hapus Titipan'),
         content: Text(
           'Yakin ingin menghapus titipan tanggal ${FormatHelpers.displayDate(_consignment.consignmentDate)}?',
@@ -469,7 +498,7 @@ class _ConsignmentDetailScreenState
       case AppConstants.consignmentCancelled:
         return AppTheme.lossColorTheme(context);
       default:
-        return Colors.grey;
+        return AppTheme.secondaryText;
     }
   }
 
@@ -508,7 +537,7 @@ class _ConsignmentDetailScreenState
       case AppConstants.reportSettled:
         return AppTheme.profitColorTheme(context);
       default:
-        return Colors.grey;
+        return AppTheme.secondaryText;
     }
   }
 
@@ -536,18 +565,18 @@ class _ConsignmentDetailScreenState
           : RefreshIndicator(
               onRefresh: _loadData,
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppTheme.s16),
                 children: [
                   _buildStatusBadge(color),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppTheme.s12),
                   _buildConsignorCard(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppTheme.s12),
                   _buildSummaryCard(remaining),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.s16),
                   FadeInEntrance(
                     child: _buildItemsSection(),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.s16),
                   FadeInEntrance(
                     delay: const Duration(milliseconds: 100),
                     child: _buildSettlementSection(),
@@ -555,7 +584,7 @@ class _ConsignmentDetailScreenState
                   if ((_consignment.isDaily || _consignment.isReseller) &&
                       _consignment.status ==
                           AppConstants.consignmentSettled) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppTheme.s16),
                     FadeInEntrance(
                       delay: const Duration(milliseconds: 200),
                       child: _buildTransactionLinks(),
@@ -572,7 +601,7 @@ class _ConsignmentDetailScreenState
     if (_consignment.status != AppConstants.consignmentActive) return null;
 
     final fabShape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
     );
 
     if (_consignment.isDaily || _consignment.isReseller) {
@@ -589,7 +618,7 @@ class _ConsignmentDetailScreenState
           return FloatingActionButton.extended(
             onPressed: _handleSettleDaily,
             backgroundColor: AppTheme.profitColor,
-            foregroundColor: Colors.white,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
             shape: fabShape,
             icon: const Icon(Icons.payments_outlined),
             label: const Text('Bayar ke Pihak Penitip'),
@@ -621,7 +650,7 @@ class _ConsignmentDetailScreenState
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
@@ -635,7 +664,7 @@ class _ConsignmentDetailScreenState
               color: color,
               size: 20,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppTheme.s8),
             Text(
               _statusLabel(_consignment.status),
               style: TextStyle(
@@ -644,7 +673,7 @@ class _ConsignmentDetailScreenState
                 color: color,
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppTheme.s8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
@@ -700,7 +729,7 @@ class _ConsignmentDetailScreenState
   Widget _buildConsignorCard() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Row(
           children: [
             CircleAvatar(
@@ -720,7 +749,7 @@ class _ConsignmentDetailScreenState
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppTheme.s12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -751,12 +780,12 @@ class _ConsignmentDetailScreenState
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppTheme.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Ringkasan', style: AppTheme.labelSmall),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             Row(
               children: [
                 Expanded(
@@ -786,16 +815,16 @@ class _ConsignmentDetailScreenState
             ),
             if (_consignment.description != null &&
                 _consignment.description!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               const Divider(),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               Text(
                 _consignment.description!,
                 style: AppTheme.caption.copyWith(fontSize: 13),
               ),
             ],
             if (_consignment.dueDate != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               Row(
                 children: [
                   Icon(Icons.event_outlined,
@@ -821,18 +850,18 @@ class _ConsignmentDetailScreenState
   Widget _buildDailyPendingSummaryCard() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppTheme.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Ringkasan Titipan', style: AppTheme.labelSmall),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             _buildSummaryRow(
               'Total Nilai Titipan',
               FormatHelpers.rupiah(_consignment.totalAmount),
               AppTheme.primaryColor,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             _buildSummaryRow(
               'Sudah Dibayar',
               FormatHelpers.rupiah(_consignment.settledAmount),
@@ -850,7 +879,7 @@ class _ConsignmentDetailScreenState
                 children: [
                   Icon(Icons.schedule_rounded,
                       size: 16, color: AppTheme.warningColorTheme(context)),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppTheme.s8),
                   Expanded(
                     child: Text(
                       'Menunggu laporan penjualan',
@@ -865,16 +894,16 @@ class _ConsignmentDetailScreenState
             ),
             if (_consignment.description != null &&
                 _consignment.description!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               const Divider(),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               Text(
                 _consignment.description!,
                 style: AppTheme.caption.copyWith(fontSize: 13),
               ),
             ],
             if (_consignment.dueDate != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               Row(
                 children: [
                   Icon(Icons.event_outlined,
@@ -909,18 +938,18 @@ class _ConsignmentDetailScreenState
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppTheme.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Ringkasan Penjualan', style: AppTheme.labelSmall),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             _buildSummaryRow(
               'Total Pendapatan',
               FormatHelpers.rupiah(totalFromSales),
               AppTheme.profitColorTheme(context),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             _buildSummaryRow(
               'Total ke Pihak Penitip',
               FormatHelpers.rupiah(totalPayment),
@@ -934,9 +963,9 @@ class _ConsignmentDetailScreenState
             ),
             if (_consignment.description != null &&
                 _consignment.description!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               const Divider(),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               Text(
                 _consignment.description!,
                 style: AppTheme.caption.copyWith(fontSize: 13),
@@ -970,7 +999,7 @@ class _ConsignmentDetailScreenState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTheme.labelSmall),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppTheme.s4),
         Text(
           value,
           style: TextStyle(
@@ -989,7 +1018,7 @@ class _ConsignmentDetailScreenState
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -997,7 +1026,7 @@ class _ConsignmentDetailScreenState
               children: [
                 const Icon(Icons.inventory_2_outlined,
                     size: 18, color: AppTheme.primaryColor),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.s8),
                 Text('Item Titipan', style: AppTheme.heading3),
                 const Spacer(),
                 Text(
@@ -1006,7 +1035,7 @@ class _ConsignmentDetailScreenState
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             if (_items.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1040,7 +1069,7 @@ class _ConsignmentDetailScreenState
               style:
                   const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppTheme.s4),
             Row(
               children: [
                 _buildQtyChip(
@@ -1048,7 +1077,7 @@ class _ConsignmentDetailScreenState
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4),
                   child: Icon(Icons.arrow_forward_rounded,
-                      size: 14, color: Colors.grey),
+                      size: 14, color: AppTheme.secondaryText),
                 ),
                 _buildQtyChip(
                   'Terjual',
@@ -1058,7 +1087,7 @@ class _ConsignmentDetailScreenState
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4),
                   child: Icon(Icons.arrow_forward_rounded,
-                      size: 14, color: Colors.grey),
+                      size: 14, color: AppTheme.secondaryText),
                 ),
                 _buildQtyChip(
                   'Kembali',
@@ -1076,7 +1105,7 @@ class _ConsignmentDetailScreenState
                     style:
                         AppTheme.caption.copyWith(fontSize: 11),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppTheme.s12),
                   Text(
                     '${item.quantitySold} × ${FormatHelpers.rupiah(item.agreedPrice)} ke pihak penitip',
                     style: AppTheme.caption.copyWith(
@@ -1155,7 +1184,7 @@ class _ConsignmentDetailScreenState
                   ),
                 ),
                 if (item.sellingPrice != null) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppTheme.s4),
                   Text(
                     isFullySold ? 'Estimasi Pemasukan' : 'Omzet',
                     style: AppTheme.labelSmall,
@@ -1198,7 +1227,7 @@ class _ConsignmentDetailScreenState
   Widget _buildSettlementSection() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1206,7 +1235,7 @@ class _ConsignmentDetailScreenState
               children: [
                 const Icon(Icons.receipt_long_outlined,
                     size: 18, color: AppTheme.profitColor),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.s8),
                 Text('Riwayat Pembayaran', style: AppTheme.heading3),
                 const Spacer(),
                 Text(
@@ -1215,7 +1244,7 @@ class _ConsignmentDetailScreenState
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             if (_settlements.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1252,7 +1281,7 @@ class _ConsignmentDetailScreenState
             child: Icon(Icons.check_circle_rounded,
                 size: 18, color: AppTheme.profitColorTheme(context)),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppTheme.s12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1275,7 +1304,7 @@ class _ConsignmentDetailScreenState
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppTheme.s8),
           Flexible(
             child: Text(
               FormatHelpers.rupiah(settlement.amount),
@@ -1295,7 +1324,7 @@ class _ConsignmentDetailScreenState
   Widget _buildTransactionLinks() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1303,11 +1332,11 @@ class _ConsignmentDetailScreenState
               children: [
                 const Icon(Icons.link_rounded,
                     size: 18, color: AppTheme.primaryColor),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.s8),
                 Text('Transaksi Terkait', style: AppTheme.heading3),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             if (_consignment.incomeTransactionId != null)
               _buildTransactionLink(
                 label: 'Uang Masuk',
@@ -1316,7 +1345,7 @@ class _ConsignmentDetailScreenState
                 icon: Icons.arrow_downward_rounded,
               ),
             if (_consignment.expenseTransactionId != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               _buildTransactionLink(
                 label: 'Uang Keluar',
                 transactionId: _consignment.expenseTransactionId!,
@@ -1346,7 +1375,7 @@ class _ConsignmentDetailScreenState
       child: Row(
         children: [
           Icon(icon, size: 16, color: color),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppTheme.s8),
           Text(
             '$label #$transactionId',
             style: TextStyle(

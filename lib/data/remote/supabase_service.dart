@@ -689,7 +689,7 @@ class SupabaseService {
         'status': AppConstants.debtUnpaid,
         'debt_date': debtDate,
         'due_date': dueDate,
-        if (expenseTxId != null) 'expense_transaction_id': expenseTxId,
+        'expense_transaction_id': ?expenseTxId,
       }).select('id').single();
       return response['id'] as int;
     });
@@ -782,7 +782,7 @@ class SupabaseService {
         'user_id': userId,
         'notes': notes,
         'payment_date': paymentDate,
-        if (incomeTxId != null) 'income_transaction_id': incomeTxId,
+        'income_transaction_id': ?incomeTxId,
       }).select('id').single();
 
       // Update paid_amount and status on the debt
@@ -1313,7 +1313,7 @@ class SupabaseService {
         'status': newStatus,
         if (newStatus == AppConstants.consignmentSettled)
           'report_status': AppConstants.reportSettled,
-        if (incomeTxId != null) 'income_transaction_id': incomeTxId,
+        'income_transaction_id': ?incomeTxId,
       }).eq('id', consignmentId);
 
       return response['id'] as int;
@@ -1523,7 +1523,7 @@ class SupabaseService {
         'status': AppConstants.consignmentSettled,
         'report_status': AppConstants.reportSettled,
         'settled_amount': totalPayment,
-        if (incomeTxId != null) 'income_transaction_id': incomeTxId,
+        'income_transaction_id': ?incomeTxId,
       }).eq('id', consignmentId);
     });
   }

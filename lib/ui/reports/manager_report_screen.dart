@@ -299,19 +299,19 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(_periodLabel,
                 style: AppTheme.labelSmall.copyWith(fontSize: 12)),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.s16),
 
             NetProfitCard(
               netProfit: data.netProfit,
               style: NetProfitCardStyle.accentBar,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
 
             // Detail cards grid
             Row(
@@ -324,7 +324,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                     color: AppTheme.profitColorTheme(context),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppTheme.s12),
                 Expanded(
                   child: SummaryCard(
                     title: 'HPP',
@@ -335,7 +335,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             Row(
               children: [
                 Expanded(
@@ -346,7 +346,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                     color: AppTheme.infoColorTheme(context),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppTheme.s12),
                 Expanded(
                   child: SummaryCard(
                     title: 'Pengeluaran',

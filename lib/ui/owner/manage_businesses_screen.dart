@@ -37,7 +37,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Edit Bisnis'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -50,7 +50,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                 hintText: 'Masukkan nama bisnis',
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             TextField(
               controller: descCtrl,
               decoration: const InputDecoration(
@@ -105,7 +105,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSmall)),
         title: const Text('Hapus Bisnis'),
         content: Text(
           'Apakah Anda yakin ingin menghapus bisnis "${business.name}"? Semua transaksi dan data terkait akan dihapus secara permanen.',
@@ -241,7 +241,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                               size: 64,
                               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.s16),
                             Text(
                               _searchQuery.isNotEmpty
                                   ? 'Tidak ada bisnis ditemukan'
@@ -346,33 +346,33 @@ class _BusinessItemCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppTheme.s12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(business.name, style: AppTheme.heading3),
                   if (business.description != null && business.description!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppTheme.s4),
                     Text(
                       business.description!,
                       style: AppTheme.caption,
                     ),
                   ],
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppTheme.s4),
                   Row(
                     children: [
                       Icon(
                         hasQris ? Icons.qr_code_2_rounded : Icons.qr_code_2_outlined,
                         size: 14,
-                        color: hasQris ? AppTheme.profitColor : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        color: hasQris ? AppTheme.profitColorTheme(context) : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         hasQris ? 'QRIS aktif' : 'Belum ada QRIS',
                         style: TextStyle(
                           fontSize: 11,
-                          color: hasQris ? AppTheme.profitColor : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                          color: hasQris ? AppTheme.profitColorTheme(context) : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                         ),
                       ),
                     ],
@@ -386,7 +386,7 @@ class _BusinessItemCard extends StatelessWidget {
                 color: colorScheme.onSurfaceVariant,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
               ),
               onSelected: (value) {
                 switch (value) {

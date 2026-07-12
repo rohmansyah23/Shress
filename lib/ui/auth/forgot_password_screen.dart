@@ -65,13 +65,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       ? AppTheme.profitColor
                       : colorScheme.primary,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppTheme.s16),
                 Text(
                   _emailSent ? 'Email Terkirim' : 'Lupa Password?',
                   textAlign: TextAlign.center,
                   style: AppTheme.heading2,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppTheme.s8),
                 Text(
                   _emailSent
                       ? 'Kami telah mengirimkan tautan reset password ke:\n${_emailController.text.trim()}\n\nCek kotak masuk email Anda dan ikuti petunjuk untuk mengatur ulang password.'
@@ -79,7 +79,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   textAlign: TextAlign.center,
                   style: AppTheme.bodyText.copyWith(height: 1.5),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppTheme.s32),
 
                 if (!_emailSent) ...[
                   Form(
@@ -106,18 +106,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: AppTheme.s24),
                         SizedBox(
                           height: 52,
                           child: FilledButton(
                             onPressed: _isLoading ? null : _handleSendReset,
                             child: _isLoading
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 24,
                                     height: 24,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Colors.white,
+                                      color: Theme.of(context).colorScheme.onPrimary,
                                     ),
                                   )
                                 : const Text(
@@ -138,7 +138,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     size: 48,
                     color: AppTheme.profitColor,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppTheme.s24),
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -153,7 +153,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppTheme.s12),
                   TextButton(
                     onPressed: () {
                       setState(() {
@@ -168,7 +168,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   ),
                 ],
 
-                const SizedBox(height: 24),
+                const SizedBox(height: AppTheme.s24),
               ],
             ),
           ),

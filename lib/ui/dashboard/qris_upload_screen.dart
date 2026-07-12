@@ -181,19 +181,19 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppTheme.s20),
         children: [
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppTheme.s20),
               child: Column(
                 children: [
                   Icon(Icons.qr_code_scanner_rounded,
                       size: 48, color: AppTheme.primaryColor),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppTheme.s12),
                   Text('Upload QRIS',
                       style: AppTheme.heading3),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.s8),
                   Text(
                     'QRIS ini khusus untuk bisnis "${widget.business.name}".\n'
                     'Bisa upload dari galeri atau masukkan URL manual.',
@@ -204,7 +204,7 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppTheme.s20),
 
           SegmentedButton<bool>(
             segments: const [
@@ -217,7 +217,7 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
             onSelectionChanged: (v) =>
                 setState(() => _useUrl = v.first),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppTheme.s20),
 
           if (_useUrl)
             TextField(
@@ -232,19 +232,19 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
           else ...[
             InkWell(
               onTap: _pickImage,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
               child: Container(
                 width: double.infinity,
                 height: 260,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   border: Border.all(
                       color: Theme.of(context).colorScheme.outlineVariant, width: 1),
                 ),
                 child: _previewUrl != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         child: Image.memory(
                           _selectedImageBytes!,
                           fit: BoxFit.contain,
@@ -259,7 +259,7 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
                               Icons.add_photo_alternate_outlined,
                               size: 64,
                               color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppTheme.s12),
                           Text('Ketuk untuk pilih gambar',
                               style: AppTheme.caption
                                   .copyWith(
@@ -270,7 +270,7 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
             ),
           ],
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.s24),
           SizedBox(
             width: double.infinity,
             height: 52,

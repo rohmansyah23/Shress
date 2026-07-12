@@ -139,15 +139,15 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppTheme.s20),
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppTheme.s20),
               decoration: BoxDecoration(
                 color: isEdit
                     ? AppTheme.infoColor.withValues(alpha: 0.05)
                     : AppTheme.profitColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 border: Border.all(
                   color: isEdit
                       ? AppTheme.infoColor.withValues(alpha: 0.15)
@@ -163,7 +163,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                     color:
                         isEdit ? AppTheme.infoColor : AppTheme.profitColor,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppTheme.s12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -190,12 +190,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppTheme.s24),
 
             const Text('Nama Tampilan (Display Name)',
                 style:
                     TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             TextFormField(
               controller: _displayNameCtrl,
               decoration: const InputDecoration(
@@ -205,12 +205,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Nama tampilan harus diisi' : null,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppTheme.s20),
 
             const Text('Nama Pengguna (Username)',
                 style:
                     TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             TextFormField(
               controller: _usernameCtrl,
               decoration: const InputDecoration(
@@ -220,13 +220,13 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Username harus diisi' : null,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppTheme.s20),
 
             if (!isEdit) ...[
               const Text('Email',
                   style: TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
@@ -237,14 +237,14 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                 validator: (v) =>
                     v?.trim().isEmpty == true ? 'Email harus diisi' : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
             ],
 
             if (!isEdit) ...[
               const Text('Password',
                   style: TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _pwdCtrl,
                 obscureText: true,
@@ -262,14 +262,14 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
             ],
 
             if (isEdit) ...[
               const Text('Email Baru (opsional)',
                   style: TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
@@ -278,12 +278,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   hintText: 'Kosongkan jika tidak diubah',
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
 
               const Text('Password Baru (opsional)',
                   style: TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _pwdCtrl,
                 obscureText: true,
@@ -292,12 +292,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   hintText: 'Kosongkan jika tidak diubah',
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
 
               const Text('Konfirmasi Password Baru',
                   style: TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _confirmPwdCtrl,
                 obscureText: true,
@@ -313,13 +313,13 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppTheme.s20),
             ],
 
             const Text('Role',
                 style:
                     TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             DropdownButtonFormField<String>(
               initialValue: _selectedRole,
               decoration: const InputDecoration(
@@ -336,7 +336,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   ? null
                   : (v) => setState(() => _selectedRole = v ?? _selectedRole),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppTheme.s32),
 
             SizedBox(
               width: double.infinity,

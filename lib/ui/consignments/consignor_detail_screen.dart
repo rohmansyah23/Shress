@@ -106,7 +106,7 @@ class _ConsignorDetailScreenState
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Edit Pihak Penitip'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -115,13 +115,13 @@ class _ConsignorDetailScreenState
               controller: nameCtrl,
               decoration: const InputDecoration(labelText: 'Nama'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             TextField(
               controller: phoneCtrl,
               decoration: const InputDecoration(labelText: 'Telepon'),
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             TextField(
               controller: notesCtrl,
               decoration: const InputDecoration(labelText: 'Catatan'),
@@ -172,7 +172,7 @@ class _ConsignorDetailScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Hapus Pihak Penitip'),
         content: Text(
           'Yakin ingin menghapus "${widget.consignor.name}"? Semua data titipan terkait juga akan dihapus.',
@@ -248,10 +248,10 @@ class _ConsignorDetailScreenState
           : RefreshIndicator(
               onRefresh: _loadData,
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppTheme.s16),
                 children: [
                   _buildConsignorInfoCard(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.s16),
                   if (_consignments.isEmpty)
                     _buildEmptyState()
                   else
@@ -270,7 +270,7 @@ class _ConsignorDetailScreenState
   Widget _buildConsignorInfoCard() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppTheme.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -293,7 +293,7 @@ class _ConsignorDetailScreenState
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppTheme.s16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,15 +312,15 @@ class _ConsignorDetailScreenState
             ),
             if (widget.consignor.notes != null &&
                 widget.consignor.notes!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               const Divider(),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               Text(
                 widget.consignor.notes!,
                 style: AppTheme.caption.copyWith(fontSize: 13),
               ),
             ],
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             Text(
               'Jumlah Titipan: ${_consignments.length}',
               style: AppTheme.labelSmall.copyWith(fontSize: 12),
@@ -334,17 +334,17 @@ class _ConsignorDetailScreenState
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 60),
+        padding: const EdgeInsets.symmetric(vertical: 64),
         child: Column(
           children: [
             Icon(Icons.receipt_long_outlined,
                 size: 64, color: Theme.of(context).textTheme.bodySmall?.color),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.s16),
             Text(
               'Belum ada titipan',
               style: AppTheme.caption.copyWith(fontSize: 14),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             Text(
               'Tekan tombol + untuk menambah titipan',
               style: AppTheme.caption.copyWith(
@@ -369,10 +369,10 @@ class _ConsignorDetailScreenState
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         onTap: () => _openConsignmentDetail(consignment),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.s16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -383,12 +383,12 @@ class _ConsignorDetailScreenState
                     height: 44,
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                     ),
                     child: Icon(Icons.inventory_2_outlined,
                         size: 22, color: color),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppTheme.s12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,7 +398,7 @@ class _ConsignorDetailScreenState
                               consignment.consignmentDate),
                           style: AppTheme.caption.copyWith(fontSize: 11),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppTheme.s4),
                         Text(
                           FormatHelpers.rupiah(
                             (consignment.isDaily || consignment.isReseller) &&
@@ -417,7 +417,7 @@ class _ConsignorDetailScreenState
                     ),
                   ),
                   Icon(Icons.chevron_right_rounded,
-                      color: Colors.grey.shade400),
+                      color: AppTheme.secondaryText),
                 ],
               ),
               if (items.isNotEmpty) ...[

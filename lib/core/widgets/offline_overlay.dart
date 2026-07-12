@@ -127,7 +127,7 @@ class _OfflineOverlayState extends ConsumerState<OfflineOverlay>
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppTheme.s12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 48),
                     child: Text(
@@ -140,7 +140,7 @@ class _OfflineOverlayState extends ConsumerState<OfflineOverlay>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.s8),
                   // Small indicator that we're watching
                   Text(
                     ref.watch(isOnlineProvider)
@@ -151,7 +151,7 @@ class _OfflineOverlayState extends ConsumerState<OfflineOverlay>
                       color: Colors.white.withValues(alpha: 0.4),
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: AppTheme.s40),
                   _RetryButton(onRetry: _handleRetry),
                 ],
               ),
@@ -232,7 +232,7 @@ class _RetryButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
       ),
     );
   }

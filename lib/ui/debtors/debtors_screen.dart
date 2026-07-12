@@ -125,7 +125,7 @@ class _DebtorsScreenState extends ConsumerState<DebtorsScreen> {
                                     .onSurfaceVariant
                                     .withValues(alpha: 0.4),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: AppTheme.s12),
                               Text(
                                 'Belum ada penghutang',
                                 style: Theme.of(context)
@@ -139,7 +139,7 @@ class _DebtorsScreenState extends ConsumerState<DebtorsScreen> {
                                           .onSurfaceVariant,
                                     ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: AppTheme.s4),
                               Text(
                                 'Tekan + untuk menambah hutang baru',
                                 style: AppTheme.caption.copyWith(
@@ -229,7 +229,7 @@ class _DebtorsScreenState extends ConsumerState<DebtorsScreen> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -241,7 +241,7 @@ class _DebtorsScreenState extends ConsumerState<DebtorsScreen> {
                 Text('Ringkasan Piutang', style: AppTheme.labelSmall),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.s16),
             Row(
               children: [
                 Expanded(
@@ -249,7 +249,7 @@ class _DebtorsScreenState extends ConsumerState<DebtorsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Total Piutang Aktif', style: AppTheme.caption),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppTheme.s4),
                       Text(
                         FormatHelpers.rupiah(totalOwed),
                         style: AppTheme.amountMedium.copyWith(
@@ -261,7 +261,7 @@ class _DebtorsScreenState extends ConsumerState<DebtorsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.s16),
             Row(
               children: [
                 Expanded(
@@ -272,7 +272,7 @@ class _DebtorsScreenState extends ConsumerState<DebtorsScreen> {
                     color: AppTheme.infoColorTheme(context),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppTheme.s12),
                 Expanded(
                   child: _SummaryItem(
                     label: 'Sudah Dibayar',
@@ -309,7 +309,7 @@ class _SummaryItem extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,7 +347,7 @@ class _DebtorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -358,7 +358,7 @@ class _DebtorCard extends StatelessWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   color: AppTheme.warningColorTheme(context).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -370,7 +370,7 @@ class _DebtorCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.s12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

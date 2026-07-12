@@ -127,7 +127,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Hapus User'),
         content: Text('Yakin ingin menghapus user "${user.username}"?'),
         actions: [
@@ -240,8 +240,8 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.person_search_rounded,
-                            size: 64, color: Colors.grey.shade400),
-                        const SizedBox(height: 16),
+                            size: 64, color: AppTheme.secondaryText),
+                        const SizedBox(height: AppTheme.s16),
                         Text(
                           _searchQuery.isNotEmpty
                               ? 'Tidak ada user ditemukan'
@@ -311,13 +311,16 @@ class _UserCard extends ConsumerWidget {
 
   Color _roleColor(BuildContext context, String role) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final lightColor = AppBadge.roleColor(role);
+    if (!isDark) return lightColor;
+    // Dark mode: use lighter variants for contrast
     switch (role) {
       case AppConstants.roleOwner:
-        return isDark ? Theme.of(context).colorScheme.primary : AppTheme.primaryColor;
+        return const Color(0xFFFFB74D); // lighter amber
       case AppConstants.roleManager:
-        return isDark ? Theme.of(context).colorScheme.secondary : AppTheme.infoColor;
+        return const Color(0xFF64B5F6); // lighter blue
       case AppConstants.roleStaff:
-        return isDark ? Theme.of(context).colorScheme.tertiary : AppTheme.secondaryColor;
+        return const Color(0xFF80CBC4); // lighter teal
       default:
         return Colors.grey;
     }
@@ -362,7 +365,7 @@ class _UserCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppTheme.s12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -400,14 +403,14 @@ class _UserCard extends ConsumerWidget {
             ),
           ),
           if (user.role != AppConstants.roleOwner) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: AppTheme.s4),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Text('Role:',
                       style: AppTheme.caption.copyWith(fontSize: 12)),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppTheme.s8),
                   SizedBox(
                     height: 32,
                     child: DropdownButtonHideUnderline(
@@ -442,12 +445,12 @@ class _UserCard extends ConsumerWidget {
                   style: AppTheme.caption.copyWith(
                       fontWeight: FontWeight.w600, fontSize: 12)),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppTheme.s4),
             assignedIdsAsync.when(
               data: (assignedIds) {
                 if (businesses.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
+                  return Padding(
+                    padding: EdgeInsets.all(AppTheme.s16),
                     child: Text('Belum ada bisnis',
                         style: AppTheme.caption),
                   );
@@ -495,7 +498,7 @@ class _UserCard extends ConsumerWidget {
               ),
             ),
           ] else
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
         ],
       ),
     );

@@ -196,12 +196,12 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
           : RefreshIndicator(
               onRefresh: _loadData,
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppTheme.s16),
                 children: [
                   FadeInEntrance(
                     child: _buildSummaryCard(),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.s16),
                   if (_consignors.isEmpty)
                     _buildEmptyState()
                   else
@@ -224,7 +224,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppTheme.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -240,11 +240,11 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                   child: const Icon(Icons.inventory_2_outlined,
                       size: 20, color: AppTheme.primaryColor),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppTheme.s12),
                 Text('Ringkasan Titipan', style: AppTheme.heading3),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppTheme.s20),
             Row(
               children: [
                 Expanded(
@@ -254,7 +254,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                     AppTheme.warningColorTheme(context),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppTheme.s12),
                 Expanded(
                   child: _summaryItem(
                     'Sudah Dibayar',
@@ -264,7 +264,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             _summaryItem(
               'Jumlah Pihak Penitip',
               '$consignorCount pihak penitip',
@@ -281,7 +281,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTheme.labelSmall),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppTheme.s4),
         Text(
           value,
           style: AppTheme.amountMedium.copyWith(color: color),
@@ -293,17 +293,17 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 60),
+        padding: const EdgeInsets.symmetric(vertical: 64),
         child: Column(
           children: [
             Icon(Icons.people_outline_rounded,
                 size: 64, color: Theme.of(context).textTheme.bodySmall?.color),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.s16),
             Text(
               'Belum ada pihak penitip',
               style: AppTheme.caption.copyWith(fontSize: 14),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             Text(
               'Tekan tombol + untuk menambah pihak penitip baru',
               style: AppTheme.caption.copyWith(
@@ -325,10 +325,10 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         onTap: () => _openConsignorDetail(consignor),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.s16),
           child: Row(
             children: [
               CircleAvatar(
@@ -346,7 +346,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.s12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,7 +389,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
               ),
               const SizedBox(width: 4),
               Icon(Icons.chevron_right_rounded,
-                  color: Colors.grey.shade400),
+                  color: AppTheme.secondaryText),
             ],
           ),
         ),

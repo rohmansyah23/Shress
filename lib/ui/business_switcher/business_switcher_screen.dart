@@ -56,12 +56,12 @@ class BusinessSwitcherScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.business_rounded,
-                              size: 64, color: Colors.grey.shade400),
-                          const SizedBox(height: 16),
+                              size: 64, color: AppTheme.secondaryText),
+                          const SizedBox(height: AppTheme.s16),
                           Text('Tidak ada bisnis tersedia',
                               style: AppTheme.heading3
-                                  .copyWith(color: Colors.grey)),
-                          const SizedBox(height: 8),
+                                  .copyWith(color: AppTheme.secondaryText)),
+                          const SizedBox(height: AppTheme.s8),
                           Text('Hubungi Owner untuk mendapatkan akses',
                               style: AppTheme.caption),
                         ],
@@ -74,7 +74,7 @@ class BusinessSwitcherScreen extends ConsumerWidget {
 
             return ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppTheme.s16),
               itemCount: businesses.length,
               itemBuilder: (context, index) {
                 final business = businesses[index];
@@ -123,9 +123,9 @@ class _BusinessCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.s16),
           child: Row(
             children: [
               Container(
@@ -133,12 +133,12 @@ class _BusinessCard extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 ),
                 child: Icon(Icons.store_rounded,
                     color: colorScheme.primary, size: 28),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: AppTheme.s16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +146,7 @@ class _BusinessCard extends StatelessWidget {
                     Text(business.name, style: AppTheme.heading3),
                     if (business.description != null &&
                         business.description!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppTheme.s4),
                       Text(business.description!,
                           style: AppTheme.caption,
                           maxLines: 1,
@@ -156,7 +156,7 @@ class _BusinessCard extends StatelessWidget {
                 ),
               ),
               Icon(Icons.chevron_right_rounded,
-                  color: Colors.grey.shade400),
+                  color: AppTheme.secondaryText),
             ],
           ),
         ),

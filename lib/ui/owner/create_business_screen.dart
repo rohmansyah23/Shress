@@ -205,13 +205,13 @@ class _CreateBusinessScreenState
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppTheme.s20),
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppTheme.s20),
               decoration: BoxDecoration(
                 color: AppTheme.profitColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 border: Border.all(
                   color: AppTheme.profitColor.withValues(alpha: 0.15),
                   width: 1,
@@ -221,7 +221,7 @@ class _CreateBusinessScreenState
                 children: [
                   Icon(Icons.add_business_rounded,
                       size: 32, color: AppTheme.profitColor),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppTheme.s12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,12 +246,12 @@ class _CreateBusinessScreenState
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppTheme.s24),
 
             const Text('Nama Bisnis*',
                 style:
                     TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             TextFormField(
               controller: _nameController,
               textInputAction: TextInputAction.next,
@@ -262,12 +262,12 @@ class _CreateBusinessScreenState
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Nama bisnis harus diisi' : null,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppTheme.s20),
 
             const Text('Deskripsi (opsional)',
                 style:
                     TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             TextFormField(
               controller: _descController,
               maxLines: 3,
@@ -278,7 +278,7 @@ class _CreateBusinessScreenState
                 alignLabelWithHint: true,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppTheme.s24),
 
             Row(
               children: [
@@ -299,12 +299,12 @@ class _CreateBusinessScreenState
                   ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.s8),
             Text(
               'Upload QRIS untuk bisnis ini. Bisa dilewati dan diatur nanti.',
               style: AppTheme.caption.copyWith(fontSize: 12),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
 
             if (!_hasQris) ...[
               SizedBox(
@@ -327,7 +327,7 @@ class _CreateBusinessScreenState
                 onSelectionChanged: (v) =>
                     setState(() => _useUrl = v.first),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
 
               if (_useUrl)
                 TextField(
@@ -342,20 +342,20 @@ class _CreateBusinessScreenState
               else ...[
                 InkWell(
                   onTap: _pickImage,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   child: Container(
                     width: double.infinity,
                     height: 200,
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                       border: Border.all(
                           color: Theme.of(context).colorScheme.outlineVariant,
                           width: 1),
                     ),
                     child: _previewUrl != null
                         ? ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                             child: Image.memory(
                               _selectedImageBytes!,
                               fit: BoxFit.contain,
@@ -373,7 +373,7 @@ class _CreateBusinessScreenState
                                       .colorScheme
                                       .onSurfaceVariant
                                       .withValues(alpha: 0.5)),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: AppTheme.s8),
                               Text('Ketuk untuk pilih gambar',
                                   style: AppTheme.caption.copyWith(
                                       color: Theme.of(context)
@@ -385,7 +385,7 @@ class _CreateBusinessScreenState
                 ),
               ],
             ],
-            const SizedBox(height: 32),
+            const SizedBox(height: AppTheme.s32),
 
             SizedBox(
               width: double.infinity,

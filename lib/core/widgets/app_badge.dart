@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+
 /// A small badge/chip component for labels like roles, status, or tags.
 class AppBadge extends StatelessWidget {
   final String label;
@@ -14,24 +15,36 @@ class AppBadge extends StatelessWidget {
     required this.label,
     required this.color,
     this.fontSize = 11,
-    this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    this.borderRadius = 4,
+    this.padding = const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    this.borderRadius = AppTheme.radiusSmall,
   });
 
-  factory AppBadge.role(String role, {double fontSize = 11}) {
-    final color = switch (role) {
-      'owner' => AppTheme.primaryColor,
+  /// Get a distinct badge color for each role.
+  /// Owner = amber/gold, Manager = blue, Staff = teal.
+  static Color roleColor(String role) {
+    return switch (role) {
+      'owner' => AppTheme.warningColor,
       'manager' => AppTheme.infoColor,
       'staff' => AppTheme.secondaryColor,
-      _ => Colors.grey,
+      _ => AppTheme.secondaryText,
     };
-    final label = switch (role) {
+  }
+
+  static String roleLabel(String role) {
+    return switch (role) {
       'owner' => 'Owner',
       'manager' => 'Manager',
       'staff' => 'Staff',
       _ => role,
     };
-    return AppBadge(label: label, color: color, fontSize: fontSize);
+  }
+
+  factory AppBadge.role(String role, {double fontSize = 11}) {
+    return AppBadge(
+      label: roleLabel(role),
+      color: roleColor(role),
+      fontSize: fontSize,
+    );
   }
 
   factory AppBadge.profitLoss(double netProfit, {double fontSize = 11}) {

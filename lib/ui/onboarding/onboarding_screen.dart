@@ -169,7 +169,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             height: 100,
             decoration: BoxDecoration(
               color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
             ),
             child: Icon(
               Icons.account_balance_rounded,
@@ -177,20 +177,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               color: colorScheme.primary,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppTheme.s32),
           Text(
             'Selamat Datang di\n${AppConstants.appName}',
             textAlign: TextAlign.center,
             style: AppTheme.heading1.copyWith(color: colorScheme.primary),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.s16),
           Text(
             'Aplikasi pencatatan keuangan multi-bisnis\nuntuk membantu Anda mengelola\npemasukan dan pengeluaran dengan mudah.',
             textAlign: TextAlign.center,                  style: AppTheme.bodyText.copyWith(
                     height: 1.6,
                   ),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: AppTheme.s48),
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -214,27 +214,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 40),
+          const SizedBox(height: AppTheme.s40),
           Container(
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppTheme.profitColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
+              color: AppTheme.profitColorTheme(context).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.add_business_rounded,
               size: 40,
-              color: AppTheme.profitColor,
+              color: AppTheme.profitColorTheme(context),
             ),
           ),
-          const SizedBox(height: 24),
-          const Text(
+          const SizedBox(height: AppTheme.s24),
+          Text(
             'Buat Bisnis Pertama Anda',
             textAlign: TextAlign.center,
             style: AppTheme.heading2,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppTheme.s8),
           Text(
             'Isi nama bisnis untuk mulai\nmencatat keuangan.',
             textAlign: TextAlign.center,
@@ -242,7 +242,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppTheme.s32),
           TextFormField(
             controller: _businessNameCtrl,
             textInputAction: TextInputAction.next,
@@ -252,7 +252,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               hintText: 'Contoh: Warung Makmur',
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.s16),
           TextFormField(
             controller: _businessDescCtrl,
             maxLines: 2,
@@ -262,25 +262,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               hintText: 'Jenis usaha atau keterangan',
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppTheme.s32),
           SizedBox(
             width: double.infinity,
             height: 52,
             child: FilledButton(
-              onPressed: _isCreatingBusiness ? null : _handleCreateBusiness,
-              child: _isCreatingBusiness
-                  ? const SizedBox(
+              onPressed: _isCreatingBusiness ? null : _handleCreateBusiness,                  child: _isCreatingBusiness
+                  ? SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
                     )
                   : const Text('Buat Bisnis',
                       style: TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.s12),
           TextButton(
             onPressed: () {
               setState(() => _skipBusinessCreation = true);
@@ -288,7 +287,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             },
             child: const Text('Nanti Saja', style: TextStyle(fontSize: 13)),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: AppTheme.s40),
         ],
       ),
     );
@@ -325,21 +324,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ];
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
+      padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         children: [
-          const SizedBox(height: 24),
-          const Text(
+          const SizedBox(height: AppTheme.s24),
+          Text(
             'Fitur Unggulan',
             textAlign: TextAlign.center,
             style: AppTheme.heading2,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppTheme.s32),
           ...features.map((f) => Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: _FeatureCard(item: f),
               )),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.s24),
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -350,7 +349,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppTheme.s32),
         ],
       ),
     );
@@ -368,22 +367,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppTheme.profitColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(28),
+              color: AppTheme.profitColorTheme(context).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.check_circle_rounded,
               size: 52,
-              color: AppTheme.profitColor,
+              color: AppTheme.profitColorTheme(context),
             ),
           ),
-          const SizedBox(height: 32),
-          const Text(
+          const SizedBox(height: AppTheme.s32),
+          Text(
             'Siap Memulai!',
             textAlign: TextAlign.center,
             style: AppTheme.heading1,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.s16),
           Text(
             'Anda sudah siap menggunakan ${AppConstants.appName}.\n'
             'Mulai catat transaksi dan pantau\nkeuangan bisnis Anda.',
@@ -391,7 +390,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     height: 1.6,
                   ),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: AppTheme.s48),
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -433,7 +432,7 @@ class _FeatureCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -442,11 +441,11 @@ class _FeatureCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: item.iconColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
               ),
               child: Icon(item.icon, color: item.iconColor, size: 24),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppTheme.s16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -454,7 +453,7 @@ class _FeatureCard extends StatelessWidget {
                   Text(item.title,
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppTheme.s4),
                   Text(item.desc,
                       style: AppTheme.caption.copyWith(height: 1.5)),
                 ],

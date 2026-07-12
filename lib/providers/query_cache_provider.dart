@@ -1,4 +1,3 @@
-import 'dart:collection';
 
 class CacheEntry<T> {
   final T data;
@@ -12,7 +11,7 @@ class CacheEntry<T> {
 }
 
 class QueryCache {
-  final _cache = LinkedHashMap<String, CacheEntry<dynamic>>();
+  final _cache = <String, CacheEntry<dynamic>>{};
   final int maxEntries;
 
   QueryCache({this.maxEntries = 50});

@@ -79,7 +79,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Edit Penghutang'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -88,13 +88,13 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Nama'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             TextField(
               controller: phoneController,
               decoration: const InputDecoration(labelText: 'Telepon'),
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             TextField(
               controller: notesController,
               decoration: const InputDecoration(labelText: 'Catatan'),
@@ -150,7 +150,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Hapus Penghutang'),
         content: Text(
           'Yakin ingin menghapus ${_debtor?.name ?? ''}? Semua data hutang terkait juga akan dihapus.',
@@ -224,7 +224,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Edit Hutang'),
         content: SingleChildScrollView(
           child: Column(
@@ -239,12 +239,12 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                   prefixIcon: Icon(Icons.monetization_on_outlined),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               TextField(
                 controller: descController,
                 decoration: const InputDecoration(labelText: 'Deskripsi'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               TextField(
                 controller: dueDateController,
                 readOnly: true,
@@ -314,7 +314,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Hapus Hutang'),
         content: const Text('Yakin ingin menghapus data hutang ini?'),
         actions: [
@@ -416,7 +416,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                 child: Row(
                   children: [
                     Icon(Icons.edit_outlined, size: 20),
-                    SizedBox(width: 8),
+                    SizedBox(width: AppTheme.s8),
                     Text('Edit'),
                   ],
                 ),
@@ -427,7 +427,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                   children: [
                     Icon(Icons.delete_outline_rounded,
                         size: 20, color: AppTheme.lossColor),
-                    SizedBox(width: 8),
+                    SizedBox(width: AppTheme.s8),
                     Text('Hapus', style: TextStyle(color: AppTheme.lossColor)),
                   ],
                 ),
@@ -470,7 +470,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                                     .onSurfaceVariant
                                     .withValues(alpha: 0.4),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: AppTheme.s8),
                               Text(
                                 'Belum ada hutang',
                                 style: AppTheme.caption.copyWith(
@@ -557,7 +557,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
   Widget _buildInfoCard() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -569,7 +569,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.warningColorTheme(context)
                         .withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Center(
                     child: Text(
@@ -582,7 +582,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppTheme.s12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -607,11 +607,11 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
             ),
             if ((_debtor?.notes ?? widget.debtor.notes) != null &&
                 (_debtor?.notes ?? widget.debtor.notes)!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               const Divider(height: 1),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               Text('Catatan', style: AppTheme.labelSmall),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppTheme.s4),
               Text(
                 _debtor?.notes ?? widget.debtor.notes!,
                 style: AppTheme.bodyText,
@@ -645,7 +645,7 @@ class _DebtCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -656,7 +656,7 @@ class _DebtCard extends StatelessWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
                   debt.isPaid
@@ -665,7 +665,7 @@ class _DebtCard extends StatelessWidget {
                   color: statusColor,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.s12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -716,7 +716,7 @@ class _DebtCard extends StatelessWidget {
                     ),
                   ),
                   if (!debt.isPaid) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppTheme.s4),
                     Text(
                       'Sisa: ${FormatHelpers.rupiah(debt.remainingAmount)}',
                       style: AppTheme.caption.copyWith(
@@ -743,7 +743,7 @@ class _DebtCard extends StatelessWidget {
                     child: Row(
                       children: [
                         Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: 8),
+                        SizedBox(width: AppTheme.s8),
                         Text('Edit'),
                       ],
                     ),
@@ -754,7 +754,7 @@ class _DebtCard extends StatelessWidget {
                       children: [
                         Icon(Icons.delete_outline_rounded,
                             size: 18, color: AppTheme.lossColor),
-                        SizedBox(width: 8),
+                        SizedBox(width: AppTheme.s8),
                         Text('Hapus',
                             style: TextStyle(color: AppTheme.lossColor)),
                       ],
@@ -836,7 +836,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Edit Pembayaran'),
         content: SingleChildScrollView(
           child: Column(
@@ -851,7 +851,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                   prefixIcon: Icon(Icons.monetization_on_outlined),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               TextField(
                 controller: notesController,
                 decoration: const InputDecoration(labelText: 'Catatan'),
@@ -902,7 +902,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Hapus Pembayaran'),
         content: const Text('Yakin ingin menghapus data pembayaran ini?'),
         actions: [
@@ -984,7 +984,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Detail Hutang', style: AppTheme.heading2),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppTheme.s4),
                       Text(
                         FormatHelpers.rupiah(widget.debt.amount),
                         style: AppTheme.amountMedium.copyWith(
@@ -1001,7 +1001,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppTheme.s8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -1010,7 +1010,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                   label: 'Dibayar',
                   value: FormatHelpers.rupiah(_currentDebt.paidAmount),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.s8),
                 _InfoChip(
                   label: 'Sisa',
                   value: FormatHelpers.rupiah(_currentDebt.remainingAmount),
@@ -1019,12 +1019,12 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.s16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text('Riwayat Pembayaran', style: AppTheme.heading3),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppTheme.s8),
           Expanded(
             child: _payments.isEmpty
                 ? Center(
@@ -1039,7 +1039,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                               .onSurfaceVariant
                               .withValues(alpha: 0.4),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.s8),
                         Text(
                           'Belum ada pembayaran',
                           style: AppTheme.caption.copyWith(
@@ -1101,7 +1101,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                                 child: Row(
                                   children: [
                                     Icon(Icons.edit_outlined, size: 18),
-                                    SizedBox(width: 8),
+                                    SizedBox(width: AppTheme.s8),
                                     Text('Edit'),
                                   ],
                                 ),
@@ -1112,7 +1112,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                                   children: [
                                     Icon(Icons.delete_outline_rounded,
                                         size: 18, color: AppTheme.lossColor),
-                                    SizedBox(width: 8),
+                                    SizedBox(width: AppTheme.s8),
                                     Text('Hapus',
                                         style: TextStyle(
                                             color: AppTheme.lossColor)),
@@ -1266,7 +1266,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _FormLabel('Jumlah Pembayaran (Rp)'),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.s8),
                         TextFormField(
                           controller: amountController,
                           keyboardType: TextInputType.number,
@@ -1291,9 +1291,9 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: AppTheme.s20),
                         _FormLabel('Tanggal Pembayaran'),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.s8),
                         TextFormField(
                           controller: dateController,
                           readOnly: true,
@@ -1316,9 +1316,9 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                             suffixIcon: Icon(Icons.arrow_drop_down),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: AppTheme.s20),
                         _FormLabel('Catatan (opsional)'),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppTheme.s8),
                         TextFormField(
                           controller: notesController,
                           maxLines: 2,
@@ -1341,7 +1341,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                                     final user = ref.read(currentUserProvider);
                                     if (user == null) {
                                       setSheetState(() => isSaving = false);
-                                      if (mounted) {
+                                      if (context.mounted) {
                                         ErrorSnackbar.showError(context,
                                             'Sesi tidak valid, silakan login ulang');
                                       }
@@ -1372,12 +1372,13 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                                             formatDateIso(selectedDate),
                                         incomeCategoryId: incomeCategoryId,
                                       );
-                                      if (!mounted) return;
+                                      if (!context.mounted) return;
                                       Navigator.of(context).pop();
                                       _refreshPayments();
                                       _refreshDebt();
                                       widget.onPaymentAdded();
                                       triggerTransactionRefresh(ref);
+                                      if (!context.mounted) return;
                                       ErrorSnackbar.showSuccess(
                                           context,
                                           'Pembayaran berhasil dicatat');

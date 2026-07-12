@@ -76,13 +76,13 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                   size: 72,
                   color: _success ? AppTheme.profitColor : colorScheme.primary,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppTheme.s16),
                 Text(
                   _success ? 'Password Berhasil Diubah' : 'Buat Password Baru',
                   textAlign: TextAlign.center,
                   style: AppTheme.heading2,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppTheme.s8),
                 Text(
                   _success
                       ? 'Password Anda telah berhasil diubah. Silakan login dengan password baru.'
@@ -90,7 +90,7 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                   textAlign: TextAlign.center,
                   style: AppTheme.bodyText.copyWith(height: 1.5),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppTheme.s32),
 
                 if (!_success) ...[
                   Form(
@@ -127,7 +127,7 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppTheme.s16),
                         TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
@@ -158,18 +158,18 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: AppTheme.s24),
                         SizedBox(
                           height: 52,
                           child: FilledButton(
                             onPressed: _isLoading ? null : _handleResetPassword,
                             child: _isLoading
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 24,
                                     height: 24,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Colors.white,
+                                      color: Theme.of(context).colorScheme.onPrimary,
                                     ),
                                   )
                                 : const Text(
@@ -208,7 +208,7 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                   ),
                 ],
 
-                const SizedBox(height: 24),
+                const SizedBox(height: AppTheme.s24),
               ],
             ),
           ),

@@ -10,20 +10,20 @@ class SyncStatusScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Status Sinkronisasi')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Status', style: AppTheme.heading3),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppTheme.s16),
                 child: Row(
                   children: [
                     const Icon(Icons.cloud_done_rounded,
                         color: AppTheme.profitColor, size: 32),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: AppTheme.s16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +32,7 @@ class SyncStatusScreen extends StatelessWidget {
                               style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppTheme.s4),
                           Text(
                             'Semua data tersimpan langsung ke cloud.',
                             style: AppTheme.caption,
@@ -44,7 +44,7 @@ class SyncStatusScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.s16),
             Text(
               'Mode offline akan tersedia di V2.',
               style: AppTheme.caption,

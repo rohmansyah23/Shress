@@ -60,7 +60,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Tambah Kategori'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -70,9 +70,11 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               controller: nameCtrl,
               decoration: const InputDecoration(labelText: 'Nama Kategori'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             DropdownButtonFormField<String>(
               initialValue: type,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              dropdownColor: Theme.of(context).colorScheme.surface,
               items: const [
                 DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
                 DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
@@ -118,7 +120,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Edit Kategori'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -128,9 +130,11 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               controller: nameCtrl,
               decoration: const InputDecoration(labelText: 'Nama Kategori'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.s12),
             DropdownButtonFormField<String>(
               initialValue: type,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              dropdownColor: Theme.of(context).colorScheme.surface,
               items: const [
                 DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
                 DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
@@ -174,7 +178,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSmall)),
         title: const Text('Hapus Kategori'),
         content: Text('Hapus kategori "${c.name}"?'),
         actions: [
@@ -267,7 +271,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                               size: 64,
                               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.s16),
                             Text(
                               _searchQuery.isNotEmpty
                                   ? 'Tidak ada kategori ditemukan'
@@ -304,7 +308,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                                       color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: AppTheme.s12),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
