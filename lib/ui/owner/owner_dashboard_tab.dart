@@ -207,10 +207,10 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.inventory_2_rounded,
-                      label: 'Konsinyasi',
+                       label: 'Titipan',
                       color: AppTheme.secondaryColor,
                       onTap: () {
-                        _pickBusinessForKonsinyasi(context, businesses);
+                        _pickBusinessForTitipan(context, businesses);
                       },
                     ),
                   ),
@@ -581,7 +581,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                           Icon(Icons.inventory_2_rounded,
                               size: 18, color: AppTheme.secondaryColor),
                           const SizedBox(width: 6),
-                          Text('Konsinyasi Aktif',
+                          Text('Titipan Aktif',
                               style: AppTheme.labelSmall),
                         ],
                       ),
@@ -650,7 +650,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     );
   }
 
-  void _pickBusinessForKonsinyasi(
+  void _pickBusinessForTitipan(
       BuildContext context, List<BusinessModel> businesses) {
     if (businesses.isEmpty) return;
     if (businesses.length == 1) {

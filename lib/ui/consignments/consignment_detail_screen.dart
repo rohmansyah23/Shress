@@ -123,7 +123,7 @@ class _ConsignmentDetailScreenState
         builder: (ctx, setDialogState) => AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Bayar ke Penitip'),
+          title: const Text('Bayar ke Pihak Penitip'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +181,7 @@ class _ConsignmentDetailScreenState
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '2 transaksi akan dibuat otomatis',
+                        'transaksi akan dibuat otomatis',
                         style: AppTheme.caption.copyWith(fontSize: 12),
                       ),
                     ),
@@ -289,7 +289,7 @@ class _ConsignmentDetailScreenState
   Future<void> _recordSettlement() async {
     final remaining = _consignment.displayTotal;
     if (remaining <= 0) {
-      ErrorSnackbar.showMessage(context, 'Konsinyasi sudah lunas');
+      ErrorSnackbar.showMessage(context, 'Titipan sudah lunas');
       return;
     }
 
@@ -425,9 +425,9 @@ class _ConsignmentDetailScreenState
       builder: (ctx) => AlertDialog(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Hapus Konsinyasi'),
+        title: const Text('Hapus Titipan'),
         content: Text(
-          'Yakin ingin menghapus konsinyasi tanggal ${FormatHelpers.displayDate(_consignment.consignmentDate)}?',
+          'Yakin ingin menghapus titipan tanggal ${FormatHelpers.displayDate(_consignment.consignmentDate)}?',
         ),
         actions: [
           TextButton(
@@ -452,7 +452,7 @@ class _ConsignmentDetailScreenState
         triggerDebtRefresh(ref);
         Navigator.of(context).pop(true);
         ErrorSnackbar.showSuccess(
-            context, 'Konsinyasi berhasil dihapus');
+            context, 'Titipan berhasil dihapus');
       } catch (e) {
         if (!mounted) return;
         ErrorSnackbar.show(context, ErrorHandler.classify(e));
@@ -519,7 +519,7 @@ class _ConsignmentDetailScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Konsinyasi'),
+        title: const Text('Detail Titipan'),
         actions: [
           if (_consignment.status == AppConstants.consignmentActive)
             IconButton(
@@ -592,7 +592,7 @@ class _ConsignmentDetailScreenState
             foregroundColor: Colors.white,
             shape: fabShape,
             icon: const Icon(Icons.payments_outlined),
-            label: const Text('Bayar ke Penitip'),
+            label: const Text('Bayar ke Pihak Penitip'),
           );
         }
         return FloatingActionButton.extended(
@@ -916,19 +916,19 @@ class _ConsignmentDetailScreenState
             Text('Ringkasan Penjualan', style: AppTheme.labelSmall),
             const SizedBox(height: 12),
             _buildSummaryRow(
-              'Total dari pelanggan',
+              'Total Pendapatan',
               FormatHelpers.rupiah(totalFromSales),
               AppTheme.profitColorTheme(context),
             ),
             const SizedBox(height: 8),
             _buildSummaryRow(
-              'Total bayar penitip',
+              'Total ke Pihak Penitip',
               FormatHelpers.rupiah(totalPayment),
               AppTheme.lossColorTheme(context),
             ),
             const Divider(height: 24),
             _buildSummaryRow(
-              'Komisi warung',
+              'Komisi',
               FormatHelpers.rupiah(commission),
               AppTheme.primaryColor,
             ),
@@ -1044,7 +1044,7 @@ class _ConsignmentDetailScreenState
             Row(
               children: [
                 _buildQtyChip(
-                    'Dititip', item.quantity, AppTheme.primaryColor),
+                    'Dititipkan', item.quantity, AppTheme.primaryColor),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4),
                   child: Icon(Icons.arrow_forward_rounded,
@@ -1072,13 +1072,13 @@ class _ConsignmentDetailScreenState
               Row(
                 children: [
                   Text(
-                    '${item.quantitySold} × ${FormatHelpers.rupiah(item.sellingPrice!)} dari pelanggan',
+                    '${item.quantitySold} × ${FormatHelpers.rupiah(item.sellingPrice!)} pendapatan',
                     style:
                         AppTheme.caption.copyWith(fontSize: 11),
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    '${item.quantitySold} × ${FormatHelpers.rupiah(item.agreedPrice)} ke penitip',
+                    '${item.quantitySold} × ${FormatHelpers.rupiah(item.agreedPrice)} ke pihak penitip',
                     style: AppTheme.caption.copyWith(
                         fontSize: 11,
                         color: AppTheme.lossColorTheme(context)),

@@ -79,7 +79,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
   Future<void> _handleSave() async {
     if (!_isValid) {
       ErrorSnackbar.showMessage(
-          context, 'Jumlah terjual melebihi jumlah dititip');
+          context, 'Jumlah terjual melebihi jumlah dititipkan');
       return;
     }
 
@@ -224,7 +224,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                   ),
                 ),
                 Text(
-                  'Dititip: ${item.quantity} pcs',
+                  'Dititipkan: ${item.quantity} pcs',
                   style: AppTheme.caption.copyWith(fontSize: 12),
                 ),
               ],
@@ -309,7 +309,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Dari pelanggan', style: AppTheme.labelSmall),
+                      Text('Pendapatan', style: AppTheme.labelSmall),
                       Text(
                         FormatHelpers.rupiah(fromSales),
                         style: const TextStyle(
@@ -322,7 +322,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Bayar penitip', style: AppTheme.labelSmall),
+                      Text('Bayar pihak penitip', style: AppTheme.labelSmall),
                       Text(
                         FormatHelpers.rupiah(payment),
                         style: TextStyle(
@@ -353,19 +353,19 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
             Text('Ringkasan', style: AppTheme.labelSmall),
             const SizedBox(height: 12),
             _buildSummaryRow(
-              'Total dari pelanggan',
+              'Total Pendapatan',
               FormatHelpers.rupiah(_totalFromSales),
               AppTheme.profitColorTheme(context),
             ),
             const SizedBox(height: 8),
             _buildSummaryRow(
-              'Total bayar penitip',
+              'Total ke Pihak Penitip',
               FormatHelpers.rupiah(_totalPayment),
               AppTheme.lossColorTheme(context),
             ),
             const Divider(height: 24),
             _buildSummaryRow(
-              'Komisi warung',
+              'Komisi',
               FormatHelpers.rupiah(_commission),
               AppTheme.primaryColor,
             ),

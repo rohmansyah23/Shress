@@ -1067,7 +1067,7 @@ class SupabaseService {
             type: AppConstants.typeIncome,
             amount: commission,
             paymentMethod: paymentMethod ?? AppConstants.paymentCash,
-            description: 'Komisi titipan $consignorName - $itemDesc',
+            description: 'Komisi dari $consignorName - $itemDesc',
             transactionDate: settlementDate ??
                 DateTime.now().toIso8601String().substring(0, 10),
           );
@@ -1272,7 +1272,7 @@ class SupabaseService {
           type: AppConstants.typeIncome,
           amount: commission,
           paymentMethod: paymentMethod,
-          description: 'Komisi titipan $consignorName - $itemDesc',
+          description: 'Komisi dari $consignorName - $itemDesc',
           transactionDate: paymentDate,
         );
       }
@@ -1282,7 +1282,7 @@ class SupabaseService {
         'amount': totalPayment,
         'user_id': userId,
         'settlement_date': paymentDate,
-        'notes': 'Settlement harian via laporan penjualan',
+        'notes': 'Pelunasan harian via laporan penjualan',
       });
 
       await _supabase.from('consignments').update({

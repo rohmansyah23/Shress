@@ -508,7 +508,7 @@ class _ManagerDashboardScreenState
                             Icon(Icons.inventory_2_rounded,
                                 size: 14, color: AppTheme.secondaryColor),
                             const SizedBox(width: 4),
-                            Text('Konsinyasi',
+                            Text('Titipan',
                                 style: AppTheme.caption
                                     .copyWith(fontWeight: FontWeight.w600)),
                           ],

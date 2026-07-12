@@ -312,14 +312,14 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
         _buildTypeOption(
           value: AppConstants.consignmentTypeReseller,
           title: 'Reseller',
-          subtitle: 'Barang tahan lama, komisi + cicilan',
+          subtitle: 'Produk tahan lama, komisi + cicilan',
           icon: Icons.store_outlined,
         ),
         const SizedBox(height: 8),
         _buildTypeOption(
           value: AppConstants.consignmentTypeDaily,
           title: 'Harian',
-          subtitle: 'Barang perishable, lapor + bayar saat tutup',
+          subtitle: 'Produk perishable, lapor + bayar saat tutup',
           icon: Icons.today_outlined,
         ),
         if (_consignmentType == AppConstants.consignmentTypeDaily ||
@@ -341,7 +341,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Barang akan dilaporkan dan dibayar sesuai penjualan',
+                    'Produk akan dilaporkan dan dibayar sesuai penjualan',
                     style: AppTheme.caption.copyWith(fontSize: 12),
                   ),
                 ),
@@ -426,7 +426,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Data Penitip', style: AppTheme.heading3),
+        Text('Data Pihak Penitip', style: AppTheme.heading3),
         const SizedBox(height: 12),
         if (_existingConsignors.isNotEmpty &&
             widget.existingConsignor == null) ...[
@@ -434,7 +434,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             children: [
               Expanded(
                 child: Text(
-                  'Gunakan penitip yang sudah ada?',
+                  'Gunakan pihak penitip yang sudah ada?',
                   style: AppTheme.caption.copyWith(fontSize: 13),
                 ),
               ),
@@ -467,7 +467,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
           DropdownButtonFormField<int>(
             initialValue: _selectedConsignor?.id,
             decoration: const InputDecoration(
-              labelText: 'Pilih Penitip',
+              labelText: 'Pilih Pihak Penitip',
               prefixIcon: Icon(Icons.person_outline_rounded),
             ),
             items: _existingConsignors.map((c) {
@@ -490,12 +490,12 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             controller: _nameController,
             textInputAction: TextInputAction.next,
             decoration: const InputDecoration(
-              labelText: 'Nama Penitip *',
+              labelText: 'Nama Pihak Penitip *',
               prefixIcon: Icon(Icons.person_outline_rounded),
-              hintText: 'Nama penitip',
+              hintText: 'Nama pihak penitip',
             ),
             validator: (v) => v?.trim().isEmpty == true
-                ? 'Nama penitip harus diisi'
+                ? 'Nama pihak penitip harus diisi'
                 : null,
           ),
           const SizedBox(height: 12),
@@ -516,7 +516,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             decoration: const InputDecoration(
               labelText: 'Catatan (opsional)',
               prefixIcon: Icon(Icons.notes_outlined),
-              hintText: 'Catatan tentang penitip',
+              hintText: 'Catatan tentang pihak penitip',
               alignLabelWithHint: true,
             ),
             maxLines: 2,
@@ -680,7 +680,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
           decoration: const InputDecoration(
             labelText: 'Deskripsi (opsional)',
             prefixIcon: Icon(Icons.description_outlined),
-            hintText: 'Deskripsi konsinyasi',
+            hintText: 'Deskripsi titipan',
             alignLabelWithHint: true,
           ),
           maxLines: 2,

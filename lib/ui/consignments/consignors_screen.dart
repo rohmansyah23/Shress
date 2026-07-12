@@ -177,7 +177,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Konsinyasi'),
+        title: const Text('Daftar Titipan'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -241,7 +241,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                       size: 20, color: AppTheme.primaryColor),
                 ),
                 const SizedBox(width: 12),
-                Text('Ringkasan Konsinyasi', style: AppTheme.heading3),
+                Text('Ringkasan Titipan', style: AppTheme.heading3),
               ],
             ),
             const SizedBox(height: 20),
@@ -266,8 +266,8 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
             ),
             const SizedBox(height: 12),
             _summaryItem(
-              'Jumlah Penitip',
-              '$consignorCount penitip',
+              'Jumlah Pihak Penitip',
+              '$consignorCount pihak penitip',
               AppTheme.infoColorTheme(context),
             ),
           ],
@@ -300,12 +300,12 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                 size: 64, color: Theme.of(context).textTheme.bodySmall?.color),
             const SizedBox(height: 16),
             Text(
-              'Belum ada penitip',
+              'Belum ada pihak penitip',
               style: AppTheme.caption.copyWith(fontSize: 14),
             ),
             const SizedBox(height: 8),
             Text(
-              'Tekan tombol + untuk menambah titipan baru',
+              'Tekan tombol + untuk menambah pihak penitip baru',
               style: AppTheme.caption.copyWith(
                 fontSize: 12,
                 color: Theme.of(context).textTheme.bodySmall?.color,

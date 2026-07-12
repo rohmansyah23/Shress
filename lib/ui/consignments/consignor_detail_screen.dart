@@ -107,7 +107,7 @@ class _ConsignorDetailScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Edit Penitip'),
+        title: const Text('Edit Pihak Penitip'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -173,9 +173,9 @@ class _ConsignorDetailScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Hapus Penitip'),
+        title: const Text('Hapus Pihak Penitip'),
         content: Text(
-          'Yakin ingin menghapus "${widget.consignor.name}"? Semua data konsinyasi terkait juga akan dihapus.',
+          'Yakin ingin menghapus "${widget.consignor.name}"? Semua data titipan terkait juga akan dihapus.',
         ),
         actions: [
           TextButton(
@@ -198,7 +198,7 @@ class _ConsignorDetailScreenState
         if (!mounted) return;
         triggerDebtRefresh(ref);
         Navigator.of(context).pop(true);
-        ErrorSnackbar.showSuccess(context, 'Penitip berhasil dihapus');
+        ErrorSnackbar.showSuccess(context, 'Pihak penitip berhasil dihapus');
       } catch (e) {
         if (!mounted) return;
         ErrorSnackbar.show(context, ErrorHandler.classify(e));
@@ -322,7 +322,7 @@ class _ConsignorDetailScreenState
             ],
             const SizedBox(height: 12),
             Text(
-              'Jumlah Konsinyasi: ${_consignments.length}',
+              'Jumlah Titipan: ${_consignments.length}',
               style: AppTheme.labelSmall.copyWith(fontSize: 12),
             ),
           ],
@@ -341,7 +341,7 @@ class _ConsignorDetailScreenState
                 size: 64, color: Theme.of(context).textTheme.bodySmall?.color),
             const SizedBox(height: 16),
             Text(
-              'Belum ada konsinyasi',
+              'Belum ada titipan',
               style: AppTheme.caption.copyWith(fontSize: 14),
             ),
             const SizedBox(height: 8),
