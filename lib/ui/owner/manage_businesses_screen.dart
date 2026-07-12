@@ -8,6 +8,7 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../ui/dashboard/qris_upload_screen.dart';
+import '../../ui/dashboard/qris_display_screen.dart';
 import 'create_business_screen.dart';
 
 class ManageBusinessesScreen extends ConsumerStatefulWidget {
@@ -157,6 +158,14 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
     }
   }
 
+  void _viewQris(BusinessModel business) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => QrisDisplayScreen(business: business),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final businessesAsync = ref.watch(allBusinessesProvider);
@@ -258,6 +267,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                             business: b,
                             onEdit: () => _showEditDialog(b),
                             onQris: () => _openQrisUpload(b),
+                            onViewQris: () => _viewQris(b),
                             onDelete: () => _confirmDelete(b),
                           );
                         },
@@ -290,12 +300,14 @@ class _BusinessItemCard extends StatelessWidget {
   final BusinessModel business;
   final VoidCallback onEdit;
   final VoidCallback onQris;
+  final VoidCallback onViewQris;
   final VoidCallback onDelete;
 
   const _BusinessItemCard({
     required this.business,
     required this.onEdit,
     required this.onQris,
+    required this.onViewQris,
     required this.onDelete,
   });
 
@@ -381,6 +393,9 @@ class _BusinessItemCard extends StatelessWidget {
                   case 'edit':
                     onEdit();
                     break;
+                  case 'viewQris':
+                    onViewQris();
+                    break;
                   case 'qris':
                     onQris();
                     break;
@@ -399,6 +414,16 @@ class _BusinessItemCard extends StatelessWidget {
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
+                if (hasQris)
+                  const PopupMenuItem<String>(
+                    value: 'viewQris',
+                    child: ListTile(
+                      leading: Icon(Icons.qr_code_rounded),
+                      title: Text('Lihat QRIS'),
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                 const PopupMenuItem<String>(
                   value: 'qris',
                   child: ListTile(

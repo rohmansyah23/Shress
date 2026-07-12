@@ -4,6 +4,11 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../local/models/business_model.dart';
 import '../local/models/category_model.dart';
+import '../local/models/consignor_model.dart';
+import '../local/models/consignment_model.dart';
+import '../local/models/debt_model.dart';
+import '../local/models/debt_payment_model.dart';
+import '../local/models/debtor_model.dart';
 import '../local/models/transaction_model.dart';
 import '../local/models/user_model.dart';
 
@@ -458,6 +463,541 @@ class SupabaseService {
 
   // ==================== Monthly Trend ====================
 
+
+  // ==================== Debtor Operations ====================
+
+  Future<List<DebtorModel>> getDebtorsByBusiness(int businessId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('debtors')
+          .select()
+          .eq('business_id', businessId)
+          .order('name', ascending: true);
+      return (data as List)
+          .map((d) => DebtorModel.fromMap(d as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<DebtorModel> createDebtor({
+    required int businessId,
+    required String name,
+    String? phone,
+    String? notes,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('debtors').insert({
+        'business_id': businessId,
+        'name': name,
+        'phone': phone,
+        'notes': notes,
+      }).select().single();
+      return DebtorModel.fromMap(response);
+    });
+  }
+
+  Future<void> updateDebtor({
+    required int debtorId,
+    String? name,
+    String? phone,
+    String? notes,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final Map<String, dynamic> updates = {};
+      if (name != null) updates['name'] = name;
+      if (phone != null) updates['phone'] = phone;
+      if (notes != null) updates['notes'] = notes;
+      if (updates.isNotEmpty) {
+        await _supabase.from('debtors').update(updates).eq('id', debtorId);
+      }
+    });
+  }
+
+  Future<void> deleteDebtor(int debtorId) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('debtors').delete().eq('id', debtorId);
+    });
+  }
+
+  // ==================== Debt Operations ====================
+
+  Future<List<DebtModel>> getDebtsByBusiness(int businessId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('debts')
+          .select()
+          .eq('business_id', businessId)
+          .order('debt_date', ascending: false);
+      return (data as List)
+          .map((d) => DebtModel.fromMap(d as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<List<DebtModel>> getDebtsByDebtor(int debtorId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('debts')
+          .select()
+          .eq('debtor_id', debtorId)
+          .order('debt_date', ascending: false);
+      return (data as List)
+          .map((d) => DebtModel.fromMap(d as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<int> createDebt({
+    required int debtorId,
+    required int businessId,
+    required String userId,
+    required double amount,
+    String? description,
+    String? dueDate,
+    String? debtDate,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('debts').insert({
+        'debtor_id': debtorId,
+        'business_id': businessId,
+        'user_id': userId,
+        'amount': amount,
+        'description': description,
+        'status': AppConstants.debtUnpaid,
+        'debt_date': debtDate,
+        'due_date': dueDate,
+      }).select('id').single();
+      return response['id'] as int;
+    });
+  }
+
+  Future<void> updateDebtStatus(int debtId, String status) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('debts').update({'status': status}).eq('id', debtId);
+    });
+  }
+
+  Future<void> deleteDebt(int debtId) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('debts').delete().eq('id', debtId);
+    });
+  }
+
+  Future<DebtModel> getDebtById(int debtId) async {
+    return ErrorHandler.guard(() async {
+      final data =
+          await _supabase.from('debts').select().eq('id', debtId).single();
+      return DebtModel.fromMap(data);
+    });
+  }
+
+  // ==================== Debt Payment Operations ====================
+
+  Future<List<DebtPaymentModel>> getDebtPayments(int debtId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('debt_payments')
+          .select()
+          .eq('debt_id', debtId)
+          .order('payment_date', ascending: false);
+      return (data as List)
+          .map((p) => DebtPaymentModel.fromMap(p as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<int> createDebtPayment({
+    required int debtId,
+    required double amount,
+    required String userId,
+    String? notes,
+    String? paymentDate,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('debt_payments').insert({
+        'debt_id': debtId,
+        'amount': amount,
+        'user_id': userId,
+        'notes': notes,
+        'payment_date': paymentDate,
+      }).select('id').single();
+
+      // Update paid_amount and status on the debt
+      final debtData = await _supabase
+          .from('debts')
+          .select('amount, paid_amount')
+          .eq('id', debtId)
+          .single();
+
+      final totalPaid = (debtData['paid_amount'] as num).toDouble() + amount;
+      final totalAmount = (debtData['amount'] as num).toDouble();
+
+      String newStatus;
+      if (totalPaid >= totalAmount) {
+        newStatus = AppConstants.debtPaid;
+      } else if (totalPaid > 0) {
+        newStatus = AppConstants.debtPartial;
+      } else {
+        newStatus = AppConstants.debtUnpaid;
+      }
+
+      await _supabase.from('debts').update({
+        'paid_amount': totalPaid,
+        'status': newStatus,
+      }).eq('id', debtId);
+
+      return response['id'] as int;
+    });
+  }
+
+  Future<Map<String, dynamic>> getDebtSummary(int businessId) async {
+    return ErrorHandler.guard(() async {
+      final debts = await getDebtsByBusiness(businessId);
+      double totalOwed = 0;
+      double totalPaid = 0;
+      int activeCount = 0;
+      int debtorCount = 0;
+      final debtorIds = <int>{};
+
+      for (final debt in debts) {
+        if (debt.status != AppConstants.debtPaid) {
+          totalOwed += debt.remainingAmount;
+          activeCount++;
+        }
+        totalPaid += debt.paidAmount;
+        debtorIds.add(debt.debtorId);
+      }
+
+      debtorCount = debtorIds.length;
+
+      return {
+        'totalOwed': totalOwed,
+        'totalPaid': totalPaid,
+        'activeCount': activeCount,
+        'debtorCount': debtorCount,
+      };
+    });
+  }
+
+  Future<void> updateDebt({
+    required int debtId,
+    double? amount,
+    String? description,
+    String? dueDate,
+    String? debtDate,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final Map<String, dynamic> updates = {};
+      if (amount != null) updates['amount'] = amount;
+      if (description != null) updates['description'] = description;
+      if (dueDate != null) updates['due_date'] = dueDate;
+      if (debtDate != null) updates['debt_date'] = debtDate;
+      if (updates.isNotEmpty) {
+        await _supabase.from('debts').update(updates).eq('id', debtId);
+      }
+    });
+  }
+
+  Future<void> updateDebtPayment({
+    required int paymentId,
+    double? amount,
+    String? notes,
+    String? paymentDate,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final Map<String, dynamic> updates = {};
+      if (amount != null) updates['amount'] = amount;
+      if (notes != null) updates['notes'] = notes;
+      if (paymentDate != null) updates['payment_date'] = paymentDate;
+      if (updates.isNotEmpty) {
+        await _supabase.from('debt_payments').update(updates).eq('id', paymentId);
+      }
+    });
+  }
+
+  Future<void> deleteDebtPayment(int paymentId) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('debt_payments').delete().eq('id', paymentId);
+    });
+  }
+
+  Future<bool> areAllDebtsPaid(int debtorId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('debts')
+          .select('status')
+          .eq('debtor_id', debtorId);
+      final debts = data as List;
+      if (debts.isEmpty) return false;
+      return debts.every((d) => d['status'] == AppConstants.debtPaid);
+    });
+  }
+
+  Future<double> getTotalPaidByDebtor(int debtorId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('debts')
+          .select('paid_amount')
+          .eq('debtor_id', debtorId);
+      final debts = data as List;
+      double total = 0;
+      for (final d in debts) {
+        total += (d['paid_amount'] as num?)?.toDouble() ?? 0;
+      }
+      return total;
+    });
+  }
+
+  Future<void> resetDebtorData(int debtorId) async {
+    return ErrorHandler.guard(() async {
+      final paymentIds = await _supabase
+          .from('debt_payments')
+          .select('id')
+          .inFilter('debt_id',
+              (await _supabase.from('debts').select('id').eq('debtor_id', debtorId) as List).map((d) => d['id']).toList());
+      for (final p in paymentIds as List) {
+        await _supabase.from('debt_payments').delete().eq('id', p['id']);
+      }
+      await _supabase.from('debts').delete().eq('debtor_id', debtorId);
+      await _supabase.from('debtors').delete().eq('id', debtorId);
+    });
+  }
+
+  // ==================== Consignor Operations ====================
+
+  Future<List<ConsignorModel>> getConsignorsByBusiness(int businessId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('consignors')
+          .select()
+          .eq('business_id', businessId)
+          .order('name', ascending: true);
+      return (data as List)
+          .map((c) => ConsignorModel.fromMap(c as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<ConsignorModel> createConsignor({
+    required int businessId,
+    required String name,
+    String? phone,
+    String? notes,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('consignors').insert({
+        'business_id': businessId,
+        'name': name,
+        'phone': phone,
+        'notes': notes,
+      }).select().single();
+      return ConsignorModel.fromMap(response);
+    });
+  }
+
+  Future<void> updateConsignor({
+    required int consignorId,
+    String? name,
+    String? phone,
+    String? notes,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final Map<String, dynamic> updates = {};
+      if (name != null) updates['name'] = name;
+      if (phone != null) updates['phone'] = phone;
+      if (notes != null) updates['notes'] = notes;
+      if (updates.isNotEmpty) {
+        await _supabase.from('consignors').update(updates).eq('id', consignorId);
+      }
+    });
+  }
+
+  Future<void> deleteConsignor(int consignorId) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('consignors').delete().eq('id', consignorId);
+    });
+  }
+
+  // ==================== Consignment Operations ====================
+
+  Future<List<ConsignmentModel>> getConsignmentsByBusiness(
+      int businessId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('consignments')
+          .select()
+          .eq('business_id', businessId)
+          .order('consignment_date', ascending: false);
+      return (data as List)
+          .map((c) => ConsignmentModel.fromMap(c as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<List<ConsignmentModel>> getConsignmentsByConsignor(
+      int consignorId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('consignments')
+          .select()
+          .eq('consignor_id', consignorId)
+          .order('consignment_date', ascending: false);
+      return (data as List)
+          .map((c) => ConsignmentModel.fromMap(c as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<int> createConsignment({
+    required int consignorId,
+    required int businessId,
+    required String userId,
+    required double totalAmount,
+    String? description,
+    String? dueDate,
+    String? consignmentDate,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('consignments').insert({
+        'consignor_id': consignorId,
+        'business_id': businessId,
+        'user_id': userId,
+        'total_amount': totalAmount,
+        'description': description,
+        'status': AppConstants.consignmentActive,
+        'consignment_date': consignmentDate,
+        'due_date': dueDate,
+      }).select('id').single();
+      return response['id'] as int;
+    });
+  }
+
+  Future<void> addConsignmentItem({
+    required int consignmentId,
+    required String productName,
+    required int quantity,
+    required double agreedPrice,
+    double? sellingPrice,
+  }) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('consignment_items').insert({
+        'consignment_id': consignmentId,
+        'product_name': productName,
+        'quantity': quantity,
+        'agreed_price': agreedPrice,
+        'selling_price': sellingPrice,
+      });
+    });
+  }
+
+  Future<List<ConsignmentItemModel>> getConsignmentItems(
+      int consignmentId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('consignment_items')
+          .select()
+          .eq('consignment_id', consignmentId);
+      return (data as List)
+          .map((i) => ConsignmentItemModel.fromMap(i as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<void> deleteConsignment(int consignmentId) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('consignments').delete().eq('id', consignmentId);
+    });
+  }
+
+  // ==================== Consignment Settlement Operations ====================
+
+  Future<List<ConsignmentSettlementModel>> getConsignmentSettlements(
+      int consignmentId) async {
+    return ErrorHandler.guard(() async {
+      final data = await _supabase
+          .from('consignment_settlements')
+          .select()
+          .eq('consignment_id', consignmentId)
+          .order('settlement_date', ascending: false);
+      return (data as List)
+          .map((s) =>
+              ConsignmentSettlementModel.fromMap(s as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<int> createConsignmentSettlement({
+    required int consignmentId,
+    required double amount,
+    required String userId,
+    String? notes,
+    String? settlementDate,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final response = await _supabase.from('consignment_settlements').insert({
+        'consignment_id': consignmentId,
+        'amount': amount,
+        'user_id': userId,
+        'notes': notes,
+        'settlement_date': settlementDate,
+      }).select('id').single();
+
+      // Update settled_amount and status on the consignment
+      final consData = await _supabase
+          .from('consignments')
+          .select('total_amount, settled_amount')
+          .eq('id', consignmentId)
+          .single();
+
+      final totalSettled =
+          (consData['settled_amount'] as num).toDouble() + amount;
+      final totalAmount = (consData['total_amount'] as num).toDouble();
+
+      String newStatus;
+      if (totalSettled >= totalAmount) {
+        newStatus = AppConstants.consignmentSettled;
+      } else {
+        newStatus = AppConstants.consignmentActive;
+      }
+
+      await _supabase.from('consignments').update({
+        'settled_amount': totalSettled,
+        'status': newStatus,
+      }).eq('id', consignmentId);
+
+      return response['id'] as int;
+    });
+  }
+
+  Future<Map<String, dynamic>> getConsignmentSummary(int businessId) async {
+    return ErrorHandler.guard(() async {
+      final consignments = await getConsignmentsByBusiness(businessId);
+      double totalOwed = 0;
+      double totalSettled = 0;
+      int activeCount = 0;
+      int consignorCount = 0;
+      final consignorIds = <int>{};
+
+      for (final c in consignments) {
+        if (c.status != AppConstants.consignmentSettled &&
+            c.status != AppConstants.consignmentCancelled) {
+          totalOwed += c.remainingAmount;
+          activeCount++;
+        }
+        totalSettled += c.settledAmount;
+        consignorIds.add(c.consignorId);
+      }
+
+      consignorCount = consignorIds.length;
+
+      return {
+        'totalOwed': totalOwed,
+        'totalSettled': totalSettled,
+        'activeCount': activeCount,
+        'consignorCount': consignorCount,
+      };
+    });
+  }
 
   // ==================== Category Name Lookup ====================
 

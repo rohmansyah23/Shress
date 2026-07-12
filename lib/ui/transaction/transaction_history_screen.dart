@@ -12,7 +12,6 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
 import 'edit_transaction_page.dart';
-import '../dashboard/qris_display_screen.dart';
 
 enum DateFilter {
   today('Hari Ini'),
@@ -499,25 +498,6 @@ class _TransactionHistoryScreenState
         title: Text(widget.isOwnerView
             ? 'Riwayat - ${widget.business.name}'
             : 'Riwayat Transaksi'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_rounded),
-            tooltip: 'QRIS Pembayaran',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      QrisDisplayScreen(business: widget.business),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Muat ulang',
-            onPressed: _loadTransactions,
-          ),
-        ],
       ),
       body: body,
     );

@@ -12,6 +12,8 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/transaction_provider.dart';
 import '../transaction/transaction_sheet.dart';
+import '../debtors/debtors_screen.dart';
+import '../consignments/consignors_screen.dart';
 
 class ManagerDashboardScreen extends ConsumerStatefulWidget {
   final BusinessModel selectedBusiness;
@@ -169,6 +171,42 @@ class _ManagerDashboardScreenState
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: QuickActionButton(
+                  icon: Icons.receipt_long_rounded,
+                  label: 'Hutang',
+                  color: AppTheme.warningColor,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => DebtorsScreen(
+                          business: widget.selectedBusiness),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: QuickActionButton(
+                  icon: Icons.inventory_2_rounded,
+                  label: 'Titipan',
+                  color: AppTheme.secondaryColor,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ConsignorsScreen(
+                          business: widget.selectedBusiness),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(child: SizedBox()),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildDebtConsignmentSummary(widget.selectedBusiness.businessId),
           const SizedBox(height: 24),
           Text('Transaksi Terbaru', style: AppTheme.heading3),
           const SizedBox(height: 12),
@@ -400,6 +438,97 @@ class _ManagerDashboardScreenState
     return NetProfitCard(
       netProfit: netProfit,
       style: NetProfitCardStyle.row,
+    );
+  }
+
+  Widget _buildDebtConsignmentSummary(int businessId) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: Future.wait([
+        SupabaseService.instance.getDebtSummary(businessId),
+        SupabaseService.instance.getConsignmentSummary(businessId),
+      ]),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        final debtSummary = snapshot.data![0];
+        final consignmentSummary = snapshot.data![1];
+        final debtOwed =
+            (debtSummary['totalOwed'] as num?)?.toDouble() ?? 0;
+        final debtCount = (debtSummary['activeCount'] as int?) ?? 0;
+        final consOwed =
+            (consignmentSummary['totalOwed'] as num?)?.toDouble() ?? 0;
+        final consCount =
+            (consignmentSummary['activeCount'] as int?) ?? 0;
+
+        if (debtOwed == 0 && consOwed == 0) return const SizedBox.shrink();
+
+        return Row(
+          children: [
+            if (debtOwed > 0)
+              Expanded(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.receipt_long_rounded,
+                                size: 14, color: AppTheme.warningColor),
+                            const SizedBox(width: 4),
+                            Text('Piutang',
+                                style: AppTheme.caption
+                                    .copyWith(fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(FormatHelpers.rupiah(debtOwed),
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.warningColor)),
+                        Text('$debtCount aktif',
+                            style: AppTheme.caption.copyWith(fontSize: 10)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            if (debtOwed > 0 && consOwed > 0) const SizedBox(width: 8),
+            if (consOwed > 0)
+              Expanded(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.inventory_2_rounded,
+                                size: 14, color: AppTheme.secondaryColor),
+                            const SizedBox(width: 4),
+                            Text('Konsinyasi',
+                                style: AppTheme.caption
+                                    .copyWith(fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(FormatHelpers.rupiah(consOwed),
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.secondaryColor)),
+                        Text('$consCount aktif',
+                            style: AppTheme.caption.copyWith(fontSize: 10)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

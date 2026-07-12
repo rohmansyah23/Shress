@@ -23,6 +23,8 @@ import '../transaction/transaction_history_screen.dart';
 import '../settings/settings_screen.dart';
 import '../category/category_management_screen.dart';
 import 'manage_businesses_screen.dart';
+import '../debtors/debtors_screen.dart';
+import '../consignments/consignors_screen.dart';
 
 class OwnerDashboardTab extends ConsumerStatefulWidget {
   final dynamic user;
@@ -174,6 +176,8 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               ],
 
               const SizedBox(height: 16),
+              _buildFinanceOtherSummary(businesses),
+              const SizedBox(height: 16),
               Text('Menu Lainnya', style: AppTheme.heading3),
               const SizedBox(height: 12),
               Row(
@@ -189,6 +193,32 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     ),
                   ),
                   const SizedBox(width: 12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.receipt_long_rounded,
+                      label: 'Piutang',
+                      color: AppTheme.warningColor,
+                      onTap: () {
+                        _pickBusinessForPiutang(context, businesses);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.inventory_2_rounded,
+                      label: 'Konsinyasi',
+                      color: AppTheme.secondaryColor,
+                      onTap: () {
+                        _pickBusinessForKonsinyasi(context, businesses);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.store_rounded,
@@ -216,16 +246,12 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
+                  const SizedBox(width: 12),
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.people_rounded,
                       label: 'Kelola\nUser',
-                      color: AppTheme.warningColor,
+                      color: AppTheme.infoColor,
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -235,7 +261,11 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.settings_rounded,
@@ -452,6 +482,205 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => CategoryManagementScreen(business: businesses[i]),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinanceOtherSummary(List<BusinessModel> businesses) {
+    if (businesses.isEmpty) return const SizedBox.shrink();
+
+    final allIds = businesses.map((b) => b.businessId).toList()..sort();
+
+    return Row(
+      children: [
+        Expanded(
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: Future.wait(allIds.map((id) =>
+                    SupabaseService.instance.getDebtSummary(id)))
+                .then((summaries) {
+              double totalOwed = 0;
+              int activeCount = 0;
+              for (final s in summaries) {
+                totalOwed += (s['totalOwed'] as num?)?.toDouble() ?? 0;
+                activeCount += (s['activeCount'] as int?) ?? 0;
+              }
+              return {'totalOwed': totalOwed, 'activeCount': activeCount};
+            }),
+            builder: (context, snapshot) {
+              final totalOwed =
+                  (snapshot.data?['totalOwed'] as num?)?.toDouble() ?? 0;
+              final activeCount =
+                  (snapshot.data?['activeCount'] as int?) ?? 0;
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.receipt_long_rounded,
+                              size: 18, color: AppTheme.warningColor),
+                          const SizedBox(width: 6),
+                          Text('Piutang Aktif', style: AppTheme.labelSmall),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(FormatHelpers.rupiah(totalOwed),
+                          style: AppTheme.amountMedium
+                              .copyWith(color: AppTheme.warningColor)),
+                      const SizedBox(height: 4),
+                      Text('$activeCount hutang aktif',
+                          style: AppTheme.caption),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: Future.wait(allIds.map((id) =>
+                    SupabaseService.instance.getConsignmentSummary(id)))
+                .then((summaries) {
+              double totalOwed = 0;
+              int activeCount = 0;
+              for (final s in summaries) {
+                totalOwed += (s['totalOwed'] as num?)?.toDouble() ?? 0;
+                activeCount += (s['activeCount'] as int?) ?? 0;
+              }
+              return {'totalOwed': totalOwed, 'activeCount': activeCount};
+            }),
+            builder: (context, snapshot) {
+              final totalOwed =
+                  (snapshot.data?['totalOwed'] as num?)?.toDouble() ?? 0;
+              final activeCount =
+                  (snapshot.data?['activeCount'] as int?) ?? 0;
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.inventory_2_rounded,
+                              size: 18, color: AppTheme.secondaryColor),
+                          const SizedBox(width: 6),
+                          Text('Konsinyasi Aktif',
+                              style: AppTheme.labelSmall),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(FormatHelpers.rupiah(totalOwed),
+                          style: AppTheme.amountMedium
+                              .copyWith(color: AppTheme.secondaryColor)),
+                      const SizedBox(height: 4),
+                      Text('$activeCount titipan aktif',
+                          style: AppTheme.caption),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _pickBusinessForPiutang(
+      BuildContext context, List<BusinessModel> businesses) {
+    if (businesses.isEmpty) return;
+    if (businesses.length == 1) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => DebtorsScreen(business: businesses.first),
+        ),
+      );
+      return;
+    }
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Pilih Bisnis'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: businesses.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (_, i) => ListTile(
+              leading: const Icon(Icons.receipt_long_rounded),
+              title: Text(businesses[i].name),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        DebtorsScreen(business: businesses[i]),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _pickBusinessForKonsinyasi(
+      BuildContext context, List<BusinessModel> businesses) {
+    if (businesses.isEmpty) return;
+    if (businesses.length == 1) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ConsignorsScreen(business: businesses.first),
+        ),
+      );
+      return;
+    }
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Pilih Bisnis'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: businesses.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (_, i) => ListTile(
+              leading: const Icon(Icons.inventory_2_rounded),
+              title: Text(businesses[i].name),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        ConsignorsScreen(business: businesses[i]),
                   ),
                 );
               },

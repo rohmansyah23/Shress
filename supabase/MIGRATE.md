@@ -57,6 +57,13 @@ Setelah migrasi berhasil, pastikan tabel-tabel berikut muncul di Supabase Table 
 | `user_businesses` | Bridge akses user ke bisnis |
 | `categories` | Kategori income/expense per bisnis |
 | `transactions` | Transaksi keuangan |
+| `debtors` | Daftar penghutang (Piutang) |
+| `debts` | Detail hutang per penghutang |
+| `debt_payments` | Riwayat pembayaran cicilan hutang |
+| `consignors` | Daftar penitip barang (Konsinyasi) |
+| `consignments` | Batch penitipan barang |
+| `consignment_items` | Detail item yang dititipkan |
+| `consignment_settlements` | Pembayaran ke penitip |
 
 ## Troubleshooting
 

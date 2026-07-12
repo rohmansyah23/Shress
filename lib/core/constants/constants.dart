@@ -23,6 +23,16 @@ class AppConstants {
   static const String statusLaba = 'laba';
   static const String statusRugi = 'rugi';
 
+  // Debt Status
+  static const String debtUnpaid = 'unpaid';
+  static const String debtPartial = 'partial';
+  static const String debtPaid = 'paid';
+
+  // Consignment Status
+  static const String consignmentActive = 'active';
+  static const String consignmentSettled = 'settled';
+  static const String consignmentCancelled = 'cancelled';
+
   // Sync
   static const int syncIntervalSeconds = 30;
   static const int syncBatchSize = 50;

@@ -8,7 +8,6 @@ import '../../core/widgets/trend_chart.dart';
 import '../../core/network/connectivity_service.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/business_providers.dart';
 import '../transaction/transaction_sheet.dart';
 import '../transaction/transaction_history_screen.dart';
@@ -75,41 +74,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               )
             : null,
         title: Text(widget.business.name),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.receipt_long_rounded),
-            tooltip: 'Riwayat Transaksi',
-            onPressed: () {
-              if (widget.onNavigateToRiwayat != null) {
-                widget.onNavigateToRiwayat!();
-              } else {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        TransactionHistoryScreen(business: widget.business),
-                  ),
-                );
-              }
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Keluar',
-            onPressed: () async {
-              await ref.read(authProvider.notifier).logout();
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (_) => const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    ),
-                  ),
-                  (route) => false,
-                );
-              }
-            },
-          ),
-        ],
       ),
       body: body,
     );

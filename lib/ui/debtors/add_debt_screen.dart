@@ -1,0 +1,440 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/error_handler.dart';
+import '../../core/utils/format_helpers.dart';
+import '../../core/widgets/error_widgets.dart';
+import '../../data/local/models/business_model.dart';
+import '../../data/local/models/debtor_model.dart';
+import '../../data/remote/supabase_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/debt_consignment_provider.dart';
+
+class AddDebtScreen extends ConsumerStatefulWidget {
+  final BusinessModel business;
+  final DebtorModel? existingDebtor;
+
+  const AddDebtScreen({
+    super.key,
+    required this.business,
+    this.existingDebtor,
+  });
+
+  @override
+  ConsumerState<AddDebtScreen> createState() => _AddDebtScreenState();
+}
+
+class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _notesController = TextEditingController();
+  final _amountController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _debtDateController = TextEditingController();
+  final _dueDateController = TextEditingController();
+
+  DateTime _debtDate = DateTime.now();
+  DateTime? _dueDate;
+  bool _isSaving = false;
+  bool _isFormattingAmount = false;
+
+  bool get _hasExistingDebtor => widget.existingDebtor != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_hasExistingDebtor) {
+      _nameController.text = widget.existingDebtor!.name;
+    }
+    _debtDateController.text = _formatDate(_debtDate);
+    _amountController.addListener(_onAmountChanged);
+  }
+
+  @override
+  void dispose() {
+    _amountController.removeListener(_onAmountChanged);
+    _nameController.dispose();
+    _phoneController.dispose();
+    _notesController.dispose();
+    _amountController.dispose();
+    _descriptionController.dispose();
+    _debtDateController.dispose();
+    _dueDateController.dispose();
+    super.dispose();
+  }
+
+  void _onAmountChanged() {
+    if (_isFormattingAmount) return;
+    _isFormattingAmount = true;
+
+    final text = _amountController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (text.isNotEmpty) {
+      final value = int.tryParse(text) ?? 0;
+      final formatted = _formatRupiah(value);
+      if (_amountController.text != formatted) {
+        _amountController.value = TextEditingValue(
+          text: formatted,
+          selection: TextSelection.collapsed(offset: formatted.length),
+        );
+      }
+    }
+
+    _isFormattingAmount = false;
+  }
+
+  String _formatRupiah(int value) {
+    final s = value.toString();
+    final result = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) {
+        result.write('.');
+      }
+      result.write(s[i]);
+    }
+    return result.toString();
+  }
+
+  String _formatDate(DateTime date) {
+    return FormatHelpers.displayDate(
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}');
+  }
+
+  String _formatDateIso(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _pickDebtDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _debtDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      helpText: 'Pilih Tanggal Hutang',
+      cancelText: 'Batal',
+      confirmText: 'Pilih',
+    );
+    if (picked != null) {
+      setState(() {
+        _debtDate = picked;
+        _debtDateController.text = _formatDate(picked);
+      });
+    }
+  }
+
+  Future<void> _pickDueDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dueDate ?? DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      helpText: 'Pilih Jatuh Tempo',
+      cancelText: 'Batal',
+      confirmText: 'Pilih',
+    );
+    if (picked != null) {
+      setState(() {
+        _dueDate = picked;
+        _dueDateController.text = _formatDate(picked);
+      });
+    }
+  }
+
+  void _clearDueDate() {
+    setState(() {
+      _dueDate = null;
+      _dueDateController.clear();
+    });
+  }
+
+  Future<void> _handleSave() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSaving = true);
+
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      setState(() => _isSaving = false);
+      if (mounted) {
+        ErrorSnackbar.showError(
+            context, 'Sesi tidak valid, silakan login ulang');
+      }
+      return;
+    }
+
+    try {
+      int debtorId;
+
+      if (_hasExistingDebtor) {
+        debtorId = widget.existingDebtor!.id;
+      } else {
+        final debtor = await SupabaseService.instance.createDebtor(
+          businessId: widget.business.businessId,
+          name: _nameController.text.trim(),
+          phone: _phoneController.text.trim().isEmpty
+              ? null
+              : _phoneController.text.trim(),
+          notes: _notesController.text.trim().isEmpty
+              ? null
+              : _notesController.text.trim(),
+        );
+        debtorId = debtor.id;
+      }
+
+      final amountStr = _amountController.text.replaceAll('.', '');
+      final amount = double.tryParse(amountStr) ?? 0;
+
+      await SupabaseService.instance.createDebt(
+        debtorId: debtorId,
+        businessId: widget.business.businessId,
+        userId: user.userId,
+        amount: amount,
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        debtDate: _formatDateIso(_debtDate),
+        dueDate: _dueDate != null ? _formatDateIso(_dueDate!) : null,
+      );
+
+      setState(() => _isSaving = false);
+
+      if (!mounted) return;
+      triggerDebtRefresh(ref);
+      Navigator.of(context).pop(true);
+      ErrorSnackbar.showSuccess(context, 'Hutang berhasil disimpan');
+    } catch (e) {
+      setState(() => _isSaving = false);
+      if (mounted) {
+        ErrorSnackbar.show(context, ErrorHandler.classify(e));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tambah Hutang Baru'),
+      ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset + 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!_hasExistingDebtor) ...[
+                Text('Data Penghutang', style: AppTheme.heading3),
+                const SizedBox(height: 16),
+                _FormLabel('Nama Penghutang *'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _nameController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.person_outline_rounded),
+                    hintText: 'Nama penghutang',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Masukkan nama penghutang';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                _FormLabel('Nomor Telepon (opsional)'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.phone_outlined),
+                    hintText: '08xxxxxxxxxx',
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _FormLabel('Catatan (opsional)'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _notesController,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    hintText: 'Catatan tentang penghutang...',
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 16),
+              ],
+              if (_hasExistingDebtor) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.infoColorTheme(context)
+                        .withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.person_rounded,
+                        size: 20,
+                        color: AppTheme.infoColorTheme(context),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.existingDebtor!.name,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (widget.existingDebtor!.phone != null &&
+                                widget.existingDebtor!.phone!.isNotEmpty)
+                              Text(
+                                widget.existingDebtor!.phone!,
+                                style: AppTheme.caption.copyWith(fontSize: 12),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+              Text('Detail Hutang', style: AppTheme.heading3),
+              const SizedBox(height: 16),
+              _FormLabel('Jumlah Hutang (Rp) *'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _amountController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.monetization_on_outlined),
+                  hintText: '0',
+                  prefixText: 'Rp ',
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Masukkan jumlah hutang';
+                  }
+                  final numeric = value.replaceAll('.', '');
+                  final amount = double.tryParse(numeric);
+                  if (amount == null || amount <= 0) {
+                    return 'Jumlah harus lebih dari 0';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              _FormLabel('Deskripsi (opsional)'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  hintText: 'Deskripsi hutang...',
+                ),
+              ),
+              const SizedBox(height: 20),
+              _FormLabel('Tanggal Hutang'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _debtDateController,
+                readOnly: true,
+                onTap: _pickDebtDate,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.calendar_today_outlined),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: _FormLabel('Jatuh Tempo (opsional)'),
+                  ),
+                  if (_dueDate != null)
+                    TextButton(
+                      onPressed: _clearDueDate,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text('Hapus', style: TextStyle(fontSize: 12)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _dueDateController,
+                readOnly: true,
+                onTap: _pickDueDate,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.event_outlined),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
+                  hintText: 'Pilih jatuh tempo (opsional)',
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: FilledButton.icon(
+                  onPressed: _isSaving ? null : _handleSave,
+                  icon: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.save_rounded),
+                  label: Text(
+                    _isSaving ? 'Menyimpan...' : 'Simpan Hutang',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FormLabel extends StatelessWidget {
+  final String label;
+
+  const _FormLabel(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
