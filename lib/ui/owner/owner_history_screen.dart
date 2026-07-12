@@ -10,7 +10,9 @@ import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/transaction_list_provider.dart';
 import '../../providers/transaction_provider.dart';
+import '../../providers/paginated_list_provider.dart';
 import '../transaction/edit_transaction_page.dart';
 import '../dashboard/qris_display_screen.dart';
 
@@ -54,13 +56,12 @@ class OwnerHistoryScreen extends ConsumerStatefulWidget {
 
 class _OwnerHistoryScreenState
     extends ConsumerState<OwnerHistoryScreen> {
+  final _scrollController = ScrollController();
   List<BusinessModel> _businesses = [];
+  List<int> _allBusinessIds = [];
   bool _filterAllBusinesses = true;
   int? _selectedBusinessId;
 
-  List<TransactionModel> _all = [];
-  List<TransactionModel> _filtered = [];
-  bool _isLoading = true;
   OwnerDateFilter _selectedFilter = OwnerDateFilter.all;
   OwnerTypeFilter _selectedType = OwnerTypeFilter.all;
   DateTime? _customStart;
@@ -68,6 +69,7 @@ class _OwnerHistoryScreenState
 
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -77,13 +79,44 @@ class _OwnerHistoryScreenState
       _filterAllBusinesses = false;
       _selectedBusinessId = widget.initialBusinessId;
     }
+    _scrollController.addListener(_onScroll);
     _loadInitial();
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final state = _currentListState();
+      if (!state.isLoading && !state.allLoaded) {
+        _currentNotifier().loadNextPage();
+      }
+    }
+  }
+
+  PaginatedListState<TransactionModel> _currentListState() {
+    if (_filterAllBusinesses && _allBusinessIds.isNotEmpty) {
+      return ref.read(allTransactionsListProvider(_allBusinessIds));
+    } else if (_selectedBusinessId != null) {
+      return ref.read(transactionListProvider(_selectedBusinessId!));
+    }
+    return const PaginatedListState();
+  }
+
+  PaginatedListNotifier<TransactionModel> _currentNotifier() {
+    if (_filterAllBusinesses && _allBusinessIds.isNotEmpty) {
+      return ref.read(allTransactionsListProvider(_allBusinessIds).notifier);
+    } else if (_selectedBusinessId != null) {
+      return ref.read(transactionListProvider(_selectedBusinessId!).notifier);
+    }
+    throw UnimplementedError();
   }
 
   Future<void> _loadInitial() async {
@@ -95,8 +128,11 @@ class _OwnerHistoryScreenState
           .getAccessibleBusinesses(user.userId, user.role);
 
       if (!mounted) return;
-      setState(() => _businesses = businesses);
-      await _loadTransactions();
+      setState(() {
+        _businesses = businesses;
+        _allBusinessIds = businesses.map((b) => b.businessId).toList();
+      });
+      _applyFilter();
     } catch (e) {
       if (mounted) {
         ErrorSnackbar.show(context, ErrorHandler.classify(e));
@@ -104,42 +140,68 @@ class _OwnerHistoryScreenState
     }
   }
 
-  Future<void> _loadTransactions() async {
-    setState(() => _isLoading = true);
-    try {
-      final supa = SupabaseService.instance;
-      List<TransactionModel> transactions;
-
-      if (_filterAllBusinesses) {
-        final allIds = _businesses.map((b) => b.businessId).toList();
-        if (allIds.isEmpty) {
-          transactions = [];
-        } else {
-          transactions = await supa.getAllTransactions(allIds);
-        }
-      } else if (_selectedBusinessId != null) {
-        transactions = await supa
-            .getTransactionsByBusiness(_selectedBusinessId!);
-      } else {
-        transactions = [];
-      }
-
-      if (mounted) {
-        setState(() {
-          _all = transactions;
-          _isLoading = false;
-        });
-        _applyFilter();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ErrorSnackbar.show(context, ErrorHandler.classify(e));
-      }
+  String _dateFilterToStart(OwnerDateFilter filter) {
+    final now = DateTime.now();
+    switch (filter) {
+      case OwnerDateFilter.today:
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      case OwnerDateFilter.thisWeek:
+        final start = now.subtract(Duration(days: now.weekday - 1));
+        return '${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}';
+      case OwnerDateFilter.thisMonth:
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
+      case OwnerDateFilter.thisYear:
+        return '${now.year}-01-01';
+      case OwnerDateFilter.all:
+      case OwnerDateFilter.custom:
+        return _customStart != null
+            ? '${_customStart!.year}-${_customStart!.month.toString().padLeft(2, '0')}-${_customStart!.day.toString().padLeft(2, '0')}'
+            : '';
     }
   }
 
+  String _dateFilterToEnd(OwnerDateFilter filter) {
+    final now = DateTime.now();
+    switch (filter) {
+      case OwnerDateFilter.today:
+      case OwnerDateFilter.thisWeek:
+      case OwnerDateFilter.thisMonth:
+      case OwnerDateFilter.thisYear:
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      case OwnerDateFilter.all:
+        return '';
+      case OwnerDateFilter.custom:
+        return _customEnd != null
+            ? '${_customEnd!.year}-${_customEnd!.month.toString().padLeft(2, '0')}-${_customEnd!.day.toString().padLeft(2, '0')}'
+            : '';
+    }
+  }
 
+  void _applyFilter() {
+    final dateStart = _dateFilterToStart(_selectedFilter);
+    final dateEnd = _dateFilterToEnd(_selectedFilter);
+    final type = switch (_selectedType) {
+      OwnerTypeFilter.income => AppConstants.typeIncome,
+      OwnerTypeFilter.expense => AppConstants.typeExpense,
+      OwnerTypeFilter.all => null,
+    };
+
+    if (_filterAllBusinesses && _allBusinessIds.isNotEmpty) {
+      ref.read(allTransactionsListProvider(_allBusinessIds).notifier).setFilters(
+        typeFilter: type,
+        dateStart: dateStart.isNotEmpty ? dateStart : null,
+        dateEnd: dateEnd.isNotEmpty ? dateEnd : null,
+        searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
+      );
+    } else if (_selectedBusinessId != null) {
+      ref.read(transactionListProvider(_selectedBusinessId!).notifier).setFilters(
+        typeFilter: type,
+        dateStart: dateStart.isNotEmpty ? dateStart : null,
+        dateEnd: dateEnd.isNotEmpty ? dateEnd : null,
+        searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
+      );
+    }
+  }
 
   void _pickCustomRange() async {
     final picked = await showDateRangePicker(
@@ -191,8 +253,7 @@ class _OwnerHistoryScreenState
       ),
     );
     if (result == true) {
-      await _loadTransactions();
-      triggerTransactionRefresh(ref);
+      _currentNotifier().refresh();
     }
   }
 
@@ -226,7 +287,7 @@ class _OwnerHistoryScreenState
         );
         if (!mounted) return;
         if (result.success) {
-          await _loadTransactions();
+          _currentNotifier().refresh();
           triggerTransactionRefresh(ref);
           if (!mounted) return;
           ErrorSnackbar.showSuccess(
@@ -243,12 +304,30 @@ class _OwnerHistoryScreenState
     }
   }
 
+  void _onSearchChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() => _searchQuery = value.toLowerCase().trim());
+      _applyFilter();
+    });
+  }
+
   Widget _buildBody(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final canEdit = user != null &&
         (user.role == AppConstants.roleManager ||
             user.role == AppConstants.roleStaff ||
             user.role == AppConstants.roleOwner);
+
+    PaginatedListState<TransactionModel> listState;
+    if (_filterAllBusinesses && _allBusinessIds.isNotEmpty) {
+      listState = ref.watch(allTransactionsListProvider(_allBusinessIds));
+    } else if (_selectedBusinessId != null) {
+      listState = ref.watch(transactionListProvider(_selectedBusinessId!));
+    } else {
+      listState = const PaginatedListState();
+    }
 
     return Stack(
       children: [
@@ -270,7 +349,7 @@ class _OwnerHistoryScreenState
                           _filterAllBusinesses = true;
                           _selectedBusinessId = null;
                         });
-                        _loadTransactions();
+                        _applyFilter();
                       }
                     },
                   ),
@@ -290,7 +369,7 @@ class _OwnerHistoryScreenState
                                   ? b.businessId
                                   : null;
                             });
-                            _loadTransactions();
+                            _applyFilter();
                           },
                         ),
                       )),
@@ -374,18 +453,15 @@ class _OwnerHistoryScreenState
                     horizontal: 12, vertical: 10),
               ),
               style: const TextStyle(fontSize: 14),
-              onChanged: (value) {
-                setState(() => _searchQuery = value.toLowerCase());
-                _applyFilter();
-              },
+              onChanged: _onSearchChanged,
             ),
           ),
           const SizedBox(height: 8),
           // Transaction list
           Expanded(
-            child: _isLoading
+            child: listState.isLoading && listState.items.isEmpty
                 ? const Center(child: CircularProgressIndicator())
-                : _filtered.isEmpty
+                : listState.items.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -400,18 +476,30 @@ class _OwnerHistoryScreenState
                                   fontWeight: FontWeight.w600,
                                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 )),
+                            if (listState.error != null) ...[
+                              const SizedBox(height: 8),
+                              Text(listState.error!, style: TextStyle(color: AppTheme.lossColor, fontSize: 12)),
+                            ],
                           ],
                         ),
                       )
                     : RefreshIndicator(
-                        onRefresh: _loadTransactions,
+                        onRefresh: () => _currentNotifier().refresh(),
                         child: ListView.separated(
+                          controller: _scrollController,
                           padding: const EdgeInsets.all(12),
-                          itemCount: _filtered.length,
+                          itemCount: listState.items.length + (listState.isLoading ? 1 : 0),
                           separatorBuilder: (_, _) =>
                               const SizedBox(height: 8),
                           itemBuilder: (context, index) {
-                            final tx = _filtered[index];
+                            if (index >= listState.items.length) {
+                              return const Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Center(child: CircularProgressIndicator()),
+                              );
+                            }
+
+                            final tx = listState.items[index];
                             final isIncome =
                                 tx.type == AppConstants.typeIncome;
                             return Card(
@@ -535,17 +623,19 @@ class _OwnerHistoryScreenState
                             },
                           ),
                         ),
-                      ),
-        ],
-        ),
-      ],
-    );
+                    ),
+                  ],
+                ),
+              ],
+            );
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen<int>(transactionRefreshProvider, (prev, next) {
-      if (prev != null && prev != next) _loadTransactions();
+      if (prev != null && prev != next) {
+        _currentNotifier().refresh();
+      }
     });
     final body = _buildBody(context);
     if (!widget.showAppBar) return body;
@@ -568,106 +658,12 @@ class _OwnerHistoryScreenState
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Muat ulang',
-            onPressed: _loadTransactions,
+            onPressed: () => _currentNotifier().refresh(),
           ),
         ],
       ),
       body: body,
     );
-  }
-
-  bool _matchesSearch(TransactionModel tx) {
-    if (_searchQuery.isEmpty) return true;
-    final q = _searchQuery.toLowerCase();
-
-    if (tx.description?.toLowerCase().contains(q) == true) return true;
-
-    final amountStr = FormatHelpers.rupiah(tx.amount).toLowerCase();
-    if (amountStr.contains(q)) return true;
-
-    final dateStr = FormatHelpers.displayDate(tx.transactionDate).toLowerCase();
-    if (dateStr.contains(q)) return true;
-
-    if (tx.transactionDate.toLowerCase().contains(q)) return true;
-
-    final paymentLabel = _paymentLabel(tx.paymentMethod).toLowerCase();
-    if (paymentLabel.contains(q)) return true;
-
-    if ((tx.type == AppConstants.typeIncome ? 'uang masuk' : 'uang keluar').contains(q)) return true;
-
-    return false;
-  }
-
-  void _applyFilter() {
-    setState(() {
-      final now = DateTime.now();
-      DateTime? start;
-      DateTime? end;
-
-      switch (_selectedFilter) {
-        case OwnerDateFilter.today:
-          start = DateTime(now.year, now.month, now.day);
-          end = start;
-        case OwnerDateFilter.thisWeek:
-          start = now.subtract(Duration(days: now.weekday - 1));
-          start = DateTime(start.year, start.month, start.day);
-          end = now;
-        case OwnerDateFilter.thisMonth:
-          start = DateTime(now.year, now.month, 1);
-          end = now;
-        case OwnerDateFilter.thisYear:
-          start = DateTime(now.year, 1, 1);
-          end = now;
-        case OwnerDateFilter.all:
-          start = null;
-          end = null;
-        case OwnerDateFilter.custom:
-          if (_customStart != null && _customEnd != null) {
-            start = _customStart;
-            end = _customEnd;
-          } else {
-            start = null;
-            end = null;
-          }
-      }
-
-      Iterable<TransactionModel> filtered = _all;
-
-      if (start != null && end != null) {
-        filtered = filtered.where((t) {
-          final txDate = DateTime.tryParse(t.transactionDate);
-          if (txDate == null) return false;
-          final txDay = DateTime(txDate.year, txDate.month, txDate.day);
-          return !txDay.isBefore(start!) && !txDay.isAfter(end!);
-        });
-      }
-
-      // Apply type filter
-      if (_selectedType == OwnerTypeFilter.income) {
-        filtered = filtered.where((t) => t.type == AppConstants.typeIncome);
-      } else if (_selectedType == OwnerTypeFilter.expense) {
-        filtered = filtered.where((t) => t.type == AppConstants.typeExpense);
-      }
-
-      if (_searchQuery.isNotEmpty) {
-        filtered = filtered.where(_matchesSearch);
-      }
-
-      _filtered = filtered.toList();
-    });
-  }
-
-  String _paymentLabel(String method) {
-    switch (method) {
-      case AppConstants.paymentCash:
-        return 'Tunai';
-      case AppConstants.paymentTransfer:
-        return 'Transfer Bank';
-      case AppConstants.paymentQris:
-        return 'QRIS';
-      default:
-        return 'Lainnya';
-    }
   }
 
   void _showQrisPicker() {

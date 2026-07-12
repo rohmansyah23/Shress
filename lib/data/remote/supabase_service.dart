@@ -255,6 +255,54 @@ class SupabaseService {
 
   // ==================== Transaction Operations ====================
 
+  Future<List<TransactionModel>> getTransactionsPage({
+    required int businessId,
+    required int offset,
+    int limit = 20,
+    String? typeFilter,
+    String? dateStart,
+    String? dateEnd,
+    String? searchQuery,
+    String? paymentMethod,
+    List<int>? businessIds,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final filterBuilder = _supabase.from('transactions').select();
+
+      dynamic query = filterBuilder;
+
+      if (businessIds != null && businessIds.isNotEmpty) {
+        query = query.inFilter('business_id', businessIds);
+      } else {
+        query = query.eq('business_id', businessId);
+      }
+
+      if (typeFilter != null) {
+        query = query.eq('type', typeFilter);
+      }
+      if (dateStart != null) {
+        query = query.gte('transaction_date', dateStart);
+      }
+      if (dateEnd != null) {
+        query = query.lte('transaction_date', dateEnd);
+      }
+      if (paymentMethod != null) {
+        query = query.eq('payment_method', paymentMethod);
+      }
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        query = query.ilike('description', '%$searchQuery%');
+      }
+
+      query = query
+          .order('transaction_date', ascending: false)
+          .order('id', ascending: false)
+          .range(offset, offset + limit - 1);
+
+      final data = await query;
+      return _parseTransactions(data as List);
+    });
+  }
+
   Future<List<TransactionModel>> getTransactionsByBusiness(
       int businessId) async {
     return ErrorHandler.guard(() async {
@@ -552,6 +600,37 @@ class SupabaseService {
           .select()
           .eq('business_id', businessId)
           .order('debt_date', ascending: false);
+      return (data as List)
+          .map((d) => DebtModel.fromMap(d as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<List<DebtModel>> getDebtsPage({
+    required int businessId,
+    required int offset,
+    int limit = 20,
+    String? statusFilter,
+    int? debtorId,
+  }) async {
+    return ErrorHandler.guard(() async {
+      var query = _supabase
+          .from('debts')
+          .select()
+          .eq('business_id', businessId)
+          .order('debt_date', ascending: false)
+          .order('id', ascending: false) as dynamic;
+
+      if (statusFilter != null) {
+        query = query.eq('status', statusFilter);
+      }
+      if (debtorId != null) {
+        query = query.eq('debtor_id', debtorId);
+      }
+
+      query = query.range(offset, offset + limit - 1);
+
+      final data = await query;
       return (data as List)
           .map((d) => DebtModel.fromMap(d as Map<String, dynamic>))
           .toList();
@@ -939,6 +1018,41 @@ class SupabaseService {
   }
 
   // ==================== Consignment Operations ====================
+
+  Future<List<ConsignmentModel>> getConsignmentsPage({
+    required int businessId,
+    required int offset,
+    int limit = 20,
+    String? statusFilter,
+    String? typeFilter,
+    int? consignorId,
+  }) async {
+    return ErrorHandler.guard(() async {
+      var query = _supabase
+          .from('consignments')
+          .select()
+          .eq('business_id', businessId)
+          .order('consignment_date', ascending: false)
+          .order('id', ascending: false) as dynamic;
+
+      if (statusFilter != null) {
+        query = query.eq('status', statusFilter);
+      }
+      if (typeFilter != null) {
+        query = query.eq('type', typeFilter);
+      }
+      if (consignorId != null) {
+        query = query.eq('consignor_id', consignorId);
+      }
+
+      query = query.range(offset, offset + limit - 1);
+
+      final data = await query;
+      return (data as List)
+          .map((c) => ConsignmentModel.fromMap(c as Map<String, dynamic>))
+          .toList();
+    });
+  }
 
   Future<List<ConsignmentModel>> getConsignmentsByBusiness(
       int businessId) async {

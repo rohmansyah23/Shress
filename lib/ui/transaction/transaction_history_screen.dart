@@ -10,6 +10,7 @@ import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/transaction_list_provider.dart';
 import '../../providers/transaction_provider.dart';
 import 'edit_transaction_page.dart';
 
@@ -53,9 +54,7 @@ class TransactionHistoryScreen extends ConsumerStatefulWidget {
 
 class _TransactionHistoryScreenState
     extends ConsumerState<TransactionHistoryScreen> {
-  List<TransactionModel> _all = [];
-  List<TransactionModel> _filtered = [];
-  bool _isLoading = true;
+  final _scrollController = ScrollController();
   DateFilter _selectedFilter = DateFilter.all;
   TypeFilter _selectedType = TypeFilter.all;
   DateTime? _customStart;
@@ -63,126 +62,85 @@ class _TransactionHistoryScreenState
 
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
-    _loadTransactions();
+    _scrollController.addListener(_onScroll);
+    Future.microtask(() => _applyFilter());
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
-  Future<void> _loadTransactions() async {
-    setState(() => _isLoading = true);
-    try {
-      final transactions = await SupabaseService.instance
-          .getTransactionsByBusiness(widget.business.businessId);
-      if (mounted) {
-        setState(() {
-          _all = transactions;
-          _isLoading = false;
-        });
-        _applyFilter();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ErrorSnackbar.show(context, ErrorHandler.classify(e));
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final state = ref.read(transactionListProvider(widget.business.businessId));
+      if (!state.isLoading && !state.allLoaded) {
+        ref.read(transactionListProvider(widget.business.businessId).notifier).loadNextPage();
       }
     }
   }
 
-  bool _matchesSearch(TransactionModel tx) {
-    if (_searchQuery.isEmpty) return true;
-    final q = _searchQuery.toLowerCase();
+  String _dateFilterToStart(DateFilter filter) {
+    final now = DateTime.now();
+    switch (filter) {
+      case DateFilter.today:
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      case DateFilter.thisWeek:
+        final start = now.subtract(Duration(days: now.weekday - 1));
+        return '${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}';
+      case DateFilter.thisMonth:
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
+      case DateFilter.thisYear:
+        return '${now.year}-01-01';
+      case DateFilter.all:
+      case DateFilter.custom:
+        return _customStart != null
+            ? '${_customStart!.year}-${_customStart!.month.toString().padLeft(2, '0')}-${_customStart!.day.toString().padLeft(2, '0')}'
+            : '';
+    }
+  }
 
-    // Search by description
-    if (tx.description?.toLowerCase().contains(q) == true) return true;
-
-    // Search by formatted amount (e.g. "Rp50.000")
-    final amountStr = FormatHelpers.rupiah(tx.amount).toLowerCase();
-    if (amountStr.contains(q)) return true;
-
-    // Search by formatted date (e.g. "15 Jan 2024")
-    final dateStr = FormatHelpers.displayDate(tx.transactionDate).toLowerCase();
-    if (dateStr.contains(q)) return true;
-
-    // Search by raw date (e.g. "2024-01-15")
-    if (tx.transactionDate.toLowerCase().contains(q)) return true;
-
-    // Search by payment method label
-    final paymentLabel = _paymentLabel(tx.paymentMethod).toLowerCase();
-    if (paymentLabel.contains(q)) return true;
-
-    // Search by type
-    if ((tx.type == AppConstants.typeIncome ? 'uang masuk' : 'uang keluar').contains(q)) return true;
-
-    return false;
+  String _dateFilterToEnd(DateFilter filter) {
+    final now = DateTime.now();
+    switch (filter) {
+      case DateFilter.today:
+      case DateFilter.thisWeek:
+      case DateFilter.thisMonth:
+      case DateFilter.thisYear:
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      case DateFilter.all:
+        return '';
+      case DateFilter.custom:
+        return _customEnd != null
+            ? '${_customEnd!.year}-${_customEnd!.month.toString().padLeft(2, '0')}-${_customEnd!.day.toString().padLeft(2, '0')}'
+            : '';
+    }
   }
 
   void _applyFilter() {
-    setState(() {
-      final now = DateTime.now();
-      DateTime? start;
-      DateTime? end;
+    final dateStart = _dateFilterToStart(_selectedFilter);
+    final dateEnd = _dateFilterToEnd(_selectedFilter);
+    final type = switch (_selectedType) {
+      TypeFilter.income => AppConstants.typeIncome,
+      TypeFilter.expense => AppConstants.typeExpense,
+      TypeFilter.all => null,
+    };
 
-      switch (_selectedFilter) {
-        case DateFilter.today:
-          start = DateTime(now.year, now.month, now.day);
-          end = start;
-        case DateFilter.thisWeek:
-          start = now.subtract(Duration(days: now.weekday - 1));
-          start = DateTime(start.year, start.month, start.day);
-          end = now;
-        case DateFilter.thisMonth:
-          start = DateTime(now.year, now.month, 1);
-          end = now;
-        case DateFilter.thisYear:
-          start = DateTime(now.year, 1, 1);
-          end = now;
-        case DateFilter.all:
-          start = null;
-          end = null;
-        case DateFilter.custom:
-          if (_customStart != null && _customEnd != null) {
-            start = _customStart;
-            end = _customEnd;
-          } else {
-            start = null;
-            end = null;
-          }
-      }
-
-      Iterable<TransactionModel> filtered = _all;
-
-      // Apply date filter
-      if (start != null && end != null) {
-        filtered = filtered.where((t) {
-          final txDate = DateTime.tryParse(t.transactionDate);
-          if (txDate == null) return false;
-          final txDay = DateTime(txDate.year, txDate.month, txDate.day);
-          return !txDay.isBefore(start!) && !txDay.isAfter(end!);
-        });
-      }
-
-      // Apply type filter
-      if (_selectedType == TypeFilter.income) {
-        filtered = filtered.where((t) => t.type == AppConstants.typeIncome);
-      } else if (_selectedType == TypeFilter.expense) {
-        filtered = filtered.where((t) => t.type == AppConstants.typeExpense);
-      }
-
-      // Apply search query
-      if (_searchQuery.isNotEmpty) {
-        filtered = filtered.where(_matchesSearch);
-      }
-
-      _filtered = filtered.toList();
-    });
+    ref.read(transactionListProvider(widget.business.businessId).notifier).setFilters(
+      typeFilter: type,
+      dateStart: dateStart.isNotEmpty ? dateStart : null,
+      dateEnd: dateEnd.isNotEmpty ? dateEnd : null,
+      searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
+    );
   }
 
   void _pickCustomRange() async {
@@ -219,8 +177,7 @@ class _TransactionHistoryScreenState
       ),
     );
     if (result == true) {
-      await _loadTransactions();
-      triggerTransactionRefresh(ref);
+      ref.read(transactionListProvider(widget.business.businessId).notifier).refresh();
     }
   }
 
@@ -254,7 +211,7 @@ class _TransactionHistoryScreenState
         );
         if (!mounted) return;
         if (result.success) {
-          await _loadTransactions();
+          ref.read(transactionListProvider(widget.business.businessId).notifier).refresh();
           triggerTransactionRefresh(ref);
           if (!mounted) return;
           ErrorSnackbar.showSuccess(
@@ -276,10 +233,22 @@ class _TransactionHistoryScreenState
         .getCategoryName(widget.business.businessId, categoryId);
   }
 
+  void _onSearchChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() => _searchQuery = value.toLowerCase().trim());
+      _applyFilter();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final listState = ref.watch(transactionListProvider(widget.business.businessId));
     ref.listen<int>(transactionRefreshProvider, (prev, next) {
-      if (prev != null && prev != next) _loadTransactions();
+      if (prev != null && prev != next) {
+        ref.read(transactionListProvider(widget.business.businessId).notifier).refresh();
+      }
     });
     final user = ref.watch(currentUserProvider);
     final canEdit = user != null &&
@@ -288,8 +257,9 @@ class _TransactionHistoryScreenState
             user.role == AppConstants.roleOwner);
 
     final body = RefreshIndicator(
-      onRefresh: _loadTransactions,
+      onRefresh: () => ref.read(transactionListProvider(widget.business.businessId).notifier).refresh(),
       child: CustomScrollView(
+        controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
@@ -346,7 +316,6 @@ class _TransactionHistoryScreenState
               ),
             ),
           ),
-          // Search bar
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
@@ -370,45 +339,59 @@ class _TransactionHistoryScreenState
                       horizontal: 12, vertical: 10),
                 ),
                 style: const TextStyle(fontSize: 14),
-                onChanged: (value) {
-                  setState(() => _searchQuery = value.toLowerCase());
-                  _applyFilter();
-                },
+                onChanged: _onSearchChanged,
               ),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 4)),
-          if (_isLoading)
+          if (listState.isLoading && listState.items.isEmpty)
             const SliverToBoxAdapter(
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            )
+          else if (listState.items.isEmpty)
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height - 200,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.receipt_long_rounded,
+                          size: 64,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
+                      const SizedBox(height: 12),
+                      Text('Tidak ada transaksi',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          )),
+                      if (listState.error != null) ...[
+                        const SizedBox(height: 8),
+                        Text(listState.error!, style: TextStyle(color: AppTheme.lossColor, fontSize: 12)),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             )
           else
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  if (_filtered.isEmpty) {
-                    return SizedBox(
-                      height: MediaQuery.of(context).size.height - 200,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.receipt_long_rounded,
-                                size: 64,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
-                            const SizedBox(height: 12),
-                            Text('Tidak ada transaksi',
-                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                )),
-                          ],
-                        ),
-                      ),
+                  if (index >= listState.items.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator()),
                     );
                   }
-                  final tx = _filtered[index];
+
+                  final tx = listState.items[index];
                   final isIncome = tx.type == AppConstants.typeIncome;
                   return Padding(
                     padding: EdgeInsets.only(
@@ -484,7 +467,7 @@ class _TransactionHistoryScreenState
                     ),
                   );
                 },
-                childCount: _filtered.isEmpty ? 1 : _filtered.length,
+                childCount: listState.items.length + (listState.isLoading ? 1 : 0),
               ),
             ),
         ],
@@ -583,5 +566,3 @@ class _TransactionHistoryScreenState
     }
   }
 }
-
-
