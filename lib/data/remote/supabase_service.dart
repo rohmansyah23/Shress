@@ -842,9 +842,20 @@ class SupabaseService {
           .select()
           .eq('consignor_id', consignorId)
           .order('consignment_date', ascending: false);
-      return (data as List)
+      final consignments = (data as List)
           .map((c) => ConsignmentModel.fromMap(c as Map<String, dynamic>))
           .toList();
+
+      final enriched = <ConsignmentModel>[];
+      for (final c in consignments) {
+        if ((c.isDaily || c.isReseller) && (c.reportStatus == AppConstants.reportReported || c.reportStatus == AppConstants.reportSettled)) {
+          final owing = await getDailyPaymentOwing(c.id);
+          enriched.add(c.copyWith(paymentOwing: owing));
+        } else {
+          enriched.add(c);
+        }
+      }
+      return enriched;
     });
   }
 
@@ -853,6 +864,7 @@ class SupabaseService {
     required int businessId,
     required String userId,
     required double totalAmount,
+    String type = AppConstants.consignmentTypeReseller,
     String? description,
     String? dueDate,
     String? consignmentDate,
@@ -865,6 +877,7 @@ class SupabaseService {
         'total_amount': totalAmount,
         'description': description,
         'status': AppConstants.consignmentActive,
+        'type': type,
         'consignment_date': consignmentDate,
         'due_date': dueDate,
       }).select('id').single();
@@ -878,15 +891,20 @@ class SupabaseService {
     required int quantity,
     required double agreedPrice,
     double? sellingPrice,
+    String? description,
   }) async {
     return ErrorHandler.guard(() async {
-      await _supabase.from('consignment_items').insert({
+      final itemData = <String, dynamic>{
         'consignment_id': consignmentId,
         'product_name': productName,
         'quantity': quantity,
+        'quantity_sold': 0,
+        'quantity_returned': 0,
         'agreed_price': agreedPrice,
-        'selling_price': sellingPrice,
-      });
+      };
+      if (sellingPrice != null) itemData['selling_price'] = sellingPrice;
+      if (description != null) itemData['description'] = description;
+      await _supabase.from('consignment_items').insert(itemData);
     });
   }
 
@@ -905,6 +923,23 @@ class SupabaseService {
 
   Future<void> deleteConsignment(int consignmentId) async {
     return ErrorHandler.guard(() async {
+      final consData = await _supabase
+          .from('consignments')
+          .select('income_transaction_id, expense_transaction_id')
+          .eq('id', consignmentId)
+          .maybeSingle();
+
+      if (consData != null) {
+        final incomeTxId = consData['income_transaction_id'] as int?;
+        final expenseTxId = consData['expense_transaction_id'] as int?;
+        if (incomeTxId != null) {
+          await _supabase.from('transactions').delete().eq('id', incomeTxId);
+        }
+        if (expenseTxId != null) {
+          await _supabase.from('transactions').delete().eq('id', expenseTxId);
+        }
+      }
+
       await _supabase.from('consignments').delete().eq('id', consignmentId);
     });
   }
@@ -932,6 +967,7 @@ class SupabaseService {
     required String userId,
     String? notes,
     String? settlementDate,
+    String? paymentMethod,
   }) async {
     return ErrorHandler.guard(() async {
       final response = await _supabase.from('consignment_settlements').insert({
@@ -945,24 +981,105 @@ class SupabaseService {
       // Update settled_amount and status on the consignment
       final consData = await _supabase
           .from('consignments')
-          .select('total_amount, settled_amount')
+          .select('total_amount, settled_amount, type, business_id, consignor_id, report_status')
           .eq('id', consignmentId)
           .single();
 
       final totalSettled =
           (consData['settled_amount'] as num).toDouble() + amount;
       final totalAmount = (consData['total_amount'] as num).toDouble();
+      final type = consData['type'] as String? ?? 'reseller';
+      final isReseller = type == 'reseller';
+      final reportStatus = consData['report_status'] as String? ?? 'pending';
+
+      // For reseller: settledAmount is compared against totalPayment (agreedPrice * qtySold)
+      // For daily: same as reseller
+      // For old debt: compare against totalAmount
+      double settlementTarget = totalAmount;
+      if (isReseller && reportStatus == AppConstants.reportReported) {
+        final itemsData = await _supabase
+            .from('consignment_items')
+            .select('agreed_price, quantity_sold')
+            .eq('consignment_id', consignmentId);
+        double totalPayment = 0;
+        for (final item in itemsData) {
+          final agreedPrice = (item['agreed_price'] as num).toDouble();
+          final qtySold = item['quantity_sold'] as int;
+          totalPayment += agreedPrice * qtySold;
+        }
+        settlementTarget = totalPayment;
+      }
 
       String newStatus;
-      if (totalSettled >= totalAmount) {
+      if (totalSettled >= settlementTarget) {
         newStatus = AppConstants.consignmentSettled;
       } else {
         newStatus = AppConstants.consignmentActive;
       }
 
+      // For reseller: auto-finalize with commission when fully settled after report
+      int? incomeTxId;
+      if (isReseller &&
+          newStatus == AppConstants.consignmentSettled &&
+          reportStatus == AppConstants.reportReported) {
+        final businessId = consData['business_id'] as int;
+        final consignorId = consData['consignor_id'] as int;
+
+        final consignorData = await _supabase
+            .from('consignors')
+            .select('name')
+            .eq('id', consignorId)
+            .single();
+        final consignorName = consignorData['name'] as String;
+
+        final itemsData = await _supabase
+            .from('consignment_items')
+            .select('product_name, agreed_price, selling_price, quantity_sold')
+            .eq('consignment_id', consignmentId);
+
+        double totalFromSales = 0;
+        double totalPayment = 0;
+        final itemSummary = <String>[];
+        for (final item in itemsData) {
+          final agreedPrice = (item['agreed_price'] as num).toDouble();
+          final sellingPrice =
+              (item['selling_price'] as num?)?.toDouble() ?? agreedPrice;
+          final qtySold = item['quantity_sold'] as int;
+          final productName = item['product_name'] as String;
+          totalFromSales += sellingPrice * qtySold;
+          totalPayment += agreedPrice * qtySold;
+          itemSummary.add('$productName ($qtySold)');
+        }
+
+        final commission = totalFromSales - totalPayment;
+        if (commission > 0) {
+          final incomeCategoryId = await getOrCreateCategoryForBusiness(
+            businessId,
+            AppConstants.categoryKomisiTitipan,
+            AppConstants.typeIncome,
+          );
+
+          final itemDesc = itemSummary.join(', ');
+          incomeTxId = await createTransaction(
+            businessId: businessId,
+            categoryId: incomeCategoryId,
+            userId: userId,
+            type: AppConstants.typeIncome,
+            amount: commission,
+            paymentMethod: paymentMethod ?? AppConstants.paymentCash,
+            description: 'Komisi titipan $consignorName - $itemDesc',
+            transactionDate: settlementDate ??
+                DateTime.now().toIso8601String().substring(0, 10),
+          );
+        }
+      }
+
       await _supabase.from('consignments').update({
         'settled_amount': totalSettled,
         'status': newStatus,
+        if (newStatus == AppConstants.consignmentSettled)
+          'report_status': AppConstants.reportSettled,
+        if (incomeTxId != null) 'income_transaction_id': incomeTxId,
       }).eq('id', consignmentId);
 
       return response['id'] as int;
@@ -981,7 +1098,15 @@ class SupabaseService {
       for (final c in consignments) {
         if (c.status != AppConstants.consignmentSettled &&
             c.status != AppConstants.consignmentCancelled) {
-          totalOwed += c.remainingAmount;
+          if (c.isDaily || c.isReseller) {
+            if (c.reportStatus == AppConstants.reportReported) {
+              totalOwed += await getDailyPaymentOwing(c.id);
+            } else {
+              totalOwed += c.totalAmount;
+            }
+          } else {
+            totalOwed += c.remainingAmount;
+          }
           activeCount++;
         }
         totalSettled += c.settledAmount;
@@ -996,6 +1121,176 @@ class SupabaseService {
         'activeCount': activeCount,
         'consignorCount': consignorCount,
       };
+    });
+  }
+
+  // ==================== Daily Consignment Operations ====================
+
+  Future<double> getDailyPaymentOwing(int consignmentId) async {
+    return ErrorHandler.guard(() async {
+      final items = await _supabase
+          .from('consignment_items')
+          .select('agreed_price, quantity_sold')
+          .eq('consignment_id', consignmentId);
+      double total = 0;
+      for (final item in items) {
+        total += (item['agreed_price'] as num).toDouble() *
+            (item['quantity_sold'] as int);
+      }
+      return total;
+    });
+  }
+
+  Future<void> reportConsignmentItem({
+    required int consignmentId,
+    required int itemId,
+    required int quantitySold,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final itemData = await _supabase
+          .from('consignment_items')
+          .select('quantity')
+          .eq('id', itemId)
+          .single();
+
+      final totalQty = itemData['quantity'] as int;
+      if (quantitySold < 0 || quantitySold > totalQty) {
+        throw Exception('Jumlah terjual harus antara 0 dan $totalQty');
+      }
+
+      await _supabase.from('consignment_items').update({
+        'quantity_sold': quantitySold,
+        'quantity_returned': totalQty - quantitySold,
+      }).eq('id', itemId);
+    });
+  }
+
+  Future<void> finalizeConsignmentReport(int consignmentId) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('consignments').update({
+        'report_status': AppConstants.reportReported,
+      }).eq('id', consignmentId);
+    });
+  }
+
+  Future<int> getOrCreateCategoryForBusiness(
+    int businessId,
+    String categoryName,
+    String categoryType,
+  ) async {
+    return ErrorHandler.guard(() async {
+      final existing = await _supabase
+          .from('categories')
+          .select('id')
+          .eq('business_id', businessId)
+          .eq('name', categoryName)
+          .eq('type', categoryType);
+
+      if (existing.isNotEmpty) {
+        return existing.first['id'] as int;
+      }
+
+      final response = await _supabase.from('categories').insert({
+        'business_id': businessId,
+        'name': categoryName,
+        'type': categoryType,
+      }).select('id');
+
+      return (response as List).first['id'] as int;
+    });
+  }
+
+  Future<void> settleConsignment({
+    required int consignmentId,
+    required int businessId,
+    required String userId,
+    required String paymentMethod,
+    required String paymentDate,
+  }) async {
+    return ErrorHandler.guard(() async {
+      final consData = await _supabase
+          .from('consignments')
+          .select('settled_amount, consignor_id, status, report_status')
+          .eq('id', consignmentId)
+          .single();
+
+      if (consData['status'] != AppConstants.consignmentActive) {
+        throw Exception('Konsinyasi sudah tidak aktif');
+      }
+      if (consData['report_status'] != AppConstants.reportReported) {
+        throw Exception('Laporan penjualan belum diselesaikan');
+      }
+      final existingSettled =
+          (consData['settled_amount'] as num?)?.toDouble() ?? 0;
+      if (existingSettled > 0) {
+        throw Exception('Konsinyasi sudah pernah dibayar');
+      }
+
+      final consignorId = consData['consignor_id'] as int;
+
+      final consignorData = await _supabase
+          .from('consignors')
+          .select('name')
+          .eq('id', consignorId)
+          .single();
+      final consignorName = consignorData['name'] as String;
+
+      final itemsData = await _supabase
+          .from('consignment_items')
+          .select('product_name, agreed_price, selling_price, quantity_sold')
+          .eq('consignment_id', consignmentId);
+
+      double totalFromSales = 0;
+      double totalPayment = 0;
+      final itemSummary = <String>[];
+      for (final item in itemsData) {
+        final agreedPrice = (item['agreed_price'] as num).toDouble();
+        final sellingPrice =
+            (item['selling_price'] as num?)?.toDouble() ?? agreedPrice;
+        final qtySold = item['quantity_sold'] as int;
+        final productName = item['product_name'] as String;
+        totalFromSales += sellingPrice * qtySold;
+        totalPayment += agreedPrice * qtySold;
+        itemSummary.add('$productName ($qtySold)');
+      }
+
+      final commission = totalFromSales - totalPayment;
+
+      int? incomeTxId;
+      if (commission > 0) {
+        final incomeCategoryId = await getOrCreateCategoryForBusiness(
+          businessId,
+          AppConstants.categoryKomisiTitipan,
+          AppConstants.typeIncome,
+        );
+
+        final itemDesc = itemSummary.join(', ');
+        incomeTxId = await createTransaction(
+          businessId: businessId,
+          categoryId: incomeCategoryId,
+          userId: userId,
+          type: AppConstants.typeIncome,
+          amount: commission,
+          paymentMethod: paymentMethod,
+          description: 'Komisi titipan $consignorName - $itemDesc',
+          transactionDate: paymentDate,
+        );
+      }
+
+      await _supabase.from('consignment_settlements').insert({
+        'consignment_id': consignmentId,
+        'amount': totalPayment,
+        'user_id': userId,
+        'settlement_date': paymentDate,
+        'notes': 'Settlement harian via laporan penjualan',
+      });
+
+      await _supabase.from('consignments').update({
+        'status': AppConstants.consignmentSettled,
+        'report_status': AppConstants.reportSettled,
+        'settled_amount': totalPayment,
+        if (incomeTxId != null) 'income_transaction_id': incomeTxId,
+      }).eq('id', consignmentId);
     });
   }
 

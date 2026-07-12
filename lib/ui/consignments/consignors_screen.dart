@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
@@ -26,11 +27,61 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
   bool _isLoading = true;
   List<ConsignorModel> _consignors = [];
   Map<String, dynamic> _summary = {};
+  RealtimeChannel? _channel;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _subscribeRealtime();
+  }
+
+  void _subscribeRealtime() {
+    _channel = SupabaseService.instance.client
+        .channel('consignments-${widget.business.businessId}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'consignments',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'business_id',
+            value: widget.business.businessId,
+          ),
+          callback: (_) => _loadData(),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'consignments',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'business_id',
+            value: widget.business.businessId,
+          ),
+          callback: (_) => _loadData(),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'consignment_items',
+          callback: (_) => _loadData(),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'consignment_items',
+          callback: (_) => _loadData(),
+        )
+        .subscribe();
+  }
+
+  @override
+  void dispose() {
+    if (_channel != null) {
+      SupabaseService.instance.client.removeChannel(_channel!);
+    }
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -85,7 +136,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
   }
 
   double _getConsignorTotal(int consignorId) {
-    final consignmentsAsync = ref.read(
+    final consignmentsAsync = ref.watch(
       consignmentsByConsignorProvider(consignorId),
     );
     return consignmentsAsync.when(
@@ -94,13 +145,31 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
         for (final c in data) {
           if (c.status != AppConstants.consignmentSettled &&
               c.status != AppConstants.consignmentCancelled) {
-            total += c.totalAmount - c.settledAmount;
+            total += c.displayTotal;
           }
         }
         return total;
       },
       loading: () => 0,
       error: (_, _) => 0,
+    );
+  }
+
+  String _getConsignorStatusLabel(int consignorId) {
+    final consignmentsAsync = ref.watch(
+      consignmentsByConsignorProvider(consignorId),
+    );
+    return consignmentsAsync.when(
+      data: (data) {
+        final active = data.where(
+          (c) => c.status != AppConstants.consignmentSettled &&
+              c.status != AppConstants.consignmentCancelled,
+        );
+        if (active.isEmpty) return 'Selesai';
+        return 'Aktif';
+      },
+      loading: () => '',
+      error: (_, _) => '',
     );
   }
 
@@ -180,9 +249,9 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
               children: [
                 Expanded(
                   child: _summaryItem(
-                    'Total Tagihan Aktif',
+                    'Belum Dibayar',
                     FormatHelpers.rupiah(totalOwed),
-                    AppTheme.warningColor,
+                    AppTheme.warningColorTheme(context),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -190,7 +259,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                   child: _summaryItem(
                     'Sudah Dibayar',
                     FormatHelpers.rupiah(totalSettled),
-                    AppTheme.profitColor,
+                    AppTheme.profitColorTheme(context),
                   ),
                 ),
               ],
@@ -199,7 +268,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
             _summaryItem(
               'Jumlah Penitip',
               '$consignorCount penitip',
-              AppTheme.infoColor,
+              AppTheme.infoColorTheme(context),
             ),
           ],
         ),
@@ -228,7 +297,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
         child: Column(
           children: [
             Icon(Icons.people_outline_rounded,
-                size: 64, color: Colors.grey.shade400),
+                size: 64, color: Theme.of(context).textTheme.bodySmall?.color),
             const SizedBox(height: 16),
             Text(
               'Belum ada penitip',
@@ -239,7 +308,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
               'Tekan tombol + untuk menambah titipan baru',
               style: AppTheme.caption.copyWith(
                 fontSize: 12,
-                color: Colors.grey.shade500,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
           ],
@@ -250,6 +319,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
 
   Widget _buildConsignorCard(ConsignorModel consignor) {
     final totalActive = _getConsignorTotal(consignor.id);
+    final statusLabel = _getConsignorStatusLabel(consignor.id);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -299,19 +369,19 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: totalActive > 0
-                          ? AppTheme.warningColor
-                          : AppTheme.profitColor,
+                      color: statusLabel == 'Selesai'
+                          ? AppTheme.profitColorTheme(context)
+                          : AppTheme.warningColorTheme(context),
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    totalActive > 0 ? 'Aktif' : 'Lunas',
+                    statusLabel,
                     style: AppTheme.caption.copyWith(
                       fontSize: 11,
-                      color: totalActive > 0
-                          ? AppTheme.warningColor
-                          : AppTheme.profitColor,
+                      color: statusLabel == 'Selesai'
+                          ? AppTheme.profitColorTheme(context)
+                          : AppTheme.warningColorTheme(context),
                       fontWeight: FontWeight.w600,
                     ),
                   ),

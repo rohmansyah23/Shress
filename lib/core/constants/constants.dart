@@ -33,6 +33,19 @@ class AppConstants {
   static const String consignmentSettled = 'settled';
   static const String consignmentCancelled = 'cancelled';
 
+  // Consignment Type
+  static const String consignmentTypeReseller = 'reseller';
+  static const String consignmentTypeDaily = 'daily';
+
+  // Consignment Report Status
+  static const String reportPending = 'pending';
+  static const String reportReported = 'reported';
+  static const String reportSettled = 'settled';
+
+  // Consignment Categories
+  static const String categoryKomisiTitipan = 'Komisi Titipan';
+  static const String categoryBayarTitipan = 'Bayar Titipan';
+
   // Sync
   static const int syncIntervalSeconds = 30;
   static const int syncBatchSize = 50;

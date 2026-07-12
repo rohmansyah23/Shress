@@ -12,6 +12,7 @@ import '../../data/local/models/consignment_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/debt_consignment_provider.dart';
+import 'report_sales_screen.dart';
 
 class ConsignmentDetailScreen extends ConsumerStatefulWidget {
   final ConsignmentModel consignment;
@@ -36,6 +37,7 @@ class _ConsignmentDetailScreenState
   List<ConsignmentItemModel> _items = [];
   List<ConsignmentSettlementModel> _settlements = [];
   late ConsignmentModel _consignment;
+  String _paymentMethod = AppConstants.paymentCash;
 
   @override
   void initState() {
@@ -48,10 +50,8 @@ class _ConsignmentDetailScreenState
     setState(() => _isLoading = true);
     try {
       final results = await Future.wait([
-        SupabaseService.instance
-            .getConsignmentItems(_consignment.id),
-        SupabaseService.instance
-            .getConsignmentSettlements(_consignment.id),
+        SupabaseService.instance.getConsignmentItems(_consignment.id),
+        SupabaseService.instance.getConsignmentSettlements(_consignment.id),
       ]);
       if (mounted) {
         setState(() {
@@ -68,16 +68,236 @@ class _ConsignmentDetailScreenState
     }
   }
 
+  Future<void> _handleReportSales() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReportSalesScreen(
+          consignment: _consignment,
+          items: _items,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      _refreshConsignment();
+    }
+  }
+
+  Future<void> _refreshConsignment() async {
+    try {
+      final data = await SupabaseService.instance
+          .getConsignmentItems(_consignment.id);
+      final settlements = await SupabaseService.instance
+          .getConsignmentSettlements(_consignment.id);
+
+      final refreshed = await SupabaseService.instance
+          .getConsignmentsByBusiness(_consignment.businessId);
+      final found = refreshed.where((c) => c.id == _consignment.id).firstOrNull;
+
+      if (mounted) {
+        setState(() {
+          _items = data;
+          _settlements = settlements;
+          if (found != null) {
+            double paymentOwing = 0;
+            for (final item in data) {
+              paymentOwing += item.agreedPrice * item.quantitySold;
+            }
+            _consignment = found.copyWith(paymentOwing: paymentOwing);
+          }
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _handleSettleDaily() async {
+    final totalPayment = _items.fold<double>(
+      0,
+      (sum, item) => sum + item.agreedPrice * item.quantitySold,
+    );
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Bayar ke Penitip'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.consignor.name,
+                style: AppTheme.heading3,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Total dibayar: ${FormatHelpers.rupiah(totalPayment)}',
+                style: AppTheme.caption.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.lossColorTheme(context),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('Metode bayar', style: AppTheme.labelSmall),
+              const SizedBox(height: 8),
+              _buildPaymentOption(
+                ctx,
+                setDialogState,
+                value: AppConstants.paymentCash,
+                label: 'Cash',
+                icon: Icons.money_rounded,
+              ),
+              const SizedBox(height: 4),
+              _buildPaymentOption(
+                ctx,
+                setDialogState,
+                value: AppConstants.paymentTransfer,
+                label: 'Transfer',
+                icon: Icons.account_balance_rounded,
+              ),
+              const SizedBox(height: 4),
+              _buildPaymentOption(
+                ctx,
+                setDialogState,
+                value: AppConstants.paymentQris,
+                label: 'QRIS',
+                icon: Icons.qr_code_rounded,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.infoColorTheme(context)
+                      .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.receipt_long_rounded,
+                        size: 16, color: AppTheme.infoColorTheme(context)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '2 transaksi akan dibuat otomatis',
+                        style: AppTheme.caption.copyWith(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Bayar Sekarang'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        if (!mounted) return;
+        final user = ref.read(currentUserProvider);
+        if (user == null) {
+          ErrorSnackbar.showMessage(context, 'Sesi tidak valid');
+          return;
+        }
+
+        await SupabaseService.instance.settleConsignment(
+          consignmentId: _consignment.id,
+          businessId: _consignment.businessId,
+          userId: user.userId,
+          paymentMethod: _paymentMethod,
+          paymentDate: DateTime.now().toIso8601String().substring(0, 10),
+        );
+
+        if (!mounted) return;
+        triggerDebtRefresh(ref);
+        await _refreshConsignment();
+        ErrorSnackbar.showSuccess(context, 'Pembayaran berhasil');
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      } catch (e) {
+        if (!mounted) return;
+        ErrorSnackbar.show(context, ErrorHandler.classify(e));
+      }
+    }
+  }
+
+  Widget _buildPaymentOption(
+    BuildContext ctx,
+    StateSetter setDialogState, {
+    required String value,
+    required String label,
+    required IconData icon,
+  }) {
+    final isSelected = _paymentMethod == value;
+    final textColor = Theme.of(ctx).textTheme.bodyMedium?.color ?? Colors.grey;
+    final subtleColor = Theme.of(ctx).brightness == Brightness.dark
+        ? Colors.white54
+        : (Theme.of(ctx).textTheme.bodySmall?.color ?? Colors.grey);
+    return InkWell(
+      onTap: () => setDialogState(() => _paymentMethod = value),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppTheme.primaryColor.withValues(alpha: 0.15)
+              : Theme.of(ctx).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? AppTheme.primaryColor
+                : subtleColor.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon,
+                size: 18,
+                color: isSelected ? AppTheme.primaryColor : subtleColor),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppTheme.primaryColor : textColor,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            const Spacer(),
+            if (isSelected)
+              Icon(Icons.check_circle_rounded,
+                  size: 18, color: AppTheme.primaryColor),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _recordSettlement() async {
-    final remaining = _consignment.totalAmount - _consignment.settledAmount;
+    final remaining = _consignment.displayTotal;
     if (remaining <= 0) {
       ErrorSnackbar.showMessage(context, 'Konsinyasi sudah lunas');
       return;
     }
 
-    final amountCtrl = TextEditingController(text: remaining.toStringAsFixed(0));
+    final amountCtrl =
+        TextEditingController(text: remaining.toStringAsFixed(0));
     final notesCtrl = TextEditingController();
-    String settlementDate = DateTime.now().toIso8601String().substring(0, 10);
+    String settlementDate =
+        DateTime.now().toIso8601String().substring(0, 10);
 
     final result = await showDialog<bool>(
       context: context,
@@ -182,16 +402,16 @@ class _ConsignmentDetailScreenState
           consignmentId: _consignment.id,
           amount: amount,
           userId: user.userId,
-          notes: notesCtrl.text.trim().isEmpty
-              ? null
-              : notesCtrl.text.trim(),
+          notes:
+              notesCtrl.text.trim().isEmpty ? null : notesCtrl.text.trim(),
           settlementDate: settlementDate,
+          paymentMethod: _paymentMethod,
         );
 
         if (!mounted) return;
         triggerDebtRefresh(ref);
         ErrorSnackbar.showSuccess(context, 'Pembayaran berhasil dicatat');
-        _loadData();
+        _refreshConsignment();
       } catch (e) {
         if (!mounted) return;
         ErrorSnackbar.show(context, ErrorHandler.classify(e));
@@ -203,7 +423,8 @@ class _ConsignmentDetailScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Hapus Konsinyasi'),
         content: Text(
           'Yakin ingin menghapus konsinyasi tanggal ${FormatHelpers.displayDate(_consignment.consignmentDate)}?',
@@ -265,14 +486,40 @@ class _ConsignmentDetailScreenState
     }
   }
 
+  String _reportStatusLabel(String reportStatus) {
+    switch (reportStatus) {
+      case AppConstants.reportPending:
+        return 'Menunggu';
+      case AppConstants.reportReported:
+        return 'Dilaporkan';
+      case AppConstants.reportSettled:
+        return 'Selesai';
+      default:
+        return reportStatus;
+    }
+  }
+
+  Color _reportStatusColor(String reportStatus, BuildContext context) {
+    switch (reportStatus) {
+      case AppConstants.reportPending:
+        return AppTheme.warningColorTheme(context);
+      case AppConstants.reportReported:
+        return AppTheme.infoColorTheme(context);
+      case AppConstants.reportSettled:
+        return AppTheme.profitColorTheme(context);
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final remaining = _consignment.totalAmount - _consignment.settledAmount;
+    final remaining = _consignment.displayTotal;
     final color = _statusColor(_consignment.status, context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detail Konsinyasi'),
+        title: const Text('Detail Konsinyasi'),
         actions: [
           if (_consignment.status == AppConstants.consignmentActive)
             IconButton(
@@ -283,13 +530,7 @@ class _ConsignmentDetailScreenState
             ),
         ],
       ),
-      floatingActionButton: _consignment.status == AppConstants.consignmentActive
-          ? FloatingActionButton.extended(
-              onPressed: _recordSettlement,
-              icon: const Icon(Icons.payments_outlined),
-              label: const Text('Catat Pembayaran'),
-            )
-          : null,
+      floatingActionButton: _buildFab(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -311,10 +552,65 @@ class _ConsignmentDetailScreenState
                     delay: const Duration(milliseconds: 100),
                     child: _buildSettlementSection(),
                   ),
+                  if ((_consignment.isDaily || _consignment.isReseller) &&
+                      _consignment.status ==
+                          AppConstants.consignmentSettled) ...[
+                    const SizedBox(height: 16),
+                    FadeInEntrance(
+                      delay: const Duration(milliseconds: 200),
+                      child: _buildTransactionLinks(),
+                    ),
+                  ],
                   const SizedBox(height: 80),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget? _buildFab() {
+    if (_consignment.status != AppConstants.consignmentActive) return null;
+
+    final fabShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    );
+
+    if (_consignment.isDaily || _consignment.isReseller) {
+      if (_consignment.reportStatus == AppConstants.reportPending) {
+        return FloatingActionButton.extended(
+          onPressed: _handleReportSales,
+          shape: fabShape,
+          icon: const Icon(Icons.edit_note_rounded),
+          label: const Text('Laporkan Penjualan'),
+        );
+      }
+      if (_consignment.reportStatus == AppConstants.reportReported) {
+    if (_consignment.isDaily || _consignment.isReseller) {
+          return FloatingActionButton.extended(
+            onPressed: _handleSettleDaily,
+            backgroundColor: AppTheme.profitColor,
+            foregroundColor: Colors.white,
+            shape: fabShape,
+            icon: const Icon(Icons.payments_outlined),
+            label: const Text('Bayar ke Penitip'),
+          );
+        }
+        return FloatingActionButton.extended(
+          onPressed: _recordSettlement,
+          backgroundColor: AppTheme.profitColor,
+          foregroundColor: Colors.white,
+          shape: fabShape,
+          icon: const Icon(Icons.payments_outlined),
+          label: const Text('Catat Pembayaran'),
+        );
+      }
+    }
+
+    return FloatingActionButton.extended(
+      onPressed: _recordSettlement,
+      shape: fabShape,
+      icon: const Icon(Icons.payments_outlined),
+      label: const Text('Catat Pembayaran'),
     );
   }
 
@@ -348,12 +644,52 @@ class _ConsignmentDetailScreenState
                 color: color,
               ),
             ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: (_consignment.isDaily || _consignment.isReseller)
+                    ? AppTheme.infoColorTheme(context).withValues(alpha: 0.15)
+                    : AppTheme.primaryColorTheme(context).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                _consignment.isDaily ? 'Harian' : 'Reseller',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: (_consignment.isDaily || _consignment.isReseller)
+                      ? AppTheme.infoColorTheme(context)
+                      : AppTheme.primaryColorTheme(context),
+                ),
+              ),
+            ),
+            if (_consignment.isDaily || _consignment.isReseller) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _reportStatusColor(
+                          _consignment.reportStatus, context)
+                      .withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  _reportStatusLabel(_consignment.reportStatus),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: _reportStatusColor(
+                        _consignment.reportStatus, context),
+                  ),
+                ),
+              ),
+            ],
             const Spacer(),
             Text(
               FormatHelpers.displayDate(_consignment.consignmentDate),
-              style: AppTheme.caption.copyWith(
-                color: color,
-              ),
+              style: AppTheme.caption.copyWith(color: color),
             ),
           ],
         ),
@@ -406,6 +742,13 @@ class _ConsignmentDetailScreenState
   }
 
   Widget _buildSummaryCard(double remaining) {
+    if (_consignment.isDaily || _consignment.isReseller) {
+      if (_consignment.reportStatus == AppConstants.reportPending) {
+        return _buildDailyPendingSummaryCard();
+      }
+      return _buildDailySummaryCard();
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -456,7 +799,8 @@ class _ConsignmentDetailScreenState
               Row(
                 children: [
                   Icon(Icons.event_outlined,
-                      size: 14, color: AppTheme.infoColorTheme(context)),
+                      size: 14,
+                      color: AppTheme.infoColorTheme(context)),
                   const SizedBox(width: 4),
                   Text(
                     'Jatuh tempo: ${FormatHelpers.displayDate(_consignment.dueDate!)}',
@@ -471,6 +815,153 @@ class _ConsignmentDetailScreenState
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDailyPendingSummaryCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Ringkasan Titipan', style: AppTheme.labelSmall),
+            const SizedBox(height: 12),
+            _buildSummaryRow(
+              'Total Nilai Titipan',
+              FormatHelpers.rupiah(_consignment.totalAmount),
+              AppTheme.primaryColor,
+            ),
+            const SizedBox(height: 8),
+            _buildSummaryRow(
+              'Sudah Dibayar',
+              FormatHelpers.rupiah(_consignment.settledAmount),
+              AppTheme.profitColorTheme(context),
+            ),
+            const Divider(height: 24),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.warningColorTheme(context)
+                    .withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.schedule_rounded,
+                      size: 16, color: AppTheme.warningColorTheme(context)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Menunggu laporan penjualan',
+                      style: AppTheme.caption.copyWith(
+                        fontSize: 12,
+                        color: AppTheme.warningColorTheme(context),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_consignment.description != null &&
+                _consignment.description!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text(
+                _consignment.description!,
+                style: AppTheme.caption.copyWith(fontSize: 13),
+              ),
+            ],
+            if (_consignment.dueDate != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.event_outlined,
+                      size: 14,
+                      color: AppTheme.infoColorTheme(context)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Jatuh tempo: ${FormatHelpers.displayDate(_consignment.dueDate!)}',
+                    style: AppTheme.caption.copyWith(
+                      fontSize: 12,
+                      color: AppTheme.infoColorTheme(context),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDailySummaryCard() {
+    double totalFromSales = 0;
+    double totalPayment = 0;
+    for (final item in _items) {
+      final effectivePrice = item.sellingPrice ?? item.agreedPrice;
+      totalFromSales += effectivePrice * item.quantitySold;
+      totalPayment += item.agreedPrice * item.quantitySold;
+    }
+    final commission = totalFromSales - totalPayment;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Ringkasan Penjualan', style: AppTheme.labelSmall),
+            const SizedBox(height: 12),
+            _buildSummaryRow(
+              'Total dari pelanggan',
+              FormatHelpers.rupiah(totalFromSales),
+              AppTheme.profitColorTheme(context),
+            ),
+            const SizedBox(height: 8),
+            _buildSummaryRow(
+              'Total bayar penitip',
+              FormatHelpers.rupiah(totalPayment),
+              AppTheme.lossColorTheme(context),
+            ),
+            const Divider(height: 24),
+            _buildSummaryRow(
+              'Komisi warung',
+              FormatHelpers.rupiah(commission),
+              AppTheme.primaryColor,
+            ),
+            if (_consignment.description != null &&
+                _consignment.description!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text(
+                _consignment.description!,
+                style: AppTheme.caption.copyWith(fontSize: 13),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: AppTheme.caption),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 
@@ -493,6 +984,9 @@ class _ConsignmentDetailScreenState
   }
 
   Widget _buildItemsSection() {
+    final showSalesInfo = (_consignment.isDaily || _consignment.isReseller) &&
+        _consignment.reportStatus != AppConstants.reportPending;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -520,19 +1014,87 @@ class _ConsignmentDetailScreenState
                   child: Text(
                     'Tidak ada item',
                     style: AppTheme.caption.copyWith(
-                        color: Colors.grey.shade500),
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
                   ),
                 ),
               )
             else
-              ..._items.map((item) => _buildItemRow(item)),
+              ..._items.map(
+                  (item) => _buildItemRow(item, showSalesInfo)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildItemRow(ConsignmentItemModel item) {
+  Widget _buildItemRow(ConsignmentItemModel item, bool showSalesInfo) {
+    if (showSalesInfo) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              item.productName,
+              style:
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                _buildQtyChip(
+                    'Dititip', item.quantity, AppTheme.primaryColor),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Icon(Icons.arrow_forward_rounded,
+                      size: 14, color: Colors.grey),
+                ),
+                _buildQtyChip(
+                  'Terjual',
+                  item.quantitySold,
+                  AppTheme.profitColorTheme(context),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Icon(Icons.arrow_forward_rounded,
+                      size: 14, color: Colors.grey),
+                ),
+                _buildQtyChip(
+                  'Kembali',
+                  item.quantityReturned,
+                  AppTheme.warningColorTheme(context),
+                ),
+              ],
+            ),
+            if (item.sellingPrice != null) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Text(
+                    '${item.quantitySold} × ${FormatHelpers.rupiah(item.sellingPrice!)} dari pelanggan',
+                    style:
+                        AppTheme.caption.copyWith(fontSize: 11),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '${item.quantitySold} × ${FormatHelpers.rupiah(item.agreedPrice)} ke penitip',
+                    style: AppTheme.caption.copyWith(
+                        fontSize: 11,
+                        color: AppTheme.lossColorTheme(context)),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+
+    final isFullySold = (_consignment.isDaily || _consignment.isReseller) &&
+        item.sellingPrice != null &&
+        item.quantitySold >= item.quantity;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -547,6 +1109,15 @@ class _ConsignmentDetailScreenState
                   style: const TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w500),
                 ),
+                if (item.description != null &&
+                    item.description!.isNotEmpty)
+                  Text(
+                    item.description!,
+                    style: AppTheme.caption.copyWith(
+                      fontSize: 12,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                  ),
                 const SizedBox(height: 2),
                 Text(
                   '${item.quantity} x ${FormatHelpers.rupiah(item.agreedPrice)}',
@@ -583,10 +1154,43 @@ class _ConsignmentDetailScreenState
                     color: AppTheme.infoColorTheme(context),
                   ),
                 ),
+                if (item.sellingPrice != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    isFullySold ? 'Estimasi Pemasukan' : 'Omzet',
+                    style: AppTheme.labelSmall,
+                  ),
+                  Text(
+                    FormatHelpers.rupiah(item.totalSellingPriceAll),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.profitColorTheme(context),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQtyChip(String label, int qty, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        '$label: $qty',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
       ),
     );
   }
@@ -619,7 +1223,8 @@ class _ConsignmentDetailScreenState
                   child: Text(
                     'Belum ada pembayaran',
                     style: AppTheme.caption.copyWith(
-                        color: Colors.grey.shade500),
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
                   ),
                 ),
               )
@@ -640,8 +1245,8 @@ class _ConsignmentDetailScreenState
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color:
-                  AppTheme.profitColorTheme(context).withValues(alpha: 0.12),
+              color: AppTheme.profitColorTheme(context)
+                  .withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(Icons.check_circle_rounded,
@@ -662,7 +1267,7 @@ class _ConsignmentDetailScreenState
                     settlement.notes!,
                     style: AppTheme.caption.copyWith(
                       fontSize: 11,
-                      color: Colors.grey.shade500,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -670,12 +1275,84 @@ class _ConsignmentDetailScreenState
               ],
             ),
           ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              FormatHelpers.rupiah(settlement.amount),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.profitColorTheme(context),
+              ),
+              overflow: TextOverflow.visible,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionLinks() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.link_rounded,
+                    size: 18, color: AppTheme.primaryColor),
+                const SizedBox(width: 8),
+                Text('Transaksi Terkait', style: AppTheme.heading3),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (_consignment.incomeTransactionId != null)
+              _buildTransactionLink(
+                label: 'Uang Masuk',
+                transactionId: _consignment.incomeTransactionId!,
+                color: AppTheme.profitColorTheme(context),
+                icon: Icons.arrow_downward_rounded,
+              ),
+            if (_consignment.expenseTransactionId != null) ...[
+              const SizedBox(height: 8),
+              _buildTransactionLink(
+                label: 'Uang Keluar',
+                transactionId: _consignment.expenseTransactionId!,
+                color: AppTheme.lossColorTheme(context),
+                icon: Icons.arrow_upward_rounded,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransactionLink({
+    required String label,
+    required int transactionId,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 8),
           Text(
-            FormatHelpers.rupiah(settlement.amount),
+            '$label #$transactionId',
             style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.profitColorTheme(context),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: color,
             ),
           ),
         ],

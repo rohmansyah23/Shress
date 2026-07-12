@@ -33,6 +33,7 @@ class _ConsignorDetailScreenState
     extends ConsumerState<ConsignorDetailScreen> {
   bool _isLoading = true;
   List<ConsignmentModel> _consignments = [];
+  Map<int, List<ConsignmentItemModel>> _itemsByConsignment = {};
 
   @override
   void initState() {
@@ -45,9 +46,16 @@ class _ConsignorDetailScreenState
     try {
       final data = await SupabaseService.instance
           .getConsignmentsByConsignor(widget.consignor.id);
+      final itemsMap = <int, List<ConsignmentItemModel>>{};
+      await Future.wait(data.map((c) async {
+        final items = await SupabaseService.instance
+            .getConsignmentItems(c.id);
+        itemsMap[c.id] = items;
+      }));
       if (mounted) {
         setState(() {
           _consignments = data;
+          _itemsByConsignment = itemsMap;
           _isLoading = false;
         });
       }
@@ -211,19 +219,6 @@ class _ConsignorDetailScreenState
     }
   }
 
-  String _statusLabel(String status) {
-    switch (status) {
-      case AppConstants.consignmentActive:
-        return 'Aktif';
-      case AppConstants.consignmentSettled:
-        return 'Selesai';
-      case AppConstants.consignmentCancelled:
-        return 'Dibatalkan';
-      default:
-        return status;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -343,7 +338,7 @@ class _ConsignorDetailScreenState
         child: Column(
           children: [
             Icon(Icons.receipt_long_outlined,
-                size: 64, color: Colors.grey.shade400),
+                size: 64, color: Theme.of(context).textTheme.bodySmall?.color),
             const SizedBox(height: 16),
             Text(
               'Belum ada konsinyasi',
@@ -354,7 +349,7 @@ class _ConsignorDetailScreenState
               'Tekan tombol + untuk menambah titipan',
               style: AppTheme.caption.copyWith(
                 fontSize: 12,
-                color: Colors.grey.shade500,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
           ],
@@ -364,8 +359,11 @@ class _ConsignorDetailScreenState
   }
 
   Widget _buildConsignmentCard(ConsignmentModel consignment) {
-    final remaining = consignment.totalAmount - consignment.settledAmount;
     final color = _statusColor(consignment.status, context);
+    final statusLabel = consignment.displayStatus;
+    final items = _itemsByConsignment[consignment.id] ?? [];
+    final itemNames = items.map((i) => i.productName).join(', ');
+    final totalQty = items.fold<int>(0, (sum, i) => sum + i.quantity);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -402,7 +400,13 @@ class _ConsignorDetailScreenState
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          FormatHelpers.rupiah(consignment.totalAmount),
+                          FormatHelpers.rupiah(
+                            (consignment.isDaily || consignment.isReseller) &&
+                                (consignment.reportStatus == AppConstants.reportReported ||
+                                 consignment.reportStatus == AppConstants.reportSettled)
+                                ? consignment.paymentOwing
+                                : consignment.totalAmount,
+                          ),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -412,15 +416,34 @@ class _ConsignorDetailScreenState
                       ],
                     ),
                   ),
+                  Icon(Icons.chevron_right_rounded,
+                      color: Colors.grey.shade400),
+                ],
+              ),
+              if (items.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  '$totalQty pcs - $itemNames',
+                  style: AppTheme.caption.copyWith(
+                    fontSize: 12,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              const SizedBox(height: 10),
+              Row(
+                children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      _statusLabel(consignment.status),
+                      statusLabel,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -428,47 +451,39 @@ class _ConsignorDetailScreenState
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Dibayar', style: AppTheme.labelSmall),
-                        const SizedBox(height: 2),
-                        Text(
-                          FormatHelpers.rupiah(consignment.settledAmount),
-                          style: AppTheme.caption.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.profitColorTheme(context),
-                          ),
-                        ),
-                      ],
+                  const SizedBox(width: 6),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: consignment.isDaily
+                          ? AppTheme.infoColorTheme(context)
+                              .withValues(alpha: 0.15)
+                          : AppTheme.primaryColorTheme(context)
+                              .withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      consignment.isDaily ? 'Harian' : 'Reseller',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: consignment.isDaily
+                            ? AppTheme.infoColorTheme(context)
+                            : AppTheme.primaryColorTheme(context),
+                      ),
                     ),
                   ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Sisa', style: AppTheme.labelSmall),
-                        const SizedBox(height: 2),
-                        Text(
-                          FormatHelpers.rupiah(remaining),
-                          style: AppTheme.caption.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: remaining > 0
-                                ? AppTheme.warningColorTheme(context)
-                                : AppTheme.profitColorTheme(context),
-                          ),
-                        ),
-                      ],
+                  const Spacer(),
+                  Text('Dibayar', style: AppTheme.labelSmall),
+                  const SizedBox(width: 4),
+                  Text(
+                    FormatHelpers.rupiah(consignment.settledAmount),
+                    style: AppTheme.caption.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.profitColorTheme(context),
                     ),
                   ),
-                  Icon(Icons.chevron_right_rounded,
-                      color: Colors.grey.shade400),
                 ],
               ),
             ],

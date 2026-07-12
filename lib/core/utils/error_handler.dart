@@ -35,6 +35,11 @@ class ErrorHandler {
 
   /// Classify and convert any error to a user-friendly AppError
   static AppError classify(Object error) {
+    // Already an AppError, return directly
+    if (error is AppError) {
+      return error;
+    }
+
     // Network error (PlatformException with no connection)
     if (error.toString().contains('SocketException') ||
         error.toString().contains('Connection refused') ||
@@ -154,11 +159,59 @@ class ErrorHandler {
 
     // Check for RLS policy violation
     if (message.contains('violates row-level security') ||
-        message.contains('permission denied') ||
         message.contains('new row violates')) {
       return AppError(
         type: AppErrorType.permission,
         userMessage: 'Akses ditolak. Hubungi Owner untuk mendapatkan izin.',
+        technicalMessage: e.toString(),
+      );
+    }
+
+    // Permission denied for table (not RLS)
+    if (message.contains('permission denied for table') ||
+        message.contains('permission denied for relation')) {
+      return AppError(
+        type: AppErrorType.permission,
+        userMessage: 'Akses ditolak. Hubungi Owner untuk mendapatkan izin.',
+        technicalMessage: e.toString(),
+      );
+    }
+
+    // Foreign key constraint violation
+    if (message.contains('violates foreign key constraint') ||
+        message.contains('foreign key violation')) {
+      return AppError(
+        type: AppErrorType.unknown,
+        userMessage: 'Data referensi tidak valid. Silakan muat ulang halaman.',
+        technicalMessage: e.toString(),
+      );
+    }
+
+    // Check constraint violation
+    if (message.contains('violates check constraint')) {
+      return AppError(
+        type: AppErrorType.unknown,
+        userMessage: 'Data tidak memenuhi syarat. Periksa input Anda.',
+        technicalMessage: e.toString(),
+      );
+    }
+
+    // Not-null constraint violation
+    if (message.contains('violates not-null constraint') ||
+        message.contains('null value in column')) {
+      return AppError(
+        type: AppErrorType.unknown,
+        userMessage: 'Data tidak lengkap. Silakan coba lagi.',
+        technicalMessage: e.toString(),
+      );
+    }
+
+    // Unique constraint violation
+    if (message.contains('violates unique constraint') ||
+        message.contains('duplicate key value')) {
+      return AppError(
+        type: AppErrorType.unknown,
+        userMessage: 'Data sudah ada. Tidak dapat membuat duplikat.',
         technicalMessage: e.toString(),
       );
     }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
@@ -27,18 +29,21 @@ class AddConsignmentScreen extends ConsumerStatefulWidget {
 
 class _ConsignmentItemEntry {
   final TextEditingController nameController;
+  final TextEditingController descController;
   final TextEditingController qtyController;
   final TextEditingController priceController;
   final TextEditingController sellingPriceController;
 
   _ConsignmentItemEntry()
       : nameController = TextEditingController(),
+        descController = TextEditingController(),
         qtyController = TextEditingController(text: '1'),
         priceController = TextEditingController(),
         sellingPriceController = TextEditingController();
 
   void dispose() {
     nameController.dispose();
+    descController.dispose();
     qtyController.dispose();
     priceController.dispose();
     sellingPriceController.dispose();
@@ -57,6 +62,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
   String _consignmentDate =
       DateTime.now().toIso8601String().substring(0, 10);
   String? _dueDate;
+  String _consignmentType = AppConstants.consignmentTypeReseller;
   final List<_ConsignmentItemEntry> _items = [_ConsignmentItemEntry()];
 
   ConsignorModel? _selectedConsignor;
@@ -114,7 +120,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
     double total = 0;
     for (final item in _items) {
       final qty = int.tryParse(item.qtyController.text) ?? 0;
-      final price = double.tryParse(item.priceController.text) ?? 0;
+      final price = FormatHelpers.unformatRupiah(item.priceController.text);
       total += qty * price;
     }
     return total;
@@ -161,7 +167,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
         ErrorSnackbar.showMessage(context, 'Jumlah harus lebih dari 0');
         return;
       }
-      if ((double.tryParse(item.priceController.text) ?? 0) <= 0) {
+      if (FormatHelpers.unformatRupiah(item.priceController.text) <= 0) {
         ErrorSnackbar.showMessage(context, 'Harga harus lebih dari 0');
         return;
       }
@@ -203,11 +209,12 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
         businessId: widget.business.businessId,
         userId: user.userId,
         totalAmount: totalAmount,
+        type: _consignmentType,
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
         consignmentDate: _consignmentDate,
-        dueDate: _dueDate,
+        dueDate: null,
       );
 
       for (final item in _items) {
@@ -215,9 +222,14 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
           consignmentId: consignmentId,
           productName: item.nameController.text.trim(),
           quantity: int.tryParse(item.qtyController.text) ?? 1,
-          agreedPrice: double.tryParse(item.priceController.text) ?? 0,
+          agreedPrice: FormatHelpers.unformatRupiah(item.priceController.text),
           sellingPrice:
-              double.tryParse(item.sellingPriceController.text),
+              item.sellingPriceController.text.trim().isEmpty
+                  ? null
+                  : FormatHelpers.unformatRupiah(item.sellingPriceController.text),
+          description: item.descController.text.trim().isEmpty
+              ? null
+              : item.descController.text.trim(),
         );
       }
 
@@ -238,25 +250,14 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tambah Titipan Baru'),
-        actions: [
-          TextButton(
-            onPressed: _isSaving ? null : _handleSave,
-            child: _isSaving
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Simpan',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            _buildTypeSection(),
+            const SizedBox(height: 24),
             _buildConsignorSection(),
             const SizedBox(height: 24),
             Text('Item Titipan', style: AppTheme.heading3),
@@ -296,6 +297,125 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 label: Text(_isSaving ? 'Menyimpan...' : 'Simpan Titipan'),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Jenis Titipan', style: AppTheme.heading3),
+        const SizedBox(height: 12),
+        _buildTypeOption(
+          value: AppConstants.consignmentTypeReseller,
+          title: 'Reseller',
+          subtitle: 'Barang tahan lama, komisi + cicilan',
+          icon: Icons.store_outlined,
+        ),
+        const SizedBox(height: 8),
+        _buildTypeOption(
+          value: AppConstants.consignmentTypeDaily,
+          title: 'Harian',
+          subtitle: 'Barang perishable, lapor + bayar saat tutup',
+          icon: Icons.today_outlined,
+        ),
+        if (_consignmentType == AppConstants.consignmentTypeDaily ||
+            _consignmentType == AppConstants.consignmentTypeReseller) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.warningColorTheme(context).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppTheme.warningColorTheme(context).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    size: 16, color: AppTheme.warningColorTheme(context)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Barang akan dilaporkan dan dibayar sesuai penjualan',
+                    style: AppTheme.caption.copyWith(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTypeOption({
+    required String value,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    final isSelected = _consignmentType == value;
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: () => setState(() {
+        _consignmentType = value;
+        if (value == AppConstants.consignmentTypeDaily) {
+          _dueDate = null;
+        }
+      }),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? scheme.primaryContainer.withValues(alpha: 0.4)
+              : null,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? scheme.primary
+                : Theme.of(context).dividerColor,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon,
+                size: 20,
+                color: isSelected
+                    ? scheme.primary
+                    : Theme.of(context).textTheme.bodySmall?.color),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? scheme.primary
+                          : Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTheme.caption.copyWith(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle_rounded,
+                  size: 20, color: scheme.primary),
           ],
         ),
       ),
@@ -397,6 +517,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
               labelText: 'Catatan (opsional)',
               prefixIcon: Icon(Icons.notes_outlined),
               hintText: 'Catatan tentang penitip',
+              alignLabelWithHint: true,
             ),
             maxLines: 2,
           ),
@@ -441,6 +562,17 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 hintText: 'Contoh: Baju Merah',
               ),
             ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: item.descController,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                labelText: 'Deskripsi Produk (opsional)',
+                hintText: index == 0 ? 'Ukuran, warna, dll' : null,
+                alignLabelWithHint: true,
+              ),
+              maxLines: 2,
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -450,8 +582,16 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
                       labelText: 'Jumlah *',
+                      suffixText: 'pcs',
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) {
+                      final qty = int.tryParse(value ?? '') ?? 0;
+                      if (qty <= 0) return 'Minimal 1';
+                      return null;
+                    },
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
@@ -465,6 +605,10 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                       prefixText: 'Rp ',
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      RupiahInputFormatter(),
+                    ],
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
@@ -480,21 +624,45 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 hintText: 'Harga jual ke pelanggan',
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                RupiahInputFormatter(),
+              ],
             ),
             if (item.nameController.text.isNotEmpty &&
                 (int.tryParse(item.qtyController.text) ?? 0) > 0 &&
-                (double.tryParse(item.priceController.text) ?? 0) > 0)
+                FormatHelpers.unformatRupiah(item.priceController.text) > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'Subtotal: ${FormatHelpers.rupiah(
-                    (int.tryParse(item.qtyController.text) ?? 0) *
-                        (double.tryParse(item.priceController.text) ?? 0),
-                  )}',
-                  style: AppTheme.caption.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.infoColorTheme(context),
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Subtotal: ${FormatHelpers.rupiah(
+                        (int.tryParse(item.qtyController.text) ?? 0) *
+                            FormatHelpers.unformatRupiah(item.priceController.text),
+                      )}',
+                      style: AppTheme.caption.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.infoColorTheme(context),
+                      ),
+                    ),
+                    if (item.sellingPriceController.text.isNotEmpty &&
+                        FormatHelpers.unformatRupiah(item.sellingPriceController.text) > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Potensi Omzet: ${FormatHelpers.rupiah(
+                            (int.tryParse(item.qtyController.text) ?? 0) *
+                                FormatHelpers.unformatRupiah(item.sellingPriceController.text),
+                          )}',
+                          style: AppTheme.caption.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.profitColorTheme(context),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
           ],
@@ -513,6 +681,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             labelText: 'Deskripsi (opsional)',
             prefixIcon: Icon(Icons.description_outlined),
             hintText: 'Deskripsi konsinyasi',
+            alignLabelWithHint: true,
           ),
           maxLines: 2,
         ),
@@ -535,29 +704,6 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
               prefixIcon: Icon(Icons.calendar_today_rounded),
             ),
             child: Text(FormatHelpers.displayDate(_consignmentDate)),
-          ),
-        ),
-        const SizedBox(height: 12),
-        InkWell(
-          onTap: () => _pickDate(true),
-          borderRadius: BorderRadius.circular(12),
-          child: InputDecorator(
-            decoration: InputDecoration(
-              labelText: 'Jatuh Tempo (opsional)',
-              prefixIcon: const Icon(Icons.event_outlined),
-              suffixIcon: _dueDate != null
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, size: 18),
-                      onPressed: () => setState(() => _dueDate = null),
-                    )
-                  : null,
-            ),
-            child: Text(
-              _dueDate != null ? FormatHelpers.displayDate(_dueDate!) : '-',
-              style: TextStyle(
-                color: _dueDate != null ? null : Colors.grey.shade500,
-              ),
-            ),
           ),
         ),
         const SizedBox(height: 20),

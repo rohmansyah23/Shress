@@ -32,6 +32,12 @@ class AppTheme {
         : warningColor;
   }
 
+  static Color primaryColorTheme(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF9FA8DA)
+        : primaryColor;
+  }
+
   static Color infoColorTheme(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFF64B5F6)
