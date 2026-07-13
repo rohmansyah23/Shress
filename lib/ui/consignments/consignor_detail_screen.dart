@@ -98,113 +98,7 @@ class _ConsignorDetailScreenState
     }
   }
 
-  Future<void> _editConsignor() async {
-    final nameCtrl = TextEditingController(text: widget.consignor.name);
-    final phoneCtrl = TextEditingController(text: widget.consignor.phone ?? '');
-    final notesCtrl = TextEditingController(text: widget.consignor.notes ?? '');
 
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
-        title: const Text('Edit Pihak Penitip'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'Nama'),
-            ),
-            const SizedBox(height: AppTheme.s12),
-            TextField(
-              controller: phoneCtrl,
-              decoration: const InputDecoration(labelText: 'Telepon'),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: AppTheme.s12),
-            TextField(
-              controller: notesCtrl,
-              decoration: const InputDecoration(labelText: 'Catatan'),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final name = nameCtrl.text.trim();
-              if (name.isEmpty) return;
-              try {
-                await SupabaseService.instance.updateConsignor(
-                  consignorId: widget.consignor.id,
-                  name: name,
-                  phone: phoneCtrl.text.trim().isEmpty
-                      ? null
-                      : phoneCtrl.text.trim(),
-                  notes: notesCtrl.text.trim().isEmpty
-                      ? null
-                      : notesCtrl.text.trim(),
-                );
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx, true);
-              } catch (e) {
-                if (!ctx.mounted) return;
-                ErrorSnackbar.show(ctx, ErrorHandler.classify(e));
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true) {
-      if (!mounted) return;
-      Navigator.of(context).pop(true);
-    }
-  }
-
-  Future<void> _deleteConsignor() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
-        title: const Text('Hapus Pihak Penitip'),
-        content: Text(
-          'Yakin ingin menghapus "${widget.consignor.name}"? Semua data titipan terkait juga akan dihapus.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.lossColor),
-            child: const Text('Hapus'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        await SupabaseService.instance
-            .deleteConsignor(widget.consignor.id);
-        if (!mounted) return;
-        triggerDebtRefresh(ref);
-        Navigator.of(context).pop(true);
-        ErrorSnackbar.showSuccess(context, 'Pihak penitip berhasil dihapus');
-      } catch (e) {
-        if (!mounted) return;
-        ErrorSnackbar.show(context, ErrorHandler.classify(e));
-      }
-    }
-  }
 
   Color _statusColor(String status, BuildContext context) {
     switch (status) {
@@ -224,19 +118,6 @@ class _ConsignorDetailScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.consignor.name),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Edit',
-            onPressed: _editConsignor,
-          ),
-          IconButton(
-            icon: Icon(Icons.delete_outline_rounded,
-                color: AppTheme.lossColorTheme(context)),
-            tooltip: 'Hapus',
-            onPressed: _deleteConsignor,
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addConsignment,
@@ -279,17 +160,17 @@ class _ConsignorDetailScreenState
                 CircleAvatar(
                   radius: 28,
                   backgroundColor:
-                      AppTheme.primaryColor.withValues(alpha: 0.12),
+                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                   child: Text(
                     widget.consignor.name.length >= 2
                         ? widget.consignor.name
                             .substring(0, 2)
                             .toUpperCase()
                         : widget.consignor.name.toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryColor,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ),
@@ -416,8 +297,47 @@ class _ConsignorDetailScreenState
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right_rounded,
-                      color: AppTheme.secondaryText),
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.more_vert_rounded,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    onSelected: (value) {
+                      if (value == 'edit') _editConsignment(consignment);
+                      if (value == 'delete') _deleteConsignment(consignment);
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined, size: 18),
+                            SizedBox(width: AppTheme.s8),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuDivider(),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline_rounded,
+                              size: 18,
+                              color: AppTheme.lossColorTheme(context),
+                            ),
+                            const SizedBox(width: AppTheme.s8),
+                            Text(
+                              'Hapus',
+                              style: TextStyle(color: AppTheme.lossColorTheme(context)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
               if (items.isNotEmpty) ...[
@@ -458,9 +378,9 @@ class _ConsignorDetailScreenState
                     decoration: BoxDecoration(
                       color: consignment.isDaily
                           ? AppTheme.infoColorTheme(context)
-                              .withValues(alpha: 0.15)
+                              .withValues(alpha: 0.2)
                           : AppTheme.primaryColorTheme(context)
-                              .withValues(alpha: 0.15),
+                              .withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -491,5 +411,126 @@ class _ConsignorDetailScreenState
         ),
       ),
     );
+  }
+
+  Future<void> _editConsignment(ConsignmentModel consignment) async {
+    DateTime selectedDate = DateTime.tryParse(consignment.consignmentDate) ?? DateTime.now();
+    final descCtrl = TextEditingController(text: consignment.description ?? '');
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+          title: const Text('Edit Titipan'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: dialogCtx,
+                    initialDate: selectedDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) {
+                    setDialogState(() => selectedDate = picked);
+                  }
+                },
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                child: InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: 'Tanggal Titip',
+                    prefixIcon: Icon(Icons.calendar_today_rounded),
+                  ),
+                  child: Text(FormatHelpers.displayDate(
+                      '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}')),
+                ),
+              ),
+              const SizedBox(height: AppTheme.s12),
+              TextField(
+                controller: descCtrl,
+                decoration: const InputDecoration(labelText: 'Keterangan / Catatan'),
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                try {
+                  final dateStr =
+                      '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
+                  await SupabaseService.instance.updateConsignment(
+                    consignmentId: consignment.id,
+                    consignmentDate: dateStr,
+                    description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
+                  );
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx, true);
+                } catch (e) {
+                  if (!ctx.mounted) return;
+                  ErrorSnackbar.show(ctx, ErrorHandler.classify(e));
+                }
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result == true) {
+      _loadData();
+      triggerDebtRefresh(ref);
+      if (!mounted) return;
+      ErrorSnackbar.showSuccess(context, 'Titipan berhasil diperbarui');
+    }
+  }
+
+  Future<void> _deleteConsignment(ConsignmentModel consignment) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        title: const Text('Hapus Titipan'),
+        content: Text(
+          'Yakin ingin menghapus titipan tanggal ${FormatHelpers.displayDate(consignment.consignmentDate)}? Semua data terkait juga akan dihapus.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.lossColorTheme(context),
+            ),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await SupabaseService.instance.deleteConsignment(consignment.id);
+        _loadData();
+        triggerDebtRefresh(ref);
+        if (!mounted) return;
+        ErrorSnackbar.showSuccess(context, 'Titipan berhasil dihapus');
+      } catch (e) {
+        if (!mounted) return;
+        ErrorSnackbar.show(context, ErrorHandler.classify(e));
+      }
+    }
   }
 }

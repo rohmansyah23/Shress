@@ -69,119 +69,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
     }
   }
 
-  Future<void> _editDebtor() async {
-    final nameController = TextEditingController(text: _debtor?.name ?? '');
-    final phoneController =
-        TextEditingController(text: _debtor?.phone ?? '');
-    final notesController =
-        TextEditingController(text: _debtor?.notes ?? '');
 
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
-        title: const Text('Edit Penghutang'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Nama'),
-            ),
-            const SizedBox(height: AppTheme.s12),
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(labelText: 'Telepon'),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: AppTheme.s12),
-            TextField(
-              controller: notesController,
-              decoration: const InputDecoration(labelText: 'Catatan'),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              try {
-                await SupabaseService.instance.updateDebtor(
-                  debtorId: widget.debtor.id,
-                  name: nameController.text.trim(),
-                  phone: phoneController.text.trim().isEmpty
-                      ? null
-                      : phoneController.text.trim(),
-                  notes: notesController.text.trim().isEmpty
-                      ? null
-                      : notesController.text.trim(),
-                );
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx, true);
-              } catch (e) {
-                if (!ctx.mounted) return;
-                ErrorSnackbar.show(ctx, ErrorHandler.classify(e));
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true && mounted) {
-      final updated = await SupabaseService.instance
-          .getDebtorsByBusiness(widget.business.businessId);
-      final match = updated.where((d) => d.id == widget.debtor.id);
-      if (match.isNotEmpty && mounted) {
-        setState(() => _debtor = match.first);
-      }
-      triggerDebtRefresh(ref);
-      if (!mounted) return;
-      ErrorSnackbar.showSuccess(context, 'Penghutang berhasil diperbarui');
-    }
-  }
-
-  Future<void> _deleteDebtor() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
-        title: const Text('Hapus Penghutang'),
-        content: Text(
-          'Yakin ingin menghapus ${_debtor?.name ?? ''}? Semua data hutang terkait juga akan dihapus.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.lossColor),
-            child: const Text('Hapus'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      try {
-        await SupabaseService.instance.deleteDebtor(widget.debtor.id);
-        if (!mounted) return;
-        triggerDebtRefresh(ref);
-        Navigator.of(context).pop();
-        ErrorSnackbar.showSuccess(context, 'Penghutang berhasil dihapus');
-      } catch (e) {
-        if (!mounted) return;
-        ErrorSnackbar.show(context, ErrorHandler.classify(e));
-      }
-    }
-  }
 
   Future<void> _editDebt(DebtModel debt) async {
     final amountController =
@@ -404,37 +292,6 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_debtor?.name ?? widget.debtor.name),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'edit') _editDebtor();
-              if (value == 'delete') _deleteDebtor();
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit_outlined, size: 20),
-                    SizedBox(width: AppTheme.s8),
-                    Text('Edit'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete_outline_rounded,
-                        size: 20, color: AppTheme.lossColor),
-                    SizedBox(width: AppTheme.s8),
-                    Text('Hapus', style: TextStyle(color: AppTheme.lossColor)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -445,13 +302,23 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.s16,
+                        AppTheme.s16,
+                        AppTheme.s16,
+                        0,
+                      ),
                       child: _buildInfoCard(),
                     ),
                   ),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.s16,
+                        AppTheme.s12,
+                        AppTheme.s16,
+                        AppTheme.s8,
+                      ),
                       child: Text('Daftar Hutang', style: AppTheme.heading3),
                     ),
                   ),
@@ -486,7 +353,12 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                     )
                   else
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppTheme.s16,
+                        0,
+                        AppTheme.s16,
+                        AppTheme.s16,
+                      ),
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
@@ -513,10 +385,10 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
             ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(
-          16,
+          AppTheme.s16,
           0,
-          16,
-          MediaQuery.of(context).viewInsets.bottom + 16,
+          AppTheme.s16,
+          MediaQuery.of(context).viewInsets.bottom + AppTheme.s16,
         ),
         child: SizedBox(
           width: double.infinity,
@@ -536,10 +408,6 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                 triggerDebtRefresh(ref);
               }
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.infoColor,
-              foregroundColor: Colors.white,
-            ),
             icon: const Icon(Icons.add_rounded),
             label: const Text(
               'Tambah Hutang',
@@ -648,7 +516,7 @@ class _DebtCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppTheme.s12),
           child: Row(
             children: [
               Container(
@@ -748,15 +616,21 @@ class _DebtCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline_rounded,
-                            size: 18, color: AppTheme.lossColor),
-                        SizedBox(width: AppTheme.s8),
-                        Text('Hapus',
-                            style: TextStyle(color: AppTheme.lossColor)),
+                        Icon(
+                          Icons.delete_outline_rounded,
+                          size: 18,
+                          color: AppTheme.lossColorTheme(context),
+                        ),
+                        const SizedBox(width: AppTheme.s8),
+                        Text(
+                          'Hapus',
+                          style: TextStyle(color: AppTheme.lossColorTheme(context)),
+                        ),
                       ],
                     ),
                   ),
@@ -1106,16 +980,23 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                                   ],
                                 ),
                               ),
-                              const PopupMenuItem(
+                              const PopupMenuDivider(),
+                              PopupMenuItem(
                                 value: 'delete',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete_outline_rounded,
-                                        size: 18, color: AppTheme.lossColor),
-                                    SizedBox(width: AppTheme.s8),
-                                    Text('Hapus',
-                                        style: TextStyle(
-                                            color: AppTheme.lossColor)),
+                                    Icon(
+                                      Icons.delete_outline_rounded,
+                                      size: 18,
+                                      color: AppTheme.lossColorTheme(context),
+                                    ),
+                                    const SizedBox(width: AppTheme.s8),
+                                    Text(
+                                      'Hapus',
+                                      style: TextStyle(
+                                        color: AppTheme.lossColorTheme(context),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),

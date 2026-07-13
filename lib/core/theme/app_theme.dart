@@ -9,9 +9,12 @@ class AppTheme {
   AppTheme._();
 
   // ── Light Theme Colors ──────────────────────────────────────
-  static const Color background = Color(0xFFF1F5F9); // Slate 100 // Slate 200 // Background utama
+  static const Color background = Color(
+    0xFFF1F5F9,
+  ); // Slate 100 // Slate 200 // Background utama
   static const Color secondaryBackground = Color(0xFFE2E8F0); // Section/list
-  static const Color card = Color(0xFFFFFFFF); // Card tetap putih
+  // Menggunakan putih yang sedikit bergeser ke arah warna background (sangat bersih & premium)
+  static const Color card = Color(0xFFF8FAFC); // Slate 50
 
   static const Color primary = Color(0xFF1E293B); // Slate 800
   static const Color accent = Color(0xFF22C55E); // Green modern
@@ -48,7 +51,7 @@ class AppTheme {
   static const Color darkBackground = Color(0xFF121212);
   static const Color darkSecondaryBackground = Color(0xFF181818);
   static const Color darkCard = Color(0xFF1E1E1E);
-  static const Color darkElevatedCard = Color(0xFF242424);
+  static const Color darkElevatedCard = Color(0xFF303030);
   static const Color darkPrimary = Color(0xFF2ECC71);
   static const Color darkAccent = Color(0xFF00E676);
   static const Color darkPrimaryText = Color(0xFFFFFFFF);
@@ -78,7 +81,6 @@ class AppTheme {
   static const double radiusPill = 999;
 
   // ── Status Colors (theme-aware helpers) ─────────────────────
-  /// Light mode shade (backward compat with theme-aware contexts)
   static Color profitColorTheme(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
       ? const Color(0xFF81C784)
@@ -238,6 +240,9 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: background,
+      hoverColor: primary.withValues(alpha: 0.08),
+      highlightColor: primary.withValues(alpha: 0.12),
+      splashColor: primary.withValues(alpha: 0.16),
 
       // ── Text Theme (Inter via Google Fonts) ─────────────────
       textTheme: GoogleFonts.interTextTheme().copyWith(
@@ -416,7 +421,10 @@ class AppTheme {
         ),
         padding: const EdgeInsets.symmetric(horizontal: s12, vertical: s8),
         labelStyle: caption.copyWith(color: primaryText),
-        secondaryLabelStyle: caption.copyWith(color: card, fontWeight: FontWeight.w600),
+        secondaryLabelStyle: caption.copyWith(
+          color: card,
+          fontWeight: FontWeight.w600,
+        ),
         selectedColor: primary,
         backgroundColor: secondaryBackground,
         brightness: Brightness.light,
@@ -522,6 +530,9 @@ class AppTheme {
       brightness: Brightness.dark,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: darkBackground,
+      hoverColor: Colors.white.withValues(alpha: 0.06),
+      highlightColor: Colors.white.withValues(alpha: 0.10),
+      splashColor: Colors.white.withValues(alpha: 0.14),
 
       // ── Text Theme (Inter via Google Fonts) ─────────────────
       textTheme: GoogleFonts.interTextTheme().copyWith(

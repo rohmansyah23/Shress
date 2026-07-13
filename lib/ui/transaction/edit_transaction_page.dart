@@ -206,14 +206,14 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 padding: const EdgeInsets.all(AppTheme.s16),
                 decoration: BoxDecoration(
                   color: (isIncome
-                          ? AppTheme.profitColor
-                          : AppTheme.lossColor)
+                          ? AppTheme.profitColorTheme(context)
+                          : AppTheme.lossColorTheme(context))
                       .withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   border: Border.all(
                     color: (isIncome
-                            ? AppTheme.profitColor
-                            : AppTheme.lossColor)
+                            ? AppTheme.profitColorTheme(context)
+                            : AppTheme.lossColorTheme(context))
                         .withValues(alpha: 0.15),
                     width: 1,
                   ),
@@ -225,8 +225,8 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                           ? Icons.trending_up_rounded
                           : Icons.trending_down_rounded,
                       color: isIncome
-                          ? AppTheme.profitColor
-                          : AppTheme.lossColor,
+                          ? AppTheme.profitColorTheme(context)
+                          : AppTheme.lossColorTheme(context),
                       size: 28,
                     ),
                     const SizedBox(width: AppTheme.s12),
@@ -240,8 +240,8 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1,
                             color: isIncome
-                                ? AppTheme.profitColor
-                                : AppTheme.lossColor,
+                                ? AppTheme.profitColorTheme(context)
+                                : AppTheme.lossColorTheme(context),
                           ),
                         ),
                         const SizedBox(height: 2),

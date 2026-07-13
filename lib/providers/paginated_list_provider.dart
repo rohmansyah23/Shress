@@ -51,6 +51,7 @@ abstract class PaginatedListNotifier<T> extends StateNotifier<PaginatedListState
 
     try {
       final newItems = await fetchPage(_offset, limit);
+      if (!mounted) return;
       _offset += newItems.length;
       final allLoaded = newItems.length < limit;
 
@@ -60,6 +61,7 @@ abstract class PaginatedListNotifier<T> extends StateNotifier<PaginatedListState
         allLoaded: allLoaded,
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
@@ -71,6 +73,7 @@ abstract class PaginatedListNotifier<T> extends StateNotifier<PaginatedListState
 
     try {
       final newItems = await fetchPage(0, limit);
+      if (!mounted) return;
       _offset = newItems.length;
       final allLoaded = newItems.length < limit;
 
@@ -80,6 +83,7 @@ abstract class PaginatedListNotifier<T> extends StateNotifier<PaginatedListState
         allLoaded: allLoaded,
       );
     } catch (e) {
+      if (!mounted) return;
       state = PaginatedListState(error: e.toString());
     }
   }

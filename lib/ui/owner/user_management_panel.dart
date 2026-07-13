@@ -184,6 +184,10 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
         title: const Text('User Management'),
 
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAddUser,
+        child: const Icon(Icons.person_add_rounded),
+      ),
       body: body,
     );
   }
@@ -192,7 +196,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
     return Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -210,19 +214,6 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
               ),
               onChanged: (value) =>
                   setState(() => _searchQuery = value.toLowerCase()),
-            ),
-          ),
-          // Action buttons
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Row(
-              children: [
-                FilledButton.tonalIcon(
-                  onPressed: _openAddUser,
-                  icon: const Icon(Icons.person_add_rounded, size: 18),
-                  label: const Text('Tambah User'),
-                ),
-              ],
             ),
           ),
           Expanded(
@@ -343,16 +334,12 @@ class _UserCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assignedIdsAsync = ref.watch(userBusinessIdsProvider(user.userId));
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppTheme.s16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        hoverColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.04),
-        highlightColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.08),
-        splashColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.12),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

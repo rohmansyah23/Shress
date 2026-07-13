@@ -160,15 +160,15 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
     return Container(
       padding: const EdgeInsets.all(AppTheme.s16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.08),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Icon(Icons.person_outline_rounded,
-              color: AppTheme.primaryColor, size: 20),
+              color: Theme.of(context).colorScheme.primary, size: 20),
           const SizedBox(width: AppTheme.s12),
           Expanded(
             child: Column(
@@ -344,7 +344,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
 
   Widget _buildSummaryCard() {
     return Card(
-      color: AppTheme.primaryColor.withValues(alpha: 0.05),
+      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
       child: Padding(
         padding: const EdgeInsets.all(AppTheme.s20),
         child: Column(
@@ -367,7 +367,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
             _buildSummaryRow(
               'Komisi',
               FormatHelpers.rupiah(_commission),
-              AppTheme.primaryColor,
+              Theme.of(context).colorScheme.primary,
             ),
           ],
         ),

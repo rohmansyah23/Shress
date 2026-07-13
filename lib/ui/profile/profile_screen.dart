@@ -7,6 +7,7 @@ import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/user_model.dart';
 import '../../providers/auth_provider.dart';
+import '../auth/login_screen.dart';
 import '../settings/settings_screen.dart';
 import '../widgetbook/widgetbook_screen.dart';
 
@@ -24,19 +25,6 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Profil Saya'),
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Pengaturan',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const SettingsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: body,
     );
@@ -87,7 +75,7 @@ class ProfileScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: AppTheme.s32),
+        const SizedBox(height: AppTheme.s20),
 
         // Info Akun
         Card(
@@ -112,53 +100,74 @@ class ProfileScreen extends ConsumerWidget {
         ),
         const SizedBox(height: AppTheme.s16),
 
-        // Aksi Akun
+        // Menu & Pengaturan
         Card(
-          child: ListTile(
-            leading: const Icon(Icons.edit_outlined),
-            title: const Text('Ubah Nama Tampilan'),
-            subtitle: const Text('Ganti nama panggilan/lengkap Anda'),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => _showEditDisplayNameDialog(context, ref, user),
+          child: Column(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('Ubah Nama Tampilan'),
+                subtitle: const Text('Ganti nama panggilan/lengkap Anda'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _showEditDisplayNameDialog(context, ref, user),
+              ),
+              const Divider(height: 1, indent: 16, endIndent: 16),
+              ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: const Text('Pengaturan'),
+                subtitle: const Text('Tema, notifikasi, keamanan akun'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const SettingsScreen(),
+                    ),
+                  );
+                },
+              ),
+              if (kDebugMode) ...[
+                const Divider(height: 1, indent: 16, endIndent: 16),
+                ListTile(
+                  leading: Icon(Icons.widgets_outlined,
+                      color: AppTheme.infoColorTheme(context)),
+                  title: const Text('WidgetBook'),
+                  subtitle: const Text('Dokumentasi komponen design system'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const WidgetBookScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: AppTheme.s16),
-
-        // WidgetBook (dev only)
-        if (kDebugMode) ...[
-          Card(
-            child: ListTile(
-              leading: Icon(Icons.widgets_outlined,
-                  color: AppTheme.infoColorTheme(context)),
-              title: const Text('WidgetBook'),
-              subtitle: const Text('Dokumentasi komponen design system'),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const WidgetBookScreen(),
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: AppTheme.s16),
-        ],
-
-        // Menu Pengaturan
         Card(
           child: ListTile(
-            leading: const Icon(Icons.settings_outlined),
-            title: const Text('Pengaturan'),
-            subtitle: const Text('Tema, notifikasi, keamanan akun'),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const SettingsScreen(),
-                ),
-              );
-            },
+            leading: Icon(Icons.logout_rounded, color: AppTheme.lossColorTheme(context)),
+            title: Text(
+              'Keluar',
+              style: TextStyle(
+                color: AppTheme.lossColorTheme(context),
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+            subtitle: Text(
+              'Logout dari akun Anda',
+              style: AppTheme.caption.copyWith(
+                color: AppTheme.lossColorTheme(context),
+                fontSize: 15,
+              ),
+            ),
+            trailing: Icon(Icons.chevron_right_rounded, color: AppTheme.lossColorTheme(context)),
+            hoverColor: AppTheme.lossColorTheme(context).withValues(alpha: 0.08),
+            splashColor: AppTheme.lossColorTheme(context).withValues(alpha: 0.12),
+            onTap: () => _showLogoutConfirmation(context, ref),
           ),
         ),
       ],
@@ -238,6 +247,41 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        title: const Text('Konfirmasi Keluar'),
+        content: const Text('Apakah Anda yakin ingin keluar dari akun saat ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.lossColor,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Keluar'),
+          ),
+        ],
       ),
     );
   }

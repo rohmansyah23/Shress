@@ -12,6 +12,7 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/debt_consignment_provider.dart';
 import '../../providers/transaction_provider.dart';
+import '../../providers/debtor_provider.dart';
 
 class AddDebtScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
@@ -41,14 +42,16 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
   DateTime? _dueDate;
   bool _isSaving = false;
   bool _isFormattingAmount = false;
+  DebtorModel? _selectedDebtor;
 
-  bool get _hasExistingDebtor => widget.existingDebtor != null;
+  bool get _hasSelectedDebtor => _selectedDebtor != null;
 
   @override
   void initState() {
     super.initState();
-    if (_hasExistingDebtor) {
-      _nameController.text = widget.existingDebtor!.name;
+    _selectedDebtor = widget.existingDebtor;
+    if (_selectedDebtor != null) {
+      _nameController.text = _selectedDebtor!.name;
     }
     _debtDateController.text = _formatDate(_debtDate);
     _amountController.addListener(_onAmountChanged);
@@ -150,6 +153,128 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
     });
   }
 
+  void _showDebtorSelectionSheet() {
+    final debtorsAsync = ref.read(debtorProvider(widget.business.businessId));
+    final debtorsList = debtorsAsync.value?.debtors ?? [];
+
+    if (debtorsList.isEmpty) {
+      ErrorSnackbar.showMessage(
+        context,
+        'Belum ada penghutang terdaftar untuk bisnis ini.',
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final filteredDebtors = debtorsList.where((d) =>
+              d.name.toLowerCase().contains(searchQuery.toLowerCase())
+            ).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    child: Row(
+                      children: [
+                        Text('Pilih Penghutang', style: AppTheme.heading3),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        hintText: 'Cari nama penghutang...',
+                        prefixIcon: Icon(Icons.search_rounded),
+                        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      ),
+                      onChanged: (val) {
+                        setSheetState(() {
+                          searchQuery = val;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: filteredDebtors.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Tidak ada hasil pencarian',
+                              style: AppTheme.caption,
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                            itemCount: filteredDebtors.length,
+                            itemBuilder: (context, index) {
+                              final debtor = filteredDebtors[index];
+                              return Card(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: AppTheme.warningColorTheme(context).withValues(alpha: 0.12),
+                                    child: Text(
+                                      debtor.name.isNotEmpty ? debtor.name[0].toUpperCase() : '?',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.warningColorTheme(context),
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    debtor.name,
+                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                  subtitle: debtor.phone != null && debtor.phone!.isNotEmpty
+                                      ? Text(debtor.phone!)
+                                      : null,
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedDebtor = debtor;
+                                    });
+                                    Navigator.pop(ctx);
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -168,8 +293,8 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
     try {
       int debtorId;
 
-      if (_hasExistingDebtor) {
-        debtorId = widget.existingDebtor!.id;
+      if (_hasSelectedDebtor) {
+        debtorId = _selectedDebtor!.id;
       } else {
         final debtor = await SupabaseService.instance.createDebtor(
           businessId: widget.business.businessId,
@@ -237,8 +362,90 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (!_hasExistingDebtor) ...[
+              if (_hasSelectedDebtor) ...[
                 Text('Data Penghutang', style: AppTheme.heading3),
+                const SizedBox(height: AppTheme.s16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.infoColorTheme(context)
+                        .withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.person_rounded,
+                        size: 20,
+                        color: AppTheme.infoColorTheme(context),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _selectedDebtor!.name,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (_selectedDebtor!.phone != null &&
+                                _selectedDebtor!.phone!.isNotEmpty)
+                              Text(
+                                _selectedDebtor!.phone!,
+                                style: AppTheme.caption.copyWith(fontSize: 12),
+                              ),
+                          ],
+                        ),
+                      ),
+                      if (widget.existingDebtor == null)
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                          onPressed: () {
+                            setState(() {
+                              _selectedDebtor = null;
+                            });
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppTheme.s24),
+              ],
+              if (!_hasSelectedDebtor) ...[
+                Text('Data Penghutang', style: AppTheme.heading3),
+                const SizedBox(height: AppTheme.s16),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.people_alt_outlined),
+                  label: const Text('Pilih dari Penghutang Terdaftar'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    ),
+                  ),
+                  onPressed: _showDebtorSelectionSheet,
+                ),
+                const SizedBox(height: AppTheme.s16),
+                const Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'ATAU BUAT BARU',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
                 const SizedBox(height: AppTheme.s16),
                 _FormLabel('Nama Penghutang *'),
                 const SizedBox(height: AppTheme.s8),
@@ -247,9 +454,10 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.person_outline_rounded),
-                    hintText: 'Nama penghutang',
+                    hintText: 'Nama penghutang baru',
                   ),
                   validator: (value) {
+                    if (_hasSelectedDebtor) return null;
                     if (value == null || value.trim().isEmpty) {
                       return 'Masukkan nama penghutang';
                     }
@@ -280,47 +488,6 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                 const SizedBox(height: AppTheme.s24),
                 const Divider(),
                 const SizedBox(height: AppTheme.s16),
-              ],
-              if (_hasExistingDebtor) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.infoColorTheme(context)
-                        .withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.person_rounded,
-                        size: 20,
-                        color: AppTheme.infoColorTheme(context),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.existingDebtor!.name,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            if (widget.existingDebtor!.phone != null &&
-                                widget.existingDebtor!.phone!.isNotEmpty)
-                              Text(
-                                widget.existingDebtor!.phone!,
-                                style: AppTheme.caption.copyWith(fontSize: 12),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppTheme.s24),
               ],
               Text('Detail Hutang', style: AppTheme.heading3),
               const SizedBox(height: AppTheme.s16),

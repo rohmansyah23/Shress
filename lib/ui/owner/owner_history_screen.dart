@@ -603,135 +603,154 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
 
                           final tx = listState.items[index];
                           final isIncome = tx.type == AppConstants.typeIncome;
-                          final isDark = Theme.of(context).brightness == Brightness.dark;
                           return Card(
                             child: InkWell(
                               onTap: () => _showTransactionDetail(tx),
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-                              hoverColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.04),
-                              highlightColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.08),
-                              splashColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color:
-                                          (isIncome
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusLarge,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            (isIncome
+                                                    ? AppTheme.profitColorTheme(
+                                                        context,
+                                                      )
+                                                    : AppTheme.lossColorTheme(
+                                                        context,
+                                                      ))
+                                                .withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        isIncome
+                                            ? Icons.trending_up_rounded
+                                            : Icons.trending_down_rounded,
+                                        color: isIncome
+                                            ? AppTheme.profitColorTheme(context)
+                                            : AppTheme.lossColorTheme(context),
+                                      ),
+                                    ),
+                                    const SizedBox(width: AppTheme.s12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Builder(
+                                            builder: (context) {
+                                              final isLight =
+                                                  Theme.of(
+                                                    context,
+                                                  ).brightness ==
+                                                  Brightness.light;
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 3,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.transparent,
+                                                  border: Border.all(
+                                                    color: isLight
+                                                        ? const Color(
+                                                            0xFFD1D5DB,
+                                                          ).withValues(
+                                                            alpha: 1.0,
+                                                          )
+                                                        : const Color(
+                                                            0xFF4B5563,
+                                                          ).withValues(
+                                                            alpha: 0.5,
+                                                          ),
+                                                    width: 1,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                                child: Text(
+                                                  _findBusinessName(
+                                                    tx.businessId,
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: isLight
+                                                        ? const Color(
+                                                            0xFF3D404D,
+                                                          )
+                                                        : const Color(
+                                                            0xFFD2D2D2,
+                                                          ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            FormatHelpers.displayDate(
+                                              tx.transactionDate,
+                                            ),
+                                            style: AppTheme.caption.copyWith(
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            FormatHelpers.rupiah(tx.amount),
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: isIncome
                                                   ? AppTheme.profitColorTheme(
                                                       context,
                                                     )
                                                   : AppTheme.lossColorTheme(
                                                       context,
-                                                    ))
-                                              .withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(
-                                      isIncome
-                                          ? Icons.trending_up_rounded
-                                          : Icons.trending_down_rounded,
-                                      color: isIncome
-                                          ? AppTheme.profitColorTheme(context)
-                                          : AppTheme.lossColorTheme(context),
-                                    ),
-                                  ),
-                                  const SizedBox(width: AppTheme.s12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Builder(
-                                          builder: (context) {
-                                            final isLight =
-                                                Theme.of(context).brightness ==
-                                                Brightness.light;
-                                            return Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 3,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: isLight
-                                                    ? const Color(0xFFEDEDEF)
-                                                    : const Color(0xFF2E2E2E),
-                                                borderRadius:
-                                                    BorderRadius.circular(6),
-                                              ),
-                                              child: Text(
-                                                _findBusinessName(
-                                                  tx.businessId,
-                                                ),
-                                                style: TextStyle(
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: isLight
-                                                      ? const Color(0xFF3D404D)
-                                                      : const Color(0xFFD2D2D2),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          FormatHelpers.displayDate(
-                                            tx.transactionDate,
+                                                    ),
+                                            ),
                                           ),
-                                          style: AppTheme.caption.copyWith(
-                                            fontSize: 11,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          FormatHelpers.rupiah(tx.amount),
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: isIncome
-                                                ? AppTheme.profitColorTheme(
-                                                    context,
-                                                  )
-                                                : AppTheme.lossColorTheme(
-                                                    context,
-                                                  ),
-                                          ),
-                                        ),
-                                        if (tx.description?.isNotEmpty == true)
-                                          Text(
-                                            tx.description!,
-                                            style: AppTheme.caption,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (canEdit) ...[
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.edit_outlined,
-                                        size: 20,
+                                          if (tx.description?.isNotEmpty ==
+                                              true)
+                                            Text(
+                                              tx.description!,
+                                              style: AppTheme.caption,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                        ],
                                       ),
-                                      onPressed: () => _handleEdit(tx),
-                                      tooltip: 'Edit',
                                     ),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.delete_outline_rounded,
-                                        size: 20,
-                                        color: AppTheme.lossColorTheme(context),
+                                    if (canEdit) ...[
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit_outlined,
+                                          size: 20,
+                                        ),
+                                        onPressed: () => _handleEdit(tx),
+                                        tooltip: 'Edit',
                                       ),
-                                      onPressed: () => _handleDelete(tx),
-                                      tooltip: 'Hapus',
-                                    ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.delete_outline_rounded,
+                                          size: 20,
+                                          color: AppTheme.lossColorTheme(
+                                            context,
+                                          ),
+                                        ),
+                                        onPressed: () => _handleDelete(tx),
+                                        tooltip: 'Hapus',
+                                      ),
                                     ],
-                                   ],
+                                  ],
                                 ),
                               ),
                             ),
@@ -779,8 +798,10 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
 
   void _showTransactionDetail(TransactionModel tx) async {
     final businessId = tx.businessId;
-    final catName = await SupabaseService.instance
-        .getCategoryName(businessId, tx.categoryId);
+    final catName = await SupabaseService.instance.getCategoryName(
+      businessId,
+      tx.categoryId,
+    );
     if (!mounted) return;
     final isIncome = tx.type == AppConstants.typeIncome;
 
@@ -788,7 +809,8 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        ),
         title: Row(
           children: [
             Icon(
@@ -807,8 +829,10 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _detailRow('Tanggal',
-                FormatHelpers.displayDate(tx.transactionDate)),
+            _detailRow(
+              'Tanggal',
+              FormatHelpers.displayDate(tx.transactionDate),
+            ),
             _detailRow('Kategori', catName),
             _detailRow('Jumlah', FormatHelpers.rupiah(tx.amount)),
             if (isIncome && tx.cogs > 0)
@@ -836,13 +860,13 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
         children: [
           SizedBox(
             width: 100,
-            child:
-                Text(label, style: AppTheme.caption.copyWith(fontSize: 12)),
+            child: Text(label, style: AppTheme.caption.copyWith(fontSize: 12)),
           ),
           Expanded(
-            child: Text(value,
-                style:
-                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            ),
           ),
         ],
       ),
@@ -861,5 +885,4 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
         return method;
     }
   }
-
 }

@@ -9,7 +9,6 @@ import '../../core/widgets/error_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/theme_provider.dart';
-import '../auth/login_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -110,18 +109,18 @@ class SettingsScreen extends ConsumerWidget {
                       segments: const [
                         ButtonSegment(
                           value: ThemeMode.light,
-                          icon: Icon(Icons.light_mode_rounded),
-                          label: Text('Terang'),
+                          icon: Icon(Icons.light_mode_rounded, size: 18),
+                          label: Text('Terang', style: TextStyle(fontSize: 12)),
                         ),
                         ButtonSegment(
                           value: ThemeMode.system,
-                          icon: Icon(Icons.settings_brightness_rounded),
-                          label: Text('Sistem'),
+                          icon: Icon(Icons.settings_brightness_rounded, size: 18),
+                          label: Text('Sistem', style: TextStyle(fontSize: 12)),
                         ),
                         ButtonSegment(
                           value: ThemeMode.dark,
-                          icon: Icon(Icons.dark_mode_rounded),
-                          label: Text('Gelap'),
+                          icon: Icon(Icons.dark_mode_rounded, size: 18),
+                          label: Text('Gelap', style: TextStyle(fontSize: 12)),
                         ),
                       ],
                       selected: {themeMode},
@@ -158,28 +157,12 @@ class SettingsScreen extends ConsumerWidget {
           Text('Keamanan', style: AppTheme.heading3),
           const SizedBox(height: 12),
           Card(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.lock_outlined),
-                  title: const Text('Ubah Password'),
-                  subtitle:
-                      const Text('Ganti password akun Anda'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => _showChangePasswordDialog(context, ref),
-                ),
-                const Divider(height: 1, indent: 16, endIndent: 16),
-                ListTile(
-                  leading: const Icon(Icons.logout_rounded,
-                      color: AppTheme.lossColor),
-                  title: const Text('Keluar',
-                      style: TextStyle(color: AppTheme.lossColor)),
-                  subtitle:
-                      const Text('Logout dari akun saat ini'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => _handleLogout(context, ref),
-                ),
-              ],
+            child: ListTile(
+              leading: const Icon(Icons.lock_outlined),
+              title: const Text('Ubah Password'),
+              subtitle: const Text('Ganti password akun Anda'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => _showChangePasswordDialog(context, ref),
             ),
           ),
           const SizedBox(height: 24),
@@ -239,15 +222,6 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _handleLogout(BuildContext context, WidgetRef ref) async {
-    await ref.read(authProvider.notifier).logout();
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
-      );
-    }
-  }
 
   void _showChangePasswordDialog(BuildContext context, WidgetRef ref) {
     final newPwdCtrl = TextEditingController();
@@ -397,22 +371,25 @@ class _NotificationReminderCardState
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Pengingat Transaksi Harian',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         'Dapatkan notifikasi setiap hari\n'
                         'untuk mencatat transaksi',
-                        style: TextStyle(fontSize: 12, color: AppTheme.secondaryText),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -450,7 +427,11 @@ class _NotificationReminderCardState
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Icon(Icons.schedule_rounded, size: 18, color: AppTheme.secondaryText),
+                  Icon(
+                    Icons.schedule_rounded,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 8),
                   Text('Waktu pengingat',
                       style: AppTheme.caption),

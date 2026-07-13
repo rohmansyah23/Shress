@@ -422,9 +422,7 @@ class QuickActionButton extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        splashColor: color.withValues(alpha: 0.15),
-        highlightColor: color.withValues(alpha: 0.08),
-        hoverColor: color.withValues(alpha: 0.06),
+
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         child: Container(
           height: 90,

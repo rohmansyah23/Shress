@@ -62,6 +62,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
   @override
   void initState() {
     super.initState();
+    _selectedTabIndex = widget.startAsIncome ? 0 : 1;
     _dateTextController.text = _formatDate(_selectedDate);
     _loadCategories();
 

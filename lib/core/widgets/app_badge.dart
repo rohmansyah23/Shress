@@ -55,6 +55,7 @@ class AppBadge extends StatelessWidget {
       fontSize: fontSize,
     );
   }
+  
 
   @override
   Widget build(BuildContext context) {

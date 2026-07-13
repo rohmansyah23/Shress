@@ -712,8 +712,8 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             padding: const EdgeInsets.all(AppTheme.s16),
             child: Row(
               children: [
-                const Icon(Icons.calculate_outlined,
-                    size: 20, color: AppTheme.primaryColor),
+                Icon(Icons.calculate_outlined,
+                    size: 20, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: AppTheme.s12),
                 Expanded(
                   child: Text('Total Nilai Titipan',

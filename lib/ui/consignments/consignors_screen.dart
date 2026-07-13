@@ -178,13 +178,6 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daftar Titipan'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Muat ulang',
-            onPressed: _loadData,
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addConsignment,
@@ -234,11 +227,11 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.inventory_2_outlined,
-                      size: 20, color: AppTheme.primaryColor),
+                  child: Icon(Icons.inventory_2_outlined,
+                      size: 20, color: Theme.of(context).colorScheme.primary),
                 ),
                 const SizedBox(width: AppTheme.s12),
                 Text('Ringkasan Titipan', style: AppTheme.heading3),
@@ -334,15 +327,15 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
               CircleAvatar(
                 radius: 24,
                 backgroundColor:
-                    AppTheme.primaryColor.withValues(alpha: 0.12),
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                 child: Text(
                   consignor.name.length >= 2
                       ? consignor.name.substring(0, 2).toUpperCase()
                       : consignor.name.toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
@@ -388,12 +381,164 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                 ],
               ),
               const SizedBox(width: 4),
-              Icon(Icons.chevron_right_rounded,
-                  color: AppTheme.secondaryText),
+              PopupMenuButton<String>(
+                icon: Icon(
+                  Icons.more_vert_rounded,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                onSelected: (value) {
+                  if (value == 'edit') _editConsignor(consignor);
+                  if (value == 'delete') _deleteConsignor(consignor);
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined, size: 18),
+                        SizedBox(width: AppTheme.s8),
+                        Text('Edit'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline_rounded,
+                          size: 18,
+                          color: AppTheme.lossColorTheme(context),
+                        ),
+                        const SizedBox(width: AppTheme.s8),
+                        Text(
+                          'Hapus',
+                          style: TextStyle(color: AppTheme.lossColorTheme(context)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _editConsignor(ConsignorModel consignor) async {
+    final nameCtrl = TextEditingController(text: consignor.name);
+    final phoneCtrl = TextEditingController(text: consignor.phone ?? '');
+    final notesCtrl = TextEditingController(text: consignor.notes ?? '');
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        title: const Text('Edit Pihak Penitip'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(labelText: 'Nama'),
+            ),
+            const SizedBox(height: AppTheme.s12),
+            TextField(
+              controller: phoneCtrl,
+              decoration: const InputDecoration(labelText: 'Telepon'),
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: AppTheme.s12),
+            TextField(
+              controller: notesCtrl,
+              decoration: const InputDecoration(labelText: 'Catatan'),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final name = nameCtrl.text.trim();
+              if (name.isEmpty) return;
+              try {
+                await SupabaseService.instance.updateConsignor(
+                  consignorId: consignor.id,
+                  name: name,
+                  phone: phoneCtrl.text.trim().isEmpty
+                      ? null
+                      : phoneCtrl.text.trim(),
+                  notes: notesCtrl.text.trim().isEmpty
+                      ? null
+                      : notesCtrl.text.trim(),
+                );
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx, true);
+              } catch (e) {
+                if (!ctx.mounted) return;
+                ErrorSnackbar.show(ctx, ErrorHandler.classify(e));
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      _loadData();
+      triggerDebtRefresh(ref);
+      if (!mounted) return;
+      ErrorSnackbar.showSuccess(context, 'Pihak penitip berhasil diperbarui');
+    }
+  }
+
+  Future<void> _deleteConsignor(ConsignorModel consignor) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        title: const Text('Hapus Pihak Penitip'),
+        content: Text(
+          'Yakin ingin menghapus "${consignor.name}"? Semua data titipan terkait juga akan dihapus.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.lossColorTheme(context),
+            ),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await SupabaseService.instance.deleteConsignor(consignor.id);
+        _loadData();
+        triggerDebtRefresh(ref);
+        if (!mounted) return;
+        ErrorSnackbar.showSuccess(context, 'Pihak penitip berhasil dihapus');
+      } catch (e) {
+        if (!mounted) return;
+        ErrorSnackbar.show(context, ErrorHandler.classify(e));
+      }
+    }
   }
 }

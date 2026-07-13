@@ -129,12 +129,17 @@ class _ManagerDashboardScreenState
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.fromLTRB(
+          AppTheme.s16,
+          AppTheme.s12,
+          AppTheme.s16,
+          AppTheme.s16,
+        ),
         children: [
           _buildBusinessHeader(cs),
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppTheme.s12),
           _buildNetProfitCard(netProfit, isProfit),
-          const SizedBox(height: AppTheme.s16),
+          const SizedBox(height: AppTheme.s12),
           Text('Aksi Cepat', style: AppTheme.heading3),
           const SizedBox(height: AppTheme.s12),
           Row(
@@ -209,9 +214,9 @@ class _ManagerDashboardScreenState
               const Expanded(child: SizedBox()),
             ],
           ),
-          const SizedBox(height: AppTheme.s16),
+          const SizedBox(height: AppTheme.s12),
           _buildDebtConsignmentSummary(widget.selectedBusiness.businessId),
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppTheme.s12),
           Text('Transaksi Terbaru', style: AppTheme.heading3),
           const SizedBox(height: AppTheme.s12),
           if (_recentLoading)

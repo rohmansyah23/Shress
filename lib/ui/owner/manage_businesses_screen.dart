@@ -176,12 +176,26 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
       appBar: AppBar(
         title: const Text('Kelola Bisnis'),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => const CreateBusinessScreen(),
+            ),
+          );
+          if (result == true) {
+            ref.invalidate(allBusinessesProvider);
+            ref.invalidate(transactionRefreshProvider);
+          }
+        },
+        child: const Icon(Icons.add_business_rounded),
+      ),
       body: Stack(
         children: [
           Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -201,28 +215,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                       setState(() => _searchQuery = value.toLowerCase()),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Row(
-                  children: [
-                    FilledButton.tonalIcon(
-                      onPressed: () async {
-                        final result = await Navigator.of(context).push<bool>(
-                          MaterialPageRoute(
-                            builder: (_) => const CreateBusinessScreen(),
-                          ),
-                        );
-                        if (result == true) {
-                          ref.invalidate(allBusinessesProvider);
-                          ref.invalidate(transactionRefreshProvider);
-                        }
-                      },
-                      icon: const Icon(Icons.add_business_rounded, size: 18),
-                      label: const Text('Tambah Bisnis'),
-                    ),
-                  ],
-                ),
-              ),
+
               Expanded(
                 child: businessesAsync.when(
                   data: (businesses) {
@@ -337,16 +330,12 @@ class _BusinessItemCard extends StatelessWidget {
     final hasQris = business.qrisImageUrl != null &&
         business.qrisImageUrl!.isNotEmpty;
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppTheme.s16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        hoverColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.04),
-        highlightColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.08),
-        splashColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.12),
+
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 4, 16),
           child: Row(

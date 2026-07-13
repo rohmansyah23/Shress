@@ -283,12 +283,12 @@ class _ConsignmentDetailScreenState
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primaryColor.withValues(alpha: 0.15)
+              ? Theme.of(ctx).colorScheme.primary.withValues(alpha: 0.15)
               : Theme.of(ctx).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected
-                ? AppTheme.primaryColor
+                ? Theme.of(ctx).colorScheme.primary
                 : subtleColor.withValues(alpha: 0.3),
           ),
         ),
@@ -296,19 +296,19 @@ class _ConsignmentDetailScreenState
           children: [
             Icon(icon,
                 size: 18,
-                color: isSelected ? AppTheme.primaryColor : subtleColor),
+                color: isSelected ? Theme.of(ctx).colorScheme.primary : subtleColor),
             const SizedBox(width: AppTheme.s8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme.primaryColor : textColor,
+                color: isSelected ? Theme.of(ctx).colorScheme.primary : textColor,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
             const Spacer(),
             if (isSelected)
               Icon(Icons.check_circle_rounded,
-                  size: 18, color: AppTheme.primaryColor),
+                  size: 18, color: Theme.of(ctx).colorScheme.primary),
           ],
         ),
       ),
@@ -448,46 +448,7 @@ class _ConsignmentDetailScreenState
     }
   }
 
-  Future<void> _deleteConsignment() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
-        title: const Text('Hapus Titipan'),
-        content: Text(
-          'Yakin ingin menghapus titipan tanggal ${FormatHelpers.displayDate(_consignment.consignmentDate)}?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style:
-                FilledButton.styleFrom(backgroundColor: AppTheme.lossColor),
-            child: const Text('Hapus'),
-          ),
-        ],
-      ),
-    );
 
-    if (confirmed == true) {
-      try {
-        await SupabaseService.instance
-            .deleteConsignment(_consignment.id);
-        if (!mounted) return;
-        triggerDebtRefresh(ref);
-        Navigator.of(context).pop(true);
-        ErrorSnackbar.showSuccess(
-            context, 'Titipan berhasil dihapus');
-      } catch (e) {
-        if (!mounted) return;
-        ErrorSnackbar.show(context, ErrorHandler.classify(e));
-      }
-    }
-  }
 
   Color _statusColor(String status, BuildContext context) {
     switch (status) {
@@ -549,15 +510,6 @@ class _ConsignmentDetailScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detail Titipan'),
-        actions: [
-          if (_consignment.status == AppConstants.consignmentActive)
-            IconButton(
-              icon: Icon(Icons.delete_outline_rounded,
-                  color: AppTheme.lossColorTheme(context)),
-              tooltip: 'Hapus',
-              onPressed: _deleteConsignment,
-            ),
-        ],
       ),
       floatingActionButton: _buildFab(),
       body: _isLoading
@@ -614,11 +566,9 @@ class _ConsignmentDetailScreenState
         );
       }
       if (_consignment.reportStatus == AppConstants.reportReported) {
-    if (_consignment.isDaily || _consignment.isReseller) {
+        if (_consignment.isDaily || _consignment.isReseller) {
           return FloatingActionButton.extended(
             onPressed: _handleSettleDaily,
-            backgroundColor: AppTheme.profitColor,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
             shape: fabShape,
             icon: const Icon(Icons.payments_outlined),
             label: const Text('Bayar ke Pihak Penitip'),
@@ -626,8 +576,6 @@ class _ConsignmentDetailScreenState
         }
         return FloatingActionButton.extended(
           onPressed: _recordSettlement,
-          backgroundColor: AppTheme.profitColor,
-          foregroundColor: Colors.white,
           shape: fabShape,
           icon: const Icon(Icons.payments_outlined),
           label: const Text('Catat Pembayaran'),
@@ -649,9 +597,9 @@ class _ConsignmentDetailScreenState
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.5)),
         ),
         child: Row(
           children: [
@@ -677,9 +625,9 @@ class _ConsignmentDetailScreenState
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: (_consignment.isDaily || _consignment.isReseller)
-                    ? AppTheme.infoColorTheme(context).withValues(alpha: 0.15)
-                    : AppTheme.primaryColorTheme(context).withValues(alpha: 0.15),
+                color: _consignment.isDaily
+                    ? AppTheme.infoColorTheme(context).withValues(alpha: 0.2)
+                    : AppTheme.primaryColorTheme(context).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -687,7 +635,7 @@ class _ConsignmentDetailScreenState
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: (_consignment.isDaily || _consignment.isReseller)
+                  color: _consignment.isDaily
                       ? AppTheme.infoColorTheme(context)
                       : AppTheme.primaryColorTheme(context),
                 ),
@@ -701,7 +649,7 @@ class _ConsignmentDetailScreenState
                 decoration: BoxDecoration(
                   color: _reportStatusColor(
                           _consignment.reportStatus, context)
-                      .withValues(alpha: 0.15),
+                      .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -718,7 +666,7 @@ class _ConsignmentDetailScreenState
             const Spacer(),
             Text(
               FormatHelpers.displayDate(_consignment.consignmentDate),
-              style: AppTheme.caption.copyWith(color: color),
+              style: AppTheme.caption.copyWith(color: color, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -735,17 +683,17 @@ class _ConsignmentDetailScreenState
             CircleAvatar(
               radius: 22,
               backgroundColor:
-                  AppTheme.primaryColor.withValues(alpha: 0.12),
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
               child: Text(
                 widget.consignor.name.length >= 2
                     ? widget.consignor.name
                         .substring(0, 2)
                         .toUpperCase()
                     : widget.consignor.name.toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
@@ -792,7 +740,7 @@ class _ConsignmentDetailScreenState
                   child: _summaryColumn(
                     'Total',
                     FormatHelpers.rupiah(_consignment.totalAmount),
-                    AppTheme.primaryColor,
+                    Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 Expanded(
@@ -859,7 +807,7 @@ class _ConsignmentDetailScreenState
             _buildSummaryRow(
               'Total Nilai Titipan',
               FormatHelpers.rupiah(_consignment.totalAmount),
-              AppTheme.primaryColor,
+              Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(height: AppTheme.s8),
             _buildSummaryRow(
@@ -937,6 +885,7 @@ class _ConsignmentDetailScreenState
     final commission = totalFromSales - totalPayment;
 
     return Card(
+      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
       child: Padding(
         padding: const EdgeInsets.all(AppTheme.s20),
         child: Column(
@@ -959,7 +908,7 @@ class _ConsignmentDetailScreenState
             _buildSummaryRow(
               'Komisi',
               FormatHelpers.rupiah(commission),
-              AppTheme.primaryColor,
+              Theme.of(context).colorScheme.primary,
             ),
             if (_consignment.description != null &&
                 _consignment.description!.isNotEmpty) ...[
@@ -1024,8 +973,8 @@ class _ConsignmentDetailScreenState
           children: [
             Row(
               children: [
-                const Icon(Icons.inventory_2_outlined,
-                    size: 18, color: AppTheme.primaryColor),
+                Icon(Icons.inventory_2_outlined,
+                    size: 18, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: AppTheme.s8),
                 Text('Item Titipan', style: AppTheme.heading3),
                 const Spacer(),
@@ -1073,7 +1022,7 @@ class _ConsignmentDetailScreenState
             Row(
               children: [
                 _buildQtyChip(
-                    'Dititipkan', item.quantity, AppTheme.primaryColor),
+                    'Dititipkan', item.quantity, AppTheme.primaryColorTheme(context)),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4),
                   child: Icon(Icons.arrow_forward_rounded,

@@ -64,8 +64,13 @@ class TransactionListNotifier extends PaginatedListNotifier<TransactionModel> {
 
 final transactionListProvider = StateNotifierProvider.family<TransactionListNotifier, PaginatedListState<TransactionModel>, int>(
   (ref, businessId) {
-    ref.watch(transactionRefreshProvider);
-    return TransactionListNotifier(businessId);
+    final notifier = TransactionListNotifier(businessId);
+    ref.listen<int>(transactionRefreshProvider, (prev, next) {
+      if (prev != next) {
+        notifier.refresh();
+      }
+    });
+    return notifier;
   },
 );
 
@@ -131,7 +136,12 @@ class AllTransactionsListNotifier extends PaginatedListNotifier<TransactionModel
 
 final allTransactionsListProvider = StateNotifierProvider.family<AllTransactionsListNotifier, PaginatedListState<TransactionModel>, List<int>>(
   (ref, businessIds) {
-    ref.watch(transactionRefreshProvider);
-    return AllTransactionsListNotifier(businessIds);
+    final notifier = AllTransactionsListNotifier(businessIds);
+    ref.listen<int>(transactionRefreshProvider, (prev, next) {
+      if (prev != next) {
+        notifier.refresh();
+      }
+    });
+    return notifier;
   },
 );

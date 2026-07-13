@@ -1253,6 +1253,19 @@ class SupabaseService {
     });
   }
 
+  Future<void> updateConsignment({
+    required int consignmentId,
+    required String consignmentDate,
+    String? description,
+  }) async {
+    return ErrorHandler.guard(() async {
+      await _supabase.from('consignments').update({
+        'consignment_date': consignmentDate,
+        'description': description,
+      }).eq('id', consignmentId);
+    });
+  }
+
   // ==================== Consignment Settlement Operations ====================
 
   Future<List<ConsignmentSettlementModel>> getConsignmentSettlements(

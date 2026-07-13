@@ -215,10 +215,14 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Kelola Kategori')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAdd,
+        child: const Icon(Icons.add),
+      ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -236,18 +240,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               ),
               onChanged: (value) =>
                   setState(() => _searchQuery = value.toLowerCase()),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Row(
-              children: [
-                FilledButton.tonalIcon(
-                  onPressed: _showAdd,
-                  icon: const Icon(Icons.category_rounded, size: 18),
-                  label: const Text('Tambah Kategori'),
-                ),
-              ],
             ),
           ),
           Expanded(
@@ -292,7 +284,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                           final c = filtered[index];
                           final isIncome = c.type == AppConstants.typeIncome;
                           return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
+                            margin: const EdgeInsets.only(bottom: AppTheme.s16),
                             clipBehavior: Clip.antiAlias,
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),

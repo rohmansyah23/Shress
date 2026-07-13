@@ -82,10 +82,10 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                 'Owner • ${businesses.length} bisnis',
                 style: AppTheme.caption,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.s12),
 
               _buildTotalNetProfit(businesses),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.s12),
 
               // === Trend Chart dengan Filter ===
               Text('Tren Keuangan', style: AppTheme.heading3),
@@ -141,7 +141,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.s12),
 
               Text('Bisnis Saya', style: AppTheme.heading3),
               const SizedBox(height: 12),
@@ -187,13 +187,14 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  if (i < businesses.length - 1)
+                    const SizedBox(height: AppTheme.s8),
                 ],
               ],
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s8),
               _buildFinanceOtherSummary(businesses),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s12),
               Text('Menu Lainnya', style: AppTheme.heading3),
               const SizedBox(height: 12),
               Row(
@@ -800,9 +801,7 @@ class _BusinessCardWithSummary extends ConsumerWidget {
 
     return Card(
       child: InkWell(
-        splashColor: AppTheme.accent.withValues(alpha: 0.15),
-        highlightColor: AppTheme.accent.withValues(alpha: 0.08),
-        hoverColor: AppTheme.accent.withValues(alpha: 0.06),
+
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Padding(

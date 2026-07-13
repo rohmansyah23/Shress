@@ -437,9 +437,6 @@ class _TransactionHistoryScreenState
                     ),
                     child: Card(
                       child: InkWell(
-                        splashColor: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context)).withValues(alpha: 0.15),
-                        highlightColor: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context)).withValues(alpha: 0.08),
-                        hoverColor: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context)).withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         onTap: () => _showTransactionDetail(tx),
                         child: Padding(
