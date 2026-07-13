@@ -61,8 +61,9 @@ class _ManagerDashboardScreenState
   Future<void> _loadRecentTransactions() async {
     setState(() => _recentLoading = true);
     try {
-      final allTx = await SupabaseService.instance
-          .getTransactionsByBusiness(widget.selectedBusiness.businessId);
+      final allTx = await SupabaseService.instance.getTransactionsByBusiness(
+        widget.selectedBusiness.businessId,
+      );
       if (mounted) {
         setState(() {
           _recentTransactions = allTx.take(5).toList();
@@ -83,7 +84,8 @@ class _ManagerDashboardScreenState
     });
     final cs = Theme.of(context).colorScheme;
     final summaryAsync = ref.watch(
-        businessSummaryProvider(widget.selectedBusiness.businessId));
+      businessSummaryProvider(widget.selectedBusiness.businessId),
+    );
 
     final body = summaryAsync.when(
       data: (summary) {
@@ -95,16 +97,15 @@ class _ManagerDashboardScreenState
       error: (error, _) => ErrorRetryWidget(
         message: ErrorHandler.classify(error).userMessage,
         onRetry: () => ref.invalidate(
-            businessSummaryProvider(widget.selectedBusiness.businessId)),
+          businessSummaryProvider(widget.selectedBusiness.businessId),
+        ),
       ),
     );
 
     if (!widget.showAppBar) return body;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.selectedBusiness.name),
-      ),
+      appBar: AppBar(title: Text(widget.selectedBusiness.name)),
       body: body,
     );
   }
@@ -122,7 +123,8 @@ class _ManagerDashboardScreenState
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(
-            businessSummaryProvider(widget.selectedBusiness.businessId));
+          businessSummaryProvider(widget.selectedBusiness.businessId),
+        );
         await _loadRecentTransactions();
       },
       child: ListView(
@@ -141,9 +143,10 @@ class _ManagerDashboardScreenState
                 child: QuickActionButton(
                   icon: Icons.trending_up_rounded,
                   label: 'Uang\nMasuk',
-                  color: AppTheme.profitColor,
+                  color: AppTheme.profitColorTheme(context),
                   onTap: () => TransactionSheet.show(
-                    context, widget.selectedBusiness,
+                    context,
+                    widget.selectedBusiness,
                     startAsIncome: true,
                   ),
                 ),
@@ -153,9 +156,10 @@ class _ManagerDashboardScreenState
                 child: QuickActionButton(
                   icon: Icons.trending_down_rounded,
                   label: 'Uang\nKeluar',
-                  color: AppTheme.lossColor,
+                  color: AppTheme.lossColorTheme(context),
                   onTap: () => TransactionSheet.show(
-                    context, widget.selectedBusiness,
+                    context,
+                    widget.selectedBusiness,
                     startAsIncome: false,
                   ),
                 ),
@@ -181,8 +185,8 @@ class _ManagerDashboardScreenState
                   color: AppTheme.warningColor,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => DebtorsScreen(
-                          business: widget.selectedBusiness),
+                      builder: (_) =>
+                          DebtorsScreen(business: widget.selectedBusiness),
                     ),
                   ),
                 ),
@@ -195,8 +199,8 @@ class _ManagerDashboardScreenState
                   color: AppTheme.secondaryColor,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => ConsignorsScreen(
-                          business: widget.selectedBusiness),
+                      builder: (_) =>
+                          ConsignorsScreen(business: widget.selectedBusiness),
                     ),
                   ),
                 ),
@@ -211,7 +215,10 @@ class _ManagerDashboardScreenState
           Text('Transaksi Terbaru', style: AppTheme.heading3),
           const SizedBox(height: AppTheme.s12),
           if (_recentLoading)
-            ...List.generate(3, (_) => const Center(child: CircularProgressIndicator()))
+            ...List.generate(
+              3,
+              (_) => const Center(child: CircularProgressIndicator()),
+            )
           else if (_recentTransactions.isEmpty)
             Card(
               child: Padding(
@@ -219,9 +226,11 @@ class _ManagerDashboardScreenState
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.receipt_long_rounded,
-                          size: 48,
-                          color: cs.onSurfaceVariant.withValues(alpha: 0.4)),
+                      Icon(
+                        Icons.receipt_long_rounded,
+                        size: 48,
+                        color: cs.onSurfaceVariant.withValues(alpha: 0.4),
+                      ),
                       const SizedBox(height: AppTheme.s12),
                       const Text(
                         'Belum ada transaksi',
@@ -249,69 +258,72 @@ class _ManagerDashboardScreenState
                 delay: Duration(milliseconds: i * 50),
                 child: Padding(
                   padding: EdgeInsets.only(
-                      bottom: i < _recentTransactions.length - 1 ? 8 : 0),
+                    bottom: i < _recentTransactions.length - 1 ? 8 : 0,
+                  ),
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: (isIncome
-                                    ? AppTheme.profitColor
-                                    : AppTheme.lossColor)
-                                .withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(10),
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color:
+                                  (isIncome
+                                          ? AppTheme.profitColorTheme(context)
+                                          : AppTheme.lossColorTheme(context))
+                                      .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              isIncome
+                                  ? Icons.trending_up_rounded
+                                  : Icons.trending_down_rounded,
+                              color: isIncome
+                                  ? AppTheme.profitColorTheme(context)
+                                  : AppTheme.lossColorTheme(context),
+                              size: 20,
+                            ),
                           ),
-                          child: Icon(
-                            isIncome
-                                ? Icons.trending_up_rounded
-                                : Icons.trending_down_rounded,
-                            color: isIncome
-                                ? AppTheme.profitColor
-                                : AppTheme.lossColor,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: AppTheme.s12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                FormatHelpers.displayDate(tx.transactionDate),
-                                style: AppTheme.caption
-                                    .copyWith(fontSize: 11),
-                              ),
-                              if (tx.description?.isNotEmpty == true)
+                          const SizedBox(width: AppTheme.s12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  tx.description!,
-                                  style: AppTheme.caption,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  FormatHelpers.displayDate(tx.transactionDate),
+                                  style: AppTheme.caption.copyWith(
+                                    fontSize: 11,
+                                  ),
                                 ),
-                            ],
+                                if (tx.description?.isNotEmpty == true)
+                                  Text(
+                                    tx.description!,
+                                    style: AppTheme.caption,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Text(
-                          FormatHelpers.rupiah(tx.amount),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: isIncome
-                                ? AppTheme.profitColor
-                                : AppTheme.lossColor,
+                          Text(
+                            FormatHelpers.rupiah(tx.amount),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isIncome
+                                  ? AppTheme.profitColorTheme(context)
+                                  : AppTheme.lossColorTheme(context),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
           const SizedBox(height: AppTheme.s8),
           if (_recentTransactions.length >= 5)
             Center(
@@ -327,10 +339,19 @@ class _ManagerDashboardScreenState
   }
 
   Widget _buildBusinessHeader(ColorScheme cs) {
-    return InkWell(
-      onTap: widget.businesses.length > 1 ? widget.onSwitchBusiness : null,
-      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-      child: Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      child: InkWell(
+        onTap: widget.businesses.length > 1 ? widget.onSwitchBusiness : null,
+        splashColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(
+          alpha: 0.15,
+        ),
+        highlightColor: (isDark ? AppTheme.accent : AppTheme.primary)
+            .withValues(alpha: 0.08),
+        hoverColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(
+          alpha: 0.06,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         child: Padding(
           padding: const EdgeInsets.all(AppTheme.s16),
           child: Row(
@@ -339,11 +360,16 @@ class _ManagerDashboardScreenState
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: cs.primaryContainer,
+                  color: isDark
+                      ? AppTheme.darkDivider
+                      : AppTheme.secondaryBackground,
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
-                child: Icon(Icons.store_rounded,
-                    color: cs.primary, size: 24),
+                child: Icon(
+                  Icons.store_rounded,
+                  color: isDark ? AppTheme.accent : AppTheme.primary,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: AppTheme.s12),
               Expanded(
@@ -369,18 +395,23 @@ class _ManagerDashboardScreenState
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppTheme.profitColor
-                                .withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                            color: AppTheme.profitColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusLarge,
+                            ),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.check_circle_rounded,
-                                  size: 10,
-                                  color: AppTheme.profitColor),
+                              Icon(
+                                Icons.check_circle_rounded,
+                                size: 10,
+                                color: AppTheme.profitColor,
+                              ),
                               SizedBox(width: 3),
                               Text(
                                 'Aktif',
@@ -397,11 +428,16 @@ class _ManagerDashboardScreenState
                           const SizedBox(width: AppTheme.s8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: cs.surfaceContainerHighest
-                                  .withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                              color: cs.surfaceContainerHighest.withValues(
+                                alpha: 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusLarge,
+                              ),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -425,8 +461,7 @@ class _ManagerDashboardScreenState
                 ),
               ),
               if (widget.businesses.length > 1)
-                Icon(Icons.chevron_right_rounded,
-                    color: cs.onSurfaceVariant),
+                Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
             ],
           ),
         ),
@@ -435,10 +470,7 @@ class _ManagerDashboardScreenState
   }
 
   Widget _buildNetProfitCard(double netProfit, bool isProfit) {
-    return NetProfitCard(
-      netProfit: netProfit,
-      style: NetProfitCardStyle.row,
-    );
+    return NetProfitCard(netProfit: netProfit, style: NetProfitCardStyle.row);
   }
 
   Widget _buildDebtConsignmentSummary(int businessId) {
@@ -451,13 +483,11 @@ class _ManagerDashboardScreenState
         if (!snapshot.hasData) return const SizedBox.shrink();
         final debtSummary = snapshot.data![0];
         final consignmentSummary = snapshot.data![1];
-        final debtOwed =
-            (debtSummary['totalOwed'] as num?)?.toDouble() ?? 0;
+        final debtOwed = (debtSummary['totalOwed'] as num?)?.toDouble() ?? 0;
         final debtCount = (debtSummary['activeCount'] as int?) ?? 0;
         final consOwed =
             (consignmentSummary['totalOwed'] as num?)?.toDouble() ?? 0;
-        final consCount =
-            (consignmentSummary['activeCount'] as int?) ?? 0;
+        final consCount = (consignmentSummary['activeCount'] as int?) ?? 0;
 
         if (debtOwed == 0 && consOwed == 0) return const SizedBox.shrink();
 
@@ -473,28 +503,40 @@ class _ManagerDashboardScreenState
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.receipt_long_rounded,
-                                size: 14, color: AppTheme.warningColor),
+                            Icon(
+                              Icons.receipt_long_rounded,
+                              size: 14,
+                              color: AppTheme.warningColor,
+                            ),
                             const SizedBox(width: 4),
-                            Text('Piutang',
-                                style: AppTheme.caption
-                                    .copyWith(fontWeight: FontWeight.w600)),
+                            Text(
+                              'Piutang',
+                              style: AppTheme.caption.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: AppTheme.s4),
-                        Text(FormatHelpers.rupiah(debtOwed),
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.warningColor)),
-                        Text('$debtCount aktif',
-                            style: AppTheme.caption.copyWith(fontSize: 10)),
+                        Text(
+                          FormatHelpers.rupiah(debtOwed),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.warningColor,
+                          ),
+                        ),
+                        Text(
+                          '$debtCount aktif',
+                          style: AppTheme.caption.copyWith(fontSize: 10),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
-            if (debtOwed > 0 && consOwed > 0) const SizedBox(width: AppTheme.s8),
+            if (debtOwed > 0 && consOwed > 0)
+              const SizedBox(width: AppTheme.s8),
             if (consOwed > 0)
               Expanded(
                 child: Card(
@@ -505,22 +547,33 @@ class _ManagerDashboardScreenState
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.inventory_2_rounded,
-                                size: 14, color: AppTheme.secondaryColor),
+                            Icon(
+                              Icons.inventory_2_rounded,
+                              size: 14,
+                              color: AppTheme.secondaryColor,
+                            ),
                             const SizedBox(width: 4),
-                            Text('Titipan',
-                                style: AppTheme.caption
-                                    .copyWith(fontWeight: FontWeight.w600)),
+                            Text(
+                              'Titipan',
+                              style: AppTheme.caption.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: AppTheme.s4),
-                        Text(FormatHelpers.rupiah(consOwed),
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.secondaryColor)),
-                        Text('$consCount aktif',
-                            style: AppTheme.caption.copyWith(fontSize: 10)),
+                        Text(
+                          FormatHelpers.rupiah(consOwed),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.secondaryColor,
+                          ),
+                        ),
+                        Text(
+                          '$consCount aktif',
+                          style: AppTheme.caption.copyWith(fontSize: 10),
+                        ),
                       ],
                     ),
                   ),
@@ -532,5 +585,3 @@ class _ManagerDashboardScreenState
     );
   }
 }
-
-

@@ -210,15 +210,7 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_appBarTitle),
-        actions: _selectedIndex == 0 && _selectedBusiness != null
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.qr_code_rounded),
-                  tooltip: 'QRIS Pembayaran',
-                  onPressed: _showQris,
-                ),
-              ]
-            : null,
+        actions: null,
       ),
       body: PfSlidePageView(
         index: _selectedIndex,

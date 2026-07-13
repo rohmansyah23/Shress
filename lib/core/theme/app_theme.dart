@@ -82,7 +82,7 @@ class AppTheme {
   static Color profitColorTheme(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
       ? const Color(0xFF81C784)
-      : const Color(0xFF2E7D32);
+      : const Color(0xFF22C55E);
 
   static Color lossColorTheme(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark

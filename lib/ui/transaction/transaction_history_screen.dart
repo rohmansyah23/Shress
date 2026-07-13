@@ -197,7 +197,7 @@ class _TransactionHistoryScreenState
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.lossColor),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.lossColorTheme(context)),
             child: const Text('Hapus'),
           ),
         ],
@@ -408,7 +408,7 @@ class _TransactionHistoryScreenState
                           )),
                       if (listState.error != null) ...[
                         const SizedBox(height: AppTheme.s8),
-                        Text(listState.error!, style: TextStyle(color: AppTheme.lossColor, fontSize: 12)),
+                        Text(listState.error!, style: TextStyle(color: AppTheme.lossColorTheme(context), fontSize: 12)),
                       ],
                     ],
                   ),
@@ -437,6 +437,9 @@ class _TransactionHistoryScreenState
                     ),
                     child: Card(
                       child: InkWell(
+                        splashColor: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context)).withValues(alpha: 0.15),
+                        highlightColor: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context)).withValues(alpha: 0.08),
+                        hoverColor: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context)).withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         onTap: () => _showTransactionDetail(tx),
                         child: Padding(
@@ -446,13 +449,13 @@ class _TransactionHistoryScreenState
                               Container(
                                 width: 44, height: 44,
                                 decoration: BoxDecoration(
-                                  color: (isIncome ? AppTheme.profitColor : AppTheme.lossColor)
+                                  color: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context))
                                       .withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                                 ),
                                 child: Icon(
                                   isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                                  color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
+                                  color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
                                 ),
                               ),
                               const SizedBox(width: AppTheme.s12),
@@ -470,7 +473,7 @@ class _TransactionHistoryScreenState
                                       style: TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
-                                        color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
+                                        color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
                                       ),
                                     ),
                                     if (tx.description?.isNotEmpty == true)
@@ -490,7 +493,7 @@ class _TransactionHistoryScreenState
                                   tooltip: 'Edit',
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.delete_outline_rounded, size: 20, color: AppTheme.lossColor),
+                                  icon: Icon(Icons.delete_outline_rounded, size: 20, color: AppTheme.lossColorTheme(context)),
                                   onPressed: () => _handleDelete(tx),
                                   tooltip: 'Hapus',
                                 ),
@@ -536,7 +539,7 @@ class _TransactionHistoryScreenState
               isIncome
                   ? Icons.trending_up_rounded
                   : Icons.trending_down_rounded,
-              color: isIncome ? AppTheme.profitColor : AppTheme.lossColor,
+              color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
             ),
             const SizedBox(width: AppTheme.s8),
             Text(isIncome ? 'Uang Masuk' : 'Uang Keluar'),

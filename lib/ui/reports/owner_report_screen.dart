@@ -419,13 +419,15 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.1))
-              : colorScheme.surfaceContainer,
+              ? (isLight ? colorScheme.primary : AppTheme.accent)
+              : (isLight
+                    ? colorScheme.surfaceContainer
+                    : AppTheme.darkBackground),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? (isLight ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.3))
-                : colorScheme.outlineVariant,
+                ? Colors.transparent
+                : (isLight ? colorScheme.outlineVariant : AppTheme.accent),
             width: 1,
           ),
         ),
@@ -435,8 +437,8 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected
-                ? (isLight ? Theme.of(context).cardColor : colorScheme.primary)
-                : colorScheme.onSurfaceVariant,
+                ? AppTheme.card
+                : (isLight ? colorScheme.onSurfaceVariant : AppTheme.accent),
           ),
         ),
       ),

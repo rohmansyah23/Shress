@@ -10,7 +10,6 @@ import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/transaction_provider.dart';
-import '../dashboard/qris_display_screen.dart';
 
 // ==================== Data Models ====================
 
@@ -234,20 +233,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laporan Keuangan'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_rounded),
-            tooltip: 'QRIS Pembayaran',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      QrisDisplayScreen(business: widget.business),
-                ),
-              );
-            },
-          ),
-        ],
+        actions: null,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: _buildPeriodSelector(colorScheme),
@@ -258,6 +244,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
   }
 
   Widget _buildPeriodSelector(ColorScheme colorScheme) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: SingleChildScrollView(
@@ -267,16 +254,42 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
             for (final period in PeriodFilter.values)
               Padding(
                 padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  label: Text(period.label),
-                  selected: _selectedPeriod == period,
-                  onSelected: (selected) {
+                child: GestureDetector(
+                  onTap: () {
                     if (period == PeriodFilter.custom) {
                       _pickCustomRange();
-                    } else if (selected) {
+                    } else {
                       setState(() => _selectedPeriod = period);
                     }
                   },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _selectedPeriod == period
+                          ? (isLight ? colorScheme.primary : AppTheme.accent)
+                          : (isLight
+                                ? colorScheme.surfaceContainer
+                                : AppTheme.darkBackground),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _selectedPeriod == period
+                            ? Colors.transparent
+                            : (isLight ? colorScheme.outlineVariant : AppTheme.accent),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      period.label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: _selectedPeriod == period ? FontWeight.w600 : FontWeight.normal,
+                            color: _selectedPeriod == period
+                                ? AppTheme.card
+                                : (isLight ? colorScheme.onSurfaceVariant : AppTheme.accent),
+                      ),
+                    ),
+                  ),
                 ),
               ),
           ],

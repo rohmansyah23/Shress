@@ -34,17 +34,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _fadeAnim = CurvedAnimation(
-      parent: _animCtrl,
-      curve: Curves.easeOut,
-    );
+    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animCtrl,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
     _animCtrl.forward();
   }
 
@@ -82,7 +76,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
     setState(() => _isLoading = true);
 
-    final success = await ref.read(authProvider.notifier).login(
+    final success = await ref
+        .read(authProvider.notifier)
+        .login(
           identifier: _identifierController.text.trim(),
           password: _passwordController.text,
         );
@@ -120,24 +116,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Logo area
-                      Container(
-                        width: 88,
-                        height: 88,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                      Card(
+                        elevation: 0,
+                        color: isDark
+                            ? AppTheme.accent.withValues(alpha: 0.08)
+                            : AppTheme.primary.withValues(alpha: 0.08),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusXL,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.account_balance_rounded,
-                          size: 44,
-                          color: AppTheme.primary,
+                        margin: EdgeInsets.zero,
+                        child: SizedBox(
+                          width: 88,
+                          height: 88,
+                          child: Icon(
+                            Icons.account_balance_rounded,
+                            size: 44,
+                            color: isDark ? AppTheme.accent : AppTheme.primary,
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppTheme.s24),
-                      Text(
-                        AppConstants.appName,
-                        style: AppTheme.heading1,
-                      ),
+                      Text(AppConstants.appName, style: AppTheme.heading1),
                       const SizedBox(height: AppTheme.s8),
                       Text(
                         'Multi-tenant Financial Reports',
@@ -151,12 +152,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           padding: const EdgeInsets.all(AppTheme.s12),
                           decoration: BoxDecoration(
                             color: AppTheme.danger.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusSmall,
+                            ),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.error_outline,
-                                  color: AppTheme.danger, size: 20),
+                              Icon(
+                                Icons.error_outline,
+                                color: AppTheme.danger,
+                                size: 20,
+                              ),
                               const SizedBox(width: AppTheme.s8),
                               Expanded(
                                 child: Text(
@@ -206,8 +212,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
                             ),
-                            onPressed: () =>
-                                setState(() => _obscurePassword = !_obscurePassword),
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
                           ),
                         ),
                         validator: (value) {
@@ -233,7 +240,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   height: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Theme.of(context).colorScheme.onPrimary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
                                   ),
                                 )
                               : const Text(

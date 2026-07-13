@@ -422,6 +422,9 @@ class QuickActionButton extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
+        splashColor: color.withValues(alpha: 0.15),
+        highlightColor: color.withValues(alpha: 0.08),
+        hoverColor: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         child: Container(
           height: 90,
@@ -955,7 +958,21 @@ class PfBottomNav extends StatelessWidget {
           topLeft: Radius.circular(AppTheme.radiusXL),
           topRight: Radius.circular(AppTheme.radiusXL),
         ),
-        boxShadow: isDark ? null : AppTheme.softShadow,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? AppTheme.darkDivider : AppTheme.divider,
+            width: 1.0,
+          ),
+        ),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ]
+            : AppTheme.softShadow,
       ),
       clipBehavior: Clip.antiAlias,
       child: SafeArea(
@@ -1090,26 +1107,47 @@ class _PfAddNavButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                // Gradien dasar + Trik inner shadow halus di bagian atas/kiri
                 gradient: LinearGradient(
-                  colors: [buttonColor, buttonColor.withValues(alpha: 0.8)],
+                  colors: [
+                    isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08),
+                    buttonColor,
+                    buttonColor.withValues(alpha: 0.85),
+                  ],
+                  stops: const [0.0, 0.1, 1.0], // 10% pertama memberikan efek inner shadow tipis
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                // Ukuran Outer Shadow yang diperkecil & dihaluskan
                 boxShadow: isDark
-                    ? null
+                    ? [
+                        BoxShadow(
+                          color: buttonColor.withValues(alpha: 0.25), // Opacity diturunkan dari 0.4
+                          blurRadius: 4,  // Dikecilkan dari 8
+                          offset: const Offset(0, 2), // Dikecilkan dari (0, 4)
+                        ),
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.05), // Dibuat lebih samar
+                          blurRadius: 2,  // Dikecilkan dari 4
+                          spreadRadius: -1,
+                          offset: const Offset(0, 1), // Dikecilkan dari (0, 2)
+                        ),
+                      ]
                     : [
                         BoxShadow(
-                          color: buttonColor.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+                          color: buttonColor.withValues(alpha: 0.18), // Opacity diturunkan dari 0.3
+                          blurRadius: 4,  // Dikecilkan dari 8
+                          offset: const Offset(0, 2), // Dikecilkan dari (0, 4)
                         ),
                       ],
               ),
-              child: const Icon(
-                Icons.add_rounded,
-                color: Colors.white,
-                size: 24,
+              child: const Center(
+                child: Icon(
+                  Icons.add_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
             ),
             const SizedBox(height: 4),

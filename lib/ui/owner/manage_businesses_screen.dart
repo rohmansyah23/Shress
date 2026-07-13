@@ -10,6 +10,7 @@ import '../../providers/transaction_provider.dart';
 import '../../ui/dashboard/qris_upload_screen.dart';
 import '../../ui/dashboard/qris_display_screen.dart';
 import 'create_business_screen.dart';
+import '../business_detail/business_detail_screen.dart';
 
 class ManageBusinessesScreen extends ConsumerStatefulWidget {
   const ManageBusinessesScreen({super.key});
@@ -265,6 +266,13 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                           final b = filtered[index];
                           return _BusinessItemCard(
                             business: b,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => BusinessDetailScreen(business: b),
+                                ),
+                              );
+                            },
                             onEdit: () => _showEditDialog(b),
                             onQris: () => _openQrisUpload(b),
                             onViewQris: () => _viewQris(b),
@@ -298,6 +306,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
 
 class _BusinessItemCard extends StatelessWidget {
   final BusinessModel business;
+  final VoidCallback? onTap;
   final VoidCallback onEdit;
   final VoidCallback onQris;
   final VoidCallback onViewQris;
@@ -305,6 +314,7 @@ class _BusinessItemCard extends StatelessWidget {
 
   const _BusinessItemCard({
     required this.business,
+    this.onTap,
     required this.onEdit,
     required this.onQris,
     required this.onViewQris,
@@ -327,12 +337,19 @@ class _BusinessItemCard extends StatelessWidget {
     final hasQris = business.qrisImageUrl != null &&
         business.qrisImageUrl!.isNotEmpty;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 4, 16),
-        child: Row(
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.04),
+        highlightColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.08),
+        splashColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 4, 16),
+          child: Row(
           children: [
             CircleAvatar(
               radius: 24,
@@ -449,6 +466,7 @@ class _BusinessItemCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -35,13 +35,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final summaryAsync =
-        ref.watch(businessSummaryProvider(widget.business.businessId));
-    final trendAsync =
-        ref.watch(businessNetProfitsTrendProvider((
-      businessId: widget.business.businessId,
-      filter: _selectedTrendFilter,
-    )));
+    final summaryAsync = ref.watch(
+      businessSummaryProvider(widget.business.businessId),
+    );
+    final trendAsync = ref.watch(
+      businessNetProfitsTrendProvider((
+        businessId: widget.business.businessId,
+        filter: _selectedTrendFilter,
+      )),
+    );
 
     final body = summaryAsync.when(
       data: (summary) {
@@ -50,8 +52,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) {
-        final appError =
-            error is AppError ? error : ErrorHandler.classify(error);
+        final appError = error is AppError
+            ? error
+            : ErrorHandler.classify(error);
         return ErrorRetryWidget.fromAppError(
           appError,
           onRetry: () {
@@ -88,28 +91,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     return Column(
       children: [
-        Consumer(builder: (context, ref, _) {
-          final isOnline = ref.watch(isOnlineProvider);
-          return OfflineBanner(
-            isOffline: !isOnline,
-            onRetry: () {
-              ref.invalidate(
-                  businessSummaryProvider(widget.business.businessId));
-              ref.invalidate(
-                  businessNetProfitsTrendProvider);
-            },
-          );
-        }),
+        Consumer(
+          builder: (context, ref, _) {
+            final isOnline = ref.watch(isOnlineProvider);
+            return OfflineBanner(
+              isOffline: !isOnline,
+              onRetry: () {
+                ref.invalidate(
+                  businessSummaryProvider(widget.business.businessId),
+                );
+                ref.invalidate(businessNetProfitsTrendProvider);
+              },
+            );
+          },
+        ),
         Expanded(
           child: RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(
-                  businessSummaryProvider(widget.business.businessId));
-              ref.invalidate(
-                  businessNetProfitsTrendProvider);
+                businessSummaryProvider(widget.business.businessId),
+              );
+              ref.invalidate(businessNetProfitsTrendProvider);
               await Future.wait([
                 ref.read(
-                    businessSummaryProvider(widget.business.businessId).future),
+                  businessSummaryProvider(widget.business.businessId).future,
+                ),
               ]);
             },
             child: SingleChildScrollView(
@@ -121,42 +127,51 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   NetProfitCard(
                     netProfit: netProfit,
                     style: NetProfitCardStyle.accentBar,
-                  ),                          const SizedBox(height: AppTheme.s12),
-                          Row(
-                            children: [
-                              Expanded(
-                                  child: SummaryCard(
-                                      title: 'Pendapatan',
-                                      amount: summary['totalIncome'] ?? 0,
-                                      icon: Icons.trending_up_rounded,
-                                      color: AppTheme.profitColorTheme(context))),
-                              const SizedBox(width: AppTheme.s12),
-                              Expanded(
-                                  child: SummaryCard(
-                                      title: 'HPP (COGS)',
-                                      amount: summary['totalCogs'] ?? 0,
-                                      icon: Icons.inventory_rounded,
-                                      color: AppTheme.warningColorTheme(context))),
-                            ],
-                          ),
-                          const SizedBox(height: AppTheme.s12),
-                          Row(
-                            children: [
-                              Expanded(
-                                  child: SummaryCard(
-                                      title: 'Laba Kotor',
-                                      amount: summary['grossProfit'] ?? 0,
-                                      icon: Icons.monetization_on_rounded,
-                                      color: AppTheme.infoColorTheme(context))),
-                              const SizedBox(width: AppTheme.s12),
-                              Expanded(
-                                  child: SummaryCard(
-                                      title: 'Pengeluaran',
-                                      amount: summary['totalExpense'] ?? 0,
-                                      icon: Icons.trending_down_rounded,
-                                      color: AppTheme.lossColorTheme(context))),
-                            ],
-                          ),
+                  ),
+                  const SizedBox(height: AppTheme.s12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'Pendapatan',
+                          amount: summary['totalIncome'] ?? 0,
+                          icon: Icons.trending_up_rounded,
+                          color: AppTheme.profitColorTheme(context),
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.s12),
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'HPP (COGS)',
+                          amount: summary['totalCogs'] ?? 0,
+                          icon: Icons.inventory_rounded,
+                          color: AppTheme.warningColorTheme(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppTheme.s12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'Laba Kotor',
+                          amount: summary['grossProfit'] ?? 0,
+                          icon: Icons.monetization_on_rounded,
+                          color: AppTheme.infoColorTheme(context),
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.s12),
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'Pengeluaran',
+                          amount: summary['totalExpense'] ?? 0,
+                          icon: Icons.trending_down_rounded,
+                          color: AppTheme.lossColorTheme(context),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 24),
 
                   // === Trend Chart dengan Filter ===
@@ -179,27 +194,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       if (trendData.isEmpty) {
                         return SizedBox(
                           height: 160,
-                          child: Center(child: Text('Belum ada data grafik', style: AppTheme.caption)),
+                          child: Center(
+                            child: Text(
+                              'Belum ada data grafik',
+                              style: AppTheme.caption,
+                            ),
+                          ),
                         );
                       }
                       return TrendChart(
                         data: trendData
-                            .map((d) => TrendDataPoint(
-                                month: d.period, netProfit: d.netProfit))
+                            .map(
+                              (d) => TrendDataPoint(
+                                month: d.period,
+                                netProfit: d.netProfit,
+                              ),
+                            )
                             .toList(),
                         title: _selectedTrendFilter == TrendFilter.daily
                             ? 'Tren Laba/Rugi 7 Hari Terakhir'
                             : _selectedTrendFilter == TrendFilter.weekly
-                                ? 'Tren Laba/Rugi 5 Minggu Terakhir'
-                                : _selectedTrendFilter == TrendFilter.monthly
-                                    ? 'Tren Laba/Rugi 6 Bulan Terakhir'
-                                    : 'Tren Laba/Rugi 5 Tahun Terakhir',
+                            ? 'Tren Laba/Rugi 5 Minggu Terakhir'
+                            : _selectedTrendFilter == TrendFilter.monthly
+                            ? 'Tren Laba/Rugi 6 Bulan Terakhir'
+                            : 'Tren Laba/Rugi 5 Tahun Terakhir',
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (err, _) => SizedBox(
                       height: 160,
-                      child: Center(child: Text('Gagal memuat grafik', style: AppTheme.caption)),
+                      child: Center(
+                        child: Text(
+                          'Gagal memuat grafik',
+                          style: AppTheme.caption,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -209,37 +239,51 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   Row(
                     children: [
                       Expanded(
-                          child: QuickActionButton(
-                              icon: Icons.trending_up_rounded,
-                              label: 'Uang\nMasuk',
-                              color: AppTheme.profitColor,
-                              onTap: () => TransactionSheet.show(
-                                  context, widget.business,
-                                  startAsIncome: true))),
+                        child: QuickActionButton(
+                          icon: Icons.trending_up_rounded,
+                          label: 'Uang\nMasuk',
+                          color: AppTheme.profitColor,
+                          onTap: () => TransactionSheet.show(
+                            context,
+                            widget.business,
+                            startAsIncome: true,
+                          ),
+                        ),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
-                          child: QuickActionButton(
-                              icon: Icons.trending_down_rounded,
-                              label: 'Uang\nKeluar',
-                              color: AppTheme.lossColor,
-                              onTap: () => TransactionSheet.show(
-                                  context, widget.business,
-                                  startAsIncome: false))),
+                        child: QuickActionButton(
+                          icon: Icons.trending_down_rounded,
+                          label: 'Uang\nKeluar',
+                          color: AppTheme.lossColor,
+                          onTap: () => TransactionSheet.show(
+                            context,
+                            widget.business,
+                            startAsIncome: false,
+                          ),
+                        ),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
-                          child: QuickActionButton(
-                              icon: Icons.history_rounded,
-                              label: 'Riwayat\nTransaksi',
-                              color: AppTheme.infoColor,
-                              onTap: () {
-                        if (widget.onNavigateToRiwayat != null) {
-                          widget.onNavigateToRiwayat!();
-                        } else {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (_) => TransactionHistoryScreen(
-                                  business: widget.business)));
-                        }
-                      })),
+                        child: QuickActionButton(
+                          icon: Icons.history_rounded,
+                          label: 'Riwayat\nTransaksi',
+                          color: AppTheme.infoColor,
+                          onTap: () {
+                            if (widget.onNavigateToRiwayat != null) {
+                              widget.onNavigateToRiwayat!();
+                            } else {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => TransactionHistoryScreen(
+                                    business: widget.business,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -262,13 +306,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.2))
-              : colorScheme.surfaceContainer,
+              ? (isLight ? colorScheme.primary : AppTheme.accent)
+              : (isLight
+                    ? colorScheme.surfaceContainer
+                    : AppTheme.darkBackground),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? (isLight ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.3))
-                : colorScheme.outlineVariant,
+                ? Colors.transparent
+                : (isLight ? colorScheme.outlineVariant : AppTheme.accent),
             width: 1,
           ),
         ),
@@ -278,13 +324,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected
-                ? (isLight ? Theme.of(context).cardColor : colorScheme.primary)
-                : colorScheme.onSurfaceVariant,
+                ? AppTheme.card
+                : (isLight ? colorScheme.onSurfaceVariant : AppTheme.accent),
           ),
         ),
       ),
     );
   }
 }
-
-

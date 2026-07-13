@@ -53,12 +53,16 @@ class SupabaseService {
   Future<List<UserModel>> getAllUsers() async {
     return ErrorHandler.guard(() async {
       final data = await _supabase.from('users').select();
-      return (data as List).map((json) => UserModel(
-            userId: json['id'] as String,
-            username: json['username'] as String,
-            role: json['role'] as String,
-            displayName: json['display_name'] as String?,
-          )).toList();
+      return (data as List)
+          .map(
+            (json) => UserModel(
+              userId: json['id'] as String,
+              username: json['username'] as String,
+              role: json['role'] as String,
+              displayName: json['display_name'] as String?,
+            ),
+          )
+          .toList();
     });
   }
 
@@ -67,12 +71,16 @@ class SupabaseService {
   Future<List<BusinessModel>> getAllBusinesses() async {
     return ErrorHandler.guard(() async {
       final data = await _supabase.from('businesses').select();
-      return (data as List).map((b) => BusinessModel(
-            businessId: b['id'] as int,
-            name: b['name'] as String,
-            description: b['description'] as String?,
-            qrisImageUrl: b['qris_image_url'] as String?,
-          )).toList();
+      return (data as List)
+          .map(
+            (b) => BusinessModel(
+              businessId: b['id'] as int,
+              name: b['name'] as String,
+              description: b['description'] as String?,
+              qrisImageUrl: b['qris_image_url'] as String?,
+            ),
+          )
+          .toList();
     });
   }
 
@@ -112,7 +120,9 @@ class SupabaseService {
   }
 
   Future<List<BusinessModel>> getAccessibleBusinesses(
-      String userId, String role) async {
+    String userId,
+    String role,
+  ) async {
     if (role == AppConstants.roleOwner) {
       return getAllBusinesses();
     }
@@ -127,10 +137,11 @@ class SupabaseService {
     String? description,
   }) async {
     return ErrorHandler.guard(() async {
-      final response = await _supabase.from('businesses').insert({
-        'name': name,
-        'description': description ?? '',
-      }).select().single();
+      final response = await _supabase
+          .from('businesses')
+          .insert({'name': name, 'description': description ?? ''})
+          .select()
+          .single();
 
       return BusinessModel(
         businessId: response['id'] as int,
@@ -148,10 +159,12 @@ class SupabaseService {
     String? description,
   }) async {
     return ErrorHandler.guard(() async {
-      final response = await _supabase.from('businesses').update({
-        'name': name,
-        'description': description ?? '',
-      }).eq('id', businessId).select().single();
+      final response = await _supabase
+          .from('businesses')
+          .update({'name': name, 'description': description ?? ''})
+          .eq('id', businessId)
+          .select()
+          .single();
 
       return BusinessModel(
         businessId: response['id'] as int,
@@ -177,12 +190,16 @@ class SupabaseService {
           .from('categories')
           .select()
           .eq('business_id', businessId);
-      return (data as List).map((c) => CategoryModel(
-            categoryId: c['id'] as int,
-            businessId: c['business_id'] as int,
-            name: c['name'] as String,
-            type: c['type'] as String,
-          )).toList();
+      return (data as List)
+          .map(
+            (c) => CategoryModel(
+              categoryId: c['id'] as int,
+              businessId: c['business_id'] as int,
+              name: c['name'] as String,
+              type: c['type'] as String,
+            ),
+          )
+          .toList();
     });
   }
 
@@ -193,11 +210,11 @@ class SupabaseService {
     required String type,
   }) async {
     return ErrorHandler.guard(() async {
-      final response = await _supabase.from('categories').insert({
-        'business_id': businessId,
-        'name': name,
-        'type': type,
-      }).select().single();
+      final response = await _supabase
+          .from('categories')
+          .insert({'business_id': businessId, 'name': name, 'type': type})
+          .select()
+          .single();
 
       return CategoryModel(
         categoryId: response['id'] as int,
@@ -215,10 +232,12 @@ class SupabaseService {
     required String type,
   }) async {
     return ErrorHandler.guard(() async {
-      final response = await _supabase.from('categories').update({
-        'name': name,
-        'type': type,
-      }).eq('id', categoryId).select().single();
+      final response = await _supabase
+          .from('categories')
+          .update({'name': name, 'type': type})
+          .eq('id', categoryId)
+          .select()
+          .single();
 
       return CategoryModel(
         categoryId: response['id'] as int,
@@ -237,19 +256,25 @@ class SupabaseService {
   }
 
   Future<List<CategoryModel>> getCategoriesByType(
-      int businessId, String type) async {
+    int businessId,
+    String type,
+  ) async {
     return ErrorHandler.guard(() async {
       final data = await _supabase
           .from('categories')
           .select()
           .eq('business_id', businessId)
           .eq('type', type);
-      return (data as List).map((c) => CategoryModel(
-            categoryId: c['id'] as int,
-            businessId: c['business_id'] as int,
-            name: c['name'] as String,
-            type: c['type'] as String,
-          )).toList();
+      return (data as List)
+          .map(
+            (c) => CategoryModel(
+              categoryId: c['id'] as int,
+              businessId: c['business_id'] as int,
+              name: c['name'] as String,
+              type: c['type'] as String,
+            ),
+          )
+          .toList();
     });
   }
 
@@ -304,13 +329,15 @@ class SupabaseService {
   }
 
   Future<List<TransactionModel>> getTransactionsByBusiness(
-      int businessId) async {
+    int businessId,
+  ) async {
     return ErrorHandler.guard(() async {
       final data = await _supabase
           .from('transactions')
           .select()
           .eq('business_id', businessId)
-          .order('transaction_date', ascending: false);
+          .order('transaction_date', ascending: false)
+          .order('created_at', ascending: false);
       return _parseTransactions(data as List);
     });
   }
@@ -351,7 +378,8 @@ class SupabaseService {
   }
 
   Future<List<TransactionModel>> getAllTransactions(
-      List<int> businessIds) async {
+    List<int> businessIds,
+  ) async {
     if (businessIds.isEmpty) return [];
     return ErrorHandler.guard(() async {
       final data = await _supabase
@@ -388,7 +416,8 @@ class SupabaseService {
   }
 
   Future<Map<String, double>> getAllBusinessesSummary(
-      List<int> businessIds) async {
+    List<int> businessIds,
+  ) async {
     return ErrorHandler.guard(() async {
       if (businessIds.isEmpty) {
         return {
@@ -435,18 +464,22 @@ class SupabaseService {
     required String transactionDate,
   }) async {
     return ErrorHandler.guard(() async {
-      final response = await _supabase.from('transactions').insert({
-        'business_id': businessId,
-        'category_id': categoryId,
-        'user_id': userId,
-        'type': type,
-        'amount': amount,
-        'cogs': type == AppConstants.typeIncome ? cogs : 0.0,
-        'payment_method': paymentMethod,
-        'description': description ?? '',
-        'transaction_date': transactionDate,
-        'status_sync': true,
-      }).select('id').single();
+      final response = await _supabase
+          .from('transactions')
+          .insert({
+            'business_id': businessId,
+            'category_id': categoryId,
+            'user_id': userId,
+            'type': type,
+            'amount': amount,
+            'cogs': type == AppConstants.typeIncome ? cogs : 0.0,
+            'payment_method': paymentMethod,
+            'description': description ?? '',
+            'transaction_date': transactionDate,
+            'status_sync': true,
+          })
+          .select('id')
+          .single();
 
       return response['id'] as int;
     });
@@ -470,7 +503,8 @@ class SupabaseService {
       if (cogs != null) updates['cogs'] = cogs;
       if (paymentMethod != null) updates['payment_method'] = paymentMethod;
       if (description != null) updates['description'] = description;
-      if (transactionDate != null) updates['transaction_date'] = transactionDate;
+      if (transactionDate != null)
+        updates['transaction_date'] = transactionDate;
 
       if (updates.isNotEmpty) {
         await _supabase
@@ -483,34 +517,35 @@ class SupabaseService {
 
   Future<void> deleteTransaction(int transactionId) async {
     return ErrorHandler.guard(() async {
-      await _supabase
-          .from('transactions')
-          .delete()
-          .eq('id', transactionId);
+      await _supabase.from('transactions').delete().eq('id', transactionId);
     });
   }
 
   List<TransactionModel> _parseTransactions(List<dynamic> data) {
-    return data.map((tx) => TransactionModel(
-          transactionId: tx['id'] as int,
-          businessId: tx['business_id'] as int,
-          categoryId: tx['category_id'] as int,
-          userId: tx['user_id'] as String,
-          type: tx['type'] as String,
-          amount: (tx['amount'] as num).toDouble(),
-          cogs: (tx['cogs'] as num?)?.toDouble() ?? 0.0,
-          paymentMethod: tx['payment_method'] as String? ?? AppConstants.paymentCash,
-          description: tx['description'] as String?,
-          transactionDate: tx['transaction_date'] as String,
-          statusSync: tx['status_sync'] as bool? ?? true,
-          createdAt: tx['created_at'] != null
-              ? DateTime.parse(tx['created_at'] as String)
-              : null,
-        )).toList();
+    return data
+        .map(
+          (tx) => TransactionModel(
+            transactionId: tx['id'] as int,
+            businessId: tx['business_id'] as int,
+            categoryId: tx['category_id'] as int,
+            userId: tx['user_id'] as String,
+            type: tx['type'] as String,
+            amount: (tx['amount'] as num).toDouble(),
+            cogs: (tx['cogs'] as num?)?.toDouble() ?? 0.0,
+            paymentMethod:
+                tx['payment_method'] as String? ?? AppConstants.paymentCash,
+            description: tx['description'] as String?,
+            transactionDate: tx['transaction_date'] as String,
+            statusSync: tx['status_sync'] as bool? ?? true,
+            createdAt: tx['created_at'] != null
+                ? DateTime.parse(tx['created_at'] as String)
+                : null,
+          ),
+        )
+        .toList();
   }
 
   // ==================== Monthly Trend ====================
-
 
   // ==================== Debtor Operations ====================
 
@@ -534,12 +569,16 @@ class SupabaseService {
     String? notes,
   }) async {
     return ErrorHandler.guard(() async {
-      final response = await _supabase.from('debtors').insert({
-        'business_id': businessId,
-        'name': name,
-        'phone': phone,
-        'notes': notes,
-      }).select().single();
+      final response = await _supabase
+          .from('debtors')
+          .insert({
+            'business_id': businessId,
+            'name': name,
+            'phone': phone,
+            'notes': notes,
+          })
+          .select()
+          .single();
       return DebtorModel.fromMap(response);
     });
   }
@@ -614,12 +653,14 @@ class SupabaseService {
     int? debtorId,
   }) async {
     return ErrorHandler.guard(() async {
-      var query = _supabase
-          .from('debts')
-          .select()
-          .eq('business_id', businessId)
-          .order('debt_date', ascending: false)
-          .order('id', ascending: false) as dynamic;
+      var query =
+          _supabase
+                  .from('debts')
+                  .select()
+                  .eq('business_id', businessId)
+                  .order('debt_date', ascending: false)
+                  .order('id', ascending: false)
+              as dynamic;
 
       if (statusFilter != null) {
         query = query.eq('status', statusFilter);
@@ -675,22 +716,28 @@ class SupabaseService {
           userId: userId,
           type: AppConstants.typeExpense,
           amount: amount,
-          description: 'Piutang: $debtorName${description != null ? ' - $description' : ''}',
-          transactionDate: debtDate ?? DateTime.now().toIso8601String().substring(0, 10),
+          description:
+              'Piutang: $debtorName${description != null ? ' - $description' : ''}',
+          transactionDate:
+              debtDate ?? DateTime.now().toIso8601String().substring(0, 10),
         );
       }
 
-      final response = await _supabase.from('debts').insert({
-        'debtor_id': debtorId,
-        'business_id': businessId,
-        'user_id': userId,
-        'amount': amount,
-        'description': description,
-        'status': AppConstants.debtUnpaid,
-        'debt_date': debtDate,
-        'due_date': dueDate,
-        'expense_transaction_id': ?expenseTxId,
-      }).select('id').single();
+      final response = await _supabase
+          .from('debts')
+          .insert({
+            'debtor_id': debtorId,
+            'business_id': businessId,
+            'user_id': userId,
+            'amount': amount,
+            'description': description,
+            'status': AppConstants.debtUnpaid,
+            'debt_date': debtDate,
+            'due_date': dueDate,
+            'expense_transaction_id': ?expenseTxId,
+          })
+          .select('id')
+          .single();
       return response['id'] as int;
     });
   }
@@ -722,8 +769,11 @@ class SupabaseService {
 
   Future<DebtModel> getDebtById(int debtId) async {
     return ErrorHandler.guard(() async {
-      final data =
-          await _supabase.from('debts').select().eq('id', debtId).single();
+      final data = await _supabase
+          .from('debts')
+          .select()
+          .eq('id', debtId)
+          .single();
       return DebtModel.fromMap(data);
     });
   }
@@ -771,19 +821,25 @@ class SupabaseService {
           userId: userId,
           type: AppConstants.typeIncome,
           amount: amount,
-          description: 'Pembayaran piutang: $debtorName${notes != null ? ' - $notes' : ''}',
-          transactionDate: paymentDate ?? DateTime.now().toIso8601String().substring(0, 10),
+          description:
+              'Pembayaran piutang: $debtorName${notes != null ? ' - $notes' : ''}',
+          transactionDate:
+              paymentDate ?? DateTime.now().toIso8601String().substring(0, 10),
         );
       }
 
-      final response = await _supabase.from('debt_payments').insert({
-        'debt_id': debtId,
-        'amount': amount,
-        'user_id': userId,
-        'notes': notes,
-        'payment_date': paymentDate,
-        'income_transaction_id': ?incomeTxId,
-      }).select('id').single();
+      final response = await _supabase
+          .from('debt_payments')
+          .insert({
+            'debt_id': debtId,
+            'amount': amount,
+            'user_id': userId,
+            'notes': notes,
+            'payment_date': paymentDate,
+            'income_transaction_id': ?incomeTxId,
+          })
+          .select('id')
+          .single();
 
       // Update paid_amount and status on the debt
       final debtData = await _supabase
@@ -804,10 +860,10 @@ class SupabaseService {
         newStatus = AppConstants.debtUnpaid;
       }
 
-      await _supabase.from('debts').update({
-        'paid_amount': totalPaid,
-        'status': newStatus,
-      }).eq('id', debtId);
+      await _supabase
+          .from('debts')
+          .update({'paid_amount': totalPaid, 'status': newStatus})
+          .eq('id', debtId);
 
       return response['id'] as int;
     });
@@ -873,7 +929,10 @@ class SupabaseService {
       if (notes != null) updates['notes'] = notes;
       if (paymentDate != null) updates['payment_date'] = paymentDate;
       if (updates.isNotEmpty) {
-        await _supabase.from('debt_payments').update(updates).eq('id', paymentId);
+        await _supabase
+            .from('debt_payments')
+            .update(updates)
+            .eq('id', paymentId);
       }
     });
   }
@@ -927,10 +986,10 @@ class SupabaseService {
       newStatus = AppConstants.debtUnpaid;
     }
 
-    await _supabase.from('debts').update({
-      'paid_amount': totalPaid,
-      'status': newStatus,
-    }).eq('id', debtId);
+    await _supabase
+        .from('debts')
+        .update({'paid_amount': totalPaid, 'status': newStatus})
+        .eq('id', debtId);
   }
 
   Future<bool> areAllDebtsPaid(int debtorId) async {
@@ -960,8 +1019,6 @@ class SupabaseService {
     });
   }
 
-
-
   // ==================== Consignor Operations ====================
 
   Future<List<ConsignorModel>> getConsignorsByBusiness(int businessId) async {
@@ -984,12 +1041,16 @@ class SupabaseService {
     String? notes,
   }) async {
     return ErrorHandler.guard(() async {
-      final response = await _supabase.from('consignors').insert({
-        'business_id': businessId,
-        'name': name,
-        'phone': phone,
-        'notes': notes,
-      }).select().single();
+      final response = await _supabase
+          .from('consignors')
+          .insert({
+            'business_id': businessId,
+            'name': name,
+            'phone': phone,
+            'notes': notes,
+          })
+          .select()
+          .single();
       return ConsignorModel.fromMap(response);
     });
   }
@@ -1006,7 +1067,10 @@ class SupabaseService {
       if (phone != null) updates['phone'] = phone;
       if (notes != null) updates['notes'] = notes;
       if (updates.isNotEmpty) {
-        await _supabase.from('consignors').update(updates).eq('id', consignorId);
+        await _supabase
+            .from('consignors')
+            .update(updates)
+            .eq('id', consignorId);
       }
     });
   }
@@ -1028,12 +1092,14 @@ class SupabaseService {
     int? consignorId,
   }) async {
     return ErrorHandler.guard(() async {
-      var query = _supabase
-          .from('consignments')
-          .select()
-          .eq('business_id', businessId)
-          .order('consignment_date', ascending: false)
-          .order('id', ascending: false) as dynamic;
+      var query =
+          _supabase
+                  .from('consignments')
+                  .select()
+                  .eq('business_id', businessId)
+                  .order('consignment_date', ascending: false)
+                  .order('id', ascending: false)
+              as dynamic;
 
       if (statusFilter != null) {
         query = query.eq('status', statusFilter);
@@ -1055,7 +1121,8 @@ class SupabaseService {
   }
 
   Future<List<ConsignmentModel>> getConsignmentsByBusiness(
-      int businessId) async {
+    int businessId,
+  ) async {
     return ErrorHandler.guard(() async {
       final data = await _supabase
           .from('consignments')
@@ -1069,7 +1136,8 @@ class SupabaseService {
   }
 
   Future<List<ConsignmentModel>> getConsignmentsByConsignor(
-      int consignorId) async {
+    int consignorId,
+  ) async {
     return ErrorHandler.guard(() async {
       final data = await _supabase
           .from('consignments')
@@ -1082,7 +1150,9 @@ class SupabaseService {
 
       final enriched = <ConsignmentModel>[];
       for (final c in consignments) {
-        if ((c.isDaily || c.isReseller) && (c.reportStatus == AppConstants.reportReported || c.reportStatus == AppConstants.reportSettled)) {
+        if ((c.isDaily || c.isReseller) &&
+            (c.reportStatus == AppConstants.reportReported ||
+                c.reportStatus == AppConstants.reportSettled)) {
           final owing = await getDailyPaymentOwing(c.id);
           enriched.add(c.copyWith(paymentOwing: owing));
         } else {
@@ -1104,17 +1174,21 @@ class SupabaseService {
     String? consignmentDate,
   }) async {
     return ErrorHandler.guard(() async {
-      final response = await _supabase.from('consignments').insert({
-        'consignor_id': consignorId,
-        'business_id': businessId,
-        'user_id': userId,
-        'total_amount': totalAmount,
-        'description': description,
-        'status': AppConstants.consignmentActive,
-        'type': type,
-        'consignment_date': consignmentDate,
-        'due_date': dueDate,
-      }).select('id').single();
+      final response = await _supabase
+          .from('consignments')
+          .insert({
+            'consignor_id': consignorId,
+            'business_id': businessId,
+            'user_id': userId,
+            'total_amount': totalAmount,
+            'description': description,
+            'status': AppConstants.consignmentActive,
+            'type': type,
+            'consignment_date': consignmentDate,
+            'due_date': dueDate,
+          })
+          .select('id')
+          .single();
       return response['id'] as int;
     });
   }
@@ -1143,7 +1217,8 @@ class SupabaseService {
   }
 
   Future<List<ConsignmentItemModel>> getConsignmentItems(
-      int consignmentId) async {
+    int consignmentId,
+  ) async {
     return ErrorHandler.guard(() async {
       final data = await _supabase
           .from('consignment_items')
@@ -1181,7 +1256,8 @@ class SupabaseService {
   // ==================== Consignment Settlement Operations ====================
 
   Future<List<ConsignmentSettlementModel>> getConsignmentSettlements(
-      int consignmentId) async {
+    int consignmentId,
+  ) async {
     return ErrorHandler.guard(() async {
       final data = await _supabase
           .from('consignment_settlements')
@@ -1189,8 +1265,10 @@ class SupabaseService {
           .eq('consignment_id', consignmentId)
           .order('settlement_date', ascending: false);
       return (data as List)
-          .map((s) =>
-              ConsignmentSettlementModel.fromMap(s as Map<String, dynamic>))
+          .map(
+            (s) =>
+                ConsignmentSettlementModel.fromMap(s as Map<String, dynamic>),
+          )
           .toList();
     });
   }
@@ -1204,18 +1282,24 @@ class SupabaseService {
     String? paymentMethod,
   }) async {
     return ErrorHandler.guard(() async {
-      final response = await _supabase.from('consignment_settlements').insert({
-        'consignment_id': consignmentId,
-        'amount': amount,
-        'user_id': userId,
-        'notes': notes,
-        'settlement_date': settlementDate,
-      }).select('id').single();
+      final response = await _supabase
+          .from('consignment_settlements')
+          .insert({
+            'consignment_id': consignmentId,
+            'amount': amount,
+            'user_id': userId,
+            'notes': notes,
+            'settlement_date': settlementDate,
+          })
+          .select('id')
+          .single();
 
       // Update settled_amount and status on the consignment
       final consData = await _supabase
           .from('consignments')
-          .select('total_amount, settled_amount, type, business_id, consignor_id, report_status')
+          .select(
+            'total_amount, settled_amount, type, business_id, consignor_id, report_status',
+          )
           .eq('id', consignmentId)
           .single();
 
@@ -1302,19 +1386,23 @@ class SupabaseService {
             amount: commission,
             paymentMethod: paymentMethod ?? AppConstants.paymentCash,
             description: 'Komisi dari $consignorName - $itemDesc',
-            transactionDate: settlementDate ??
+            transactionDate:
+                settlementDate ??
                 DateTime.now().toIso8601String().substring(0, 10),
           );
         }
       }
 
-      await _supabase.from('consignments').update({
-        'settled_amount': totalSettled,
-        'status': newStatus,
-        if (newStatus == AppConstants.consignmentSettled)
-          'report_status': AppConstants.reportSettled,
-        'income_transaction_id': ?incomeTxId,
-      }).eq('id', consignmentId);
+      await _supabase
+          .from('consignments')
+          .update({
+            'settled_amount': totalSettled,
+            'status': newStatus,
+            if (newStatus == AppConstants.consignmentSettled)
+              'report_status': AppConstants.reportSettled,
+            'income_transaction_id': ?incomeTxId,
+          })
+          .eq('id', consignmentId);
 
       return response['id'] as int;
     });
@@ -1368,7 +1456,8 @@ class SupabaseService {
           .eq('consignment_id', consignmentId);
       double total = 0;
       for (final item in items) {
-        total += (item['agreed_price'] as num).toDouble() *
+        total +=
+            (item['agreed_price'] as num).toDouble() *
             (item['quantity_sold'] as int);
       }
       return total;
@@ -1392,18 +1481,22 @@ class SupabaseService {
         throw Exception('Jumlah terjual harus antara 0 dan $totalQty');
       }
 
-      await _supabase.from('consignment_items').update({
-        'quantity_sold': quantitySold,
-        'quantity_returned': totalQty - quantitySold,
-      }).eq('id', itemId);
+      await _supabase
+          .from('consignment_items')
+          .update({
+            'quantity_sold': quantitySold,
+            'quantity_returned': totalQty - quantitySold,
+          })
+          .eq('id', itemId);
     });
   }
 
   Future<void> finalizeConsignmentReport(int consignmentId) async {
     return ErrorHandler.guard(() async {
-      await _supabase.from('consignments').update({
-        'report_status': AppConstants.reportReported,
-      }).eq('id', consignmentId);
+      await _supabase
+          .from('consignments')
+          .update({'report_status': AppConstants.reportReported})
+          .eq('id', consignmentId);
     });
   }
 
@@ -1424,11 +1517,14 @@ class SupabaseService {
         return existing.first['id'] as int;
       }
 
-      final response = await _supabase.from('categories').insert({
-        'business_id': businessId,
-        'name': categoryName,
-        'type': categoryType,
-      }).select('id');
+      final response = await _supabase
+          .from('categories')
+          .insert({
+            'business_id': businessId,
+            'name': categoryName,
+            'type': categoryType,
+          })
+          .select('id');
 
       return (response as List).first['id'] as int;
     });
@@ -1519,12 +1615,15 @@ class SupabaseService {
         'notes': 'Pelunasan harian via laporan penjualan',
       });
 
-      await _supabase.from('consignments').update({
-        'status': AppConstants.consignmentSettled,
-        'report_status': AppConstants.reportSettled,
-        'settled_amount': totalPayment,
-        'income_transaction_id': ?incomeTxId,
-      }).eq('id', consignmentId);
+      await _supabase
+          .from('consignments')
+          .update({
+            'status': AppConstants.consignmentSettled,
+            'report_status': AppConstants.reportSettled,
+            'settled_amount': totalPayment,
+            'income_transaction_id': ?incomeTxId,
+          })
+          .eq('id', consignmentId);
     });
   }
 
@@ -1552,18 +1651,30 @@ class SupabaseService {
 
       if (filter == TrendFilter.daily) {
         final startDay = now.subtract(const Duration(days: 6));
-        startStr = '${startDay.year}-${startDay.month.toString().padLeft(2, '0')}-${startDay.day.toString().padLeft(2, '0')}';
-        endStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+        startStr =
+            '${startDay.year}-${startDay.month.toString().padLeft(2, '0')}-${startDay.day.toString().padLeft(2, '0')}';
+        endStr =
+            '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       } else if (filter == TrendFilter.weekly) {
-        final currentMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
-        final startWeek = currentMonday.subtract(const Duration(days: 28)); // Monday of 4 weeks ago
-        startStr = '${startWeek.year}-${startWeek.month.toString().padLeft(2, '0')}-${startWeek.day.toString().padLeft(2, '0')}';
-        endStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+        final currentMonday = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(Duration(days: now.weekday - 1));
+        final startWeek = currentMonday.subtract(
+          const Duration(days: 28),
+        ); // Monday of 4 weeks ago
+        startStr =
+            '${startWeek.year}-${startWeek.month.toString().padLeft(2, '0')}-${startWeek.day.toString().padLeft(2, '0')}';
+        endStr =
+            '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       } else if (filter == TrendFilter.monthly) {
         const months = 6;
         final startMonth = DateTime(now.year, now.month - months + 1, 1);
-        startStr = '${startMonth.year}-${startMonth.month.toString().padLeft(2, '0')}-01';
-        endStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
+        startStr =
+            '${startMonth.year}-${startMonth.month.toString().padLeft(2, '0')}-01';
+        endStr =
+            '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
       } else {
         // yearly
         final startYear = now.year - 4;
@@ -1589,10 +1700,16 @@ class SupabaseService {
         final txDate = DateTime.parse(tx.transactionDate);
 
         if (filter == TrendFilter.daily) {
-          key = '${txDate.year}-${txDate.month.toString().padLeft(2, '0')}-${txDate.day.toString().padLeft(2, '0')}';
+          key =
+              '${txDate.year}-${txDate.month.toString().padLeft(2, '0')}-${txDate.day.toString().padLeft(2, '0')}';
         } else if (filter == TrendFilter.weekly) {
-          final txMonday = DateTime(txDate.year, txDate.month, txDate.day).subtract(Duration(days: txDate.weekday - 1));
-          key = '${txMonday.year}-${txMonday.month.toString().padLeft(2, '0')}-${txMonday.day.toString().padLeft(2, '0')}';
+          final txMonday = DateTime(
+            txDate.year,
+            txDate.month,
+            txDate.day,
+          ).subtract(Duration(days: txDate.weekday - 1));
+          key =
+              '${txMonday.year}-${txMonday.month.toString().padLeft(2, '0')}-${txMonday.day.toString().padLeft(2, '0')}';
         } else if (filter == TrendFilter.monthly) {
           key = tx.transactionDate.length >= 7
               ? tx.transactionDate.substring(0, 7)
@@ -1602,9 +1719,17 @@ class SupabaseService {
         }
 
         if (tx.type == 'income') {
-          incomeMap.update(key, (v) => v + tx.amount, ifAbsent: () => tx.amount);
+          incomeMap.update(
+            key,
+            (v) => v + tx.amount,
+            ifAbsent: () => tx.amount,
+          );
         } else {
-          expenseMap.update(key, (v) => v + tx.amount, ifAbsent: () => tx.amount);
+          expenseMap.update(
+            key,
+            (v) => v + tx.amount,
+            ifAbsent: () => tx.amount,
+          );
         }
       }
 
@@ -1614,17 +1739,23 @@ class SupabaseService {
         final startDay = now.subtract(const Duration(days: 6));
         for (int i = 0; i < 7; i++) {
           final d = startDay.add(Duration(days: i));
-          final key = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+          final key =
+              '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
           result.add((period: key, netProfit: income - expense));
         }
       } else if (filter == TrendFilter.weekly) {
-        final currentMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+        final currentMonday = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(Duration(days: now.weekday - 1));
         final startWeek = currentMonday.subtract(const Duration(days: 28));
         for (int i = 0; i < 5; i++) {
           final d = startWeek.add(Duration(days: i * 7));
-          final key = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+          final key =
+              '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
           result.add((period: key, netProfit: income - expense));

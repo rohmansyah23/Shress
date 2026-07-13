@@ -268,6 +268,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                         key: ValueKey(user.userId),
                         user: user,
                         businesses: _businesses,
+                        onTap: () => _openEditUser(user),
                         onEdit: () => _openEditUser(user),
                         onRoleChanged: (newRole) =>
                             _handleRoleChange(user, newRole),
@@ -294,6 +295,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
 class _UserCard extends ConsumerWidget {
   final UserModel user;
   final List<BusinessModel> businesses;
+  final VoidCallback? onTap;
   final VoidCallback onEdit;
   final ValueChanged<String> onRoleChanged;
   final ValueChanged<Set<int>> onBusinessesChanged;
@@ -303,6 +305,7 @@ class _UserCard extends ConsumerWidget {
     super.key,
     required this.user,
     required this.businesses,
+    this.onTap,
     required this.onEdit,
     required this.onRoleChanged,
     required this.onBusinessesChanged,
@@ -340,12 +343,19 @@ class _UserCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assignedIdsAsync = ref.watch(userBusinessIdsProvider(user.userId));
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.04),
+        highlightColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.08),
+        splashColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
             child: Row(
@@ -500,6 +510,7 @@ class _UserCard extends ConsumerWidget {
           ] else
             const SizedBox(height: AppTheme.s12),
         ],
+      ),
       ),
     );
   }

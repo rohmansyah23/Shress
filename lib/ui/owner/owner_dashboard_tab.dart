@@ -747,13 +747,15 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.2))
-              : colorScheme.surfaceContainer,
+              ? (isLight ? colorScheme.primary : AppTheme.accent)
+              : (isLight
+                    ? colorScheme.surfaceContainer
+                    : AppTheme.darkBackground),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? (isLight ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.3))
-                : colorScheme.outlineVariant,
+                ? Colors.transparent
+                : (isLight ? colorScheme.outlineVariant : AppTheme.accent),
             width: 1,
           ),
         ),
@@ -763,8 +765,8 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected
-                ? (isLight ? Theme.of(context).cardColor : colorScheme.primary)
-                : colorScheme.onSurfaceVariant,
+                ? AppTheme.card
+                : (isLight ? colorScheme.onSurfaceVariant : AppTheme.accent),
           ),
         ),
       ),
@@ -790,6 +792,7 @@ class _BusinessCardWithSummary extends ConsumerWidget {
     final summaryAsync = ref.watch(
       businessSummaryProvider(business.businessId),
     );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final netProfit = summaryAsync.asData?.value['netProfit'] as num?;
     final isLoading = summaryAsync.isLoading;
@@ -797,6 +800,9 @@ class _BusinessCardWithSummary extends ConsumerWidget {
 
     return Card(
       child: InkWell(
+        splashColor: AppTheme.accent.withValues(alpha: 0.15),
+        highlightColor: AppTheme.accent.withValues(alpha: 0.08),
+        hoverColor: AppTheme.accent.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Padding(
@@ -807,12 +813,12 @@ class _BusinessCardWithSummary extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
+                  color: isDark ? AppTheme.darkDivider : AppTheme.secondaryBackground,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.store_rounded,
-                  color: colorScheme.onPrimaryContainer,
+                  color: isDark ? AppTheme.accent : AppTheme.primary,
                 ),
               ),
               const SizedBox(width: 16),
@@ -857,7 +863,7 @@ class _BusinessCardWithSummary extends ConsumerWidget {
               IconButton(
                 icon: Icon(
                   Icons.bar_chart_rounded,
-                  color: AppTheme.profitColor,
+                  color: isDark ? AppTheme.accent : AppTheme.primary,
                 ),
                 tooltip: 'Laporan',
                 onPressed: onLaporan,

@@ -14,7 +14,6 @@ import '../../providers/transaction_list_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../providers/paginated_list_provider.dart';
 import '../transaction/edit_transaction_page.dart';
-import '../dashboard/qris_display_screen.dart';
 
 enum OwnerDateFilter {
   today('Hari Ini'),
@@ -50,12 +49,10 @@ class OwnerHistoryScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<OwnerHistoryScreen> createState() =>
-      _OwnerHistoryScreenState();
+  ConsumerState<OwnerHistoryScreen> createState() => _OwnerHistoryScreenState();
 }
 
-class _OwnerHistoryScreenState
-    extends ConsumerState<OwnerHistoryScreen> {
+class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
   final _scrollController = ScrollController();
   List<BusinessModel> _businesses = [];
   List<int> _allBusinessIds = [];
@@ -124,8 +121,10 @@ class _OwnerHistoryScreenState
       final user = ref.read(currentUserProvider);
       if (user == null) return;
 
-      final businesses = await SupabaseService.instance
-          .getAccessibleBusinesses(user.userId, user.role);
+      final businesses = await SupabaseService.instance.getAccessibleBusinesses(
+        user.userId,
+        user.role,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -187,19 +186,23 @@ class _OwnerHistoryScreenState
     };
 
     if (_filterAllBusinesses && _allBusinessIds.isNotEmpty) {
-      ref.read(allTransactionsListProvider(_allBusinessIds).notifier).setFilters(
-        typeFilter: type,
-        dateStart: dateStart.isNotEmpty ? dateStart : null,
-        dateEnd: dateEnd.isNotEmpty ? dateEnd : null,
-        searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
-      );
+      ref
+          .read(allTransactionsListProvider(_allBusinessIds).notifier)
+          .setFilters(
+            typeFilter: type,
+            dateStart: dateStart.isNotEmpty ? dateStart : null,
+            dateEnd: dateEnd.isNotEmpty ? dateEnd : null,
+            searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
+          );
     } else if (_selectedBusinessId != null) {
-      ref.read(transactionListProvider(_selectedBusinessId!).notifier).setFilters(
-        typeFilter: type,
-        dateStart: dateStart.isNotEmpty ? dateStart : null,
-        dateEnd: dateEnd.isNotEmpty ? dateEnd : null,
-        searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
-      );
+      ref
+          .read(transactionListProvider(_selectedBusinessId!).notifier)
+          .setFilters(
+            typeFilter: type,
+            dateStart: dateStart.isNotEmpty ? dateStart : null,
+            dateEnd: dateEnd.isNotEmpty ? dateEnd : null,
+            searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
+          );
     }
   }
 
@@ -211,9 +214,9 @@ class _OwnerHistoryScreenState
       initialDateRange: _customStart != null && _customEnd != null
           ? DateTimeRange(start: _customStart!, end: _customEnd!)
           : DateTimeRange(
-              start: DateTime(
-                  DateTime.now().year, DateTime.now().month, 1),
-              end: DateTime.now()),
+              start: DateTime(DateTime.now().year, DateTime.now().month, 1),
+              end: DateTime.now(),
+            ),
       helpText: 'Pilih Rentang Tanggal',
       cancelText: 'Batal',
       confirmText: 'Terapkan',
@@ -230,15 +233,17 @@ class _OwnerHistoryScreenState
 
   String _findBusinessName(int businessId) {
     final b = _businesses.cast<BusinessModel?>().firstWhere(
-        (b) => b?.businessId == businessId,
-        orElse: () => null);
+      (b) => b?.businessId == businessId,
+      orElse: () => null,
+    );
     return b?.name ?? 'Bisnis #$businessId';
   }
 
   BusinessModel? _findBusiness(int businessId) {
     return _businesses.cast<BusinessModel?>().firstWhere(
-        (b) => b?.businessId == businessId,
-        orElse: () => null);
+      (b) => b?.businessId == businessId,
+      orElse: () => null,
+    );
   }
 
   Future<void> _handleEdit(TransactionModel tx) async {
@@ -246,10 +251,7 @@ class _OwnerHistoryScreenState
     if (biz == null) return;
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => EditTransactionPage(
-          transaction: tx,
-          business: biz,
-        ),
+        builder: (_) => EditTransactionPage(transaction: tx, business: biz),
       ),
     );
     if (result == true) {
@@ -261,7 +263,9 @@ class _OwnerHistoryScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        ),
         title: const Text('Hapus Transaksi'),
         content: Text(
           'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDate(tx.transactionDate)}?',
@@ -273,11 +277,13 @@ class _OwnerHistoryScreenState
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.lossColor),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.lossColorTheme(context),
+            ),
             child: const Text('Hapus'),
           ),
         ],
-      )
+      ),
     );
 
     if (confirmed == true && tx.transactionId != null) {
@@ -291,11 +297,12 @@ class _OwnerHistoryScreenState
           triggerTransactionRefresh(ref);
           if (!mounted) return;
           ErrorSnackbar.showSuccess(
-              context, result.message ?? 'Berhasil dihapus');
+            context,
+            result.message ?? 'Berhasil dihapus',
+          );
         } else {
           if (!mounted) return;
-          ErrorSnackbar.showError(
-              context, result.message ?? 'Gagal menghapus');
+          ErrorSnackbar.showError(context, result.message ?? 'Gagal menghapus');
         }
       } catch (e) {
         if (!mounted) return;
@@ -327,13 +334,15 @@ class _OwnerHistoryScreenState
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isLight ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.12))
-              : colorScheme.surfaceContainer,
+              ? (isLight ? colorScheme.primary : AppTheme.accent)
+              : (isLight
+                    ? colorScheme.surfaceContainer
+                    : AppTheme.darkBackground),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? (isLight ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.4))
-                : colorScheme.outlineVariant,
+                ? Colors.transparent
+                : (isLight ? colorScheme.outlineVariant : AppTheme.accent),
             width: 1,
           ),
         ),
@@ -343,8 +352,8 @@ class _OwnerHistoryScreenState
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected
-                ? (isLight ? Theme.of(context).cardColor : colorScheme.primary)
-                : colorScheme.onSurfaceVariant,
+                ? AppTheme.card
+                : (isLight ? colorScheme.onSurfaceVariant : AppTheme.accent),
           ),
         ),
       ),
@@ -353,7 +362,8 @@ class _OwnerHistoryScreenState
 
   Widget _buildBody(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-    final canEdit = user != null &&
+    final canEdit =
+        user != null &&
         (user.role == AppConstants.roleManager ||
             user.role == AppConstants.roleStaff ||
             user.role == AppConstants.roleOwner);
@@ -370,27 +380,28 @@ class _OwnerHistoryScreenState
     return Stack(
       children: [
         Column(
-        children: [
-          // Business filter chips
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildFilterChip(
-                    label: 'Semua',
-                    isSelected: _filterAllBusinesses,
-                    onTap: () {
-                      setState(() {
-                        _filterAllBusinesses = true;
-                        _selectedBusinessId = null;
-                      });
-                      _applyFilter();
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  ..._businesses.map((b) => Padding(
+          children: [
+            // Business filter chips
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterChip(
+                      label: 'Semua',
+                      isSelected: _filterAllBusinesses,
+                      onTap: () {
+                        setState(() {
+                          _filterAllBusinesses = true;
+                          _selectedBusinessId = null;
+                        });
+                        _applyFilter();
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    ..._businesses.map(
+                      (b) => Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: _buildFilterChip(
                           label: b.name.length > 14
@@ -405,286 +416,334 @@ class _OwnerHistoryScreenState
                             _applyFilter();
                           },
                         ),
-                      )),
-                ],
-              ),
-            ),
-          ),
-          // Date filter + Type filter dropdowns
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<OwnerDateFilter>(
-                    initialValue: _selectedFilter,
-                    isDense: true,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      isDense: true,
-                    ),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    items: OwnerDateFilter.values.map((f) =>
-                      DropdownMenuItem(
-                        value: f,
-                        child: Text(
-                          f.label,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
                       ),
-                    ).toList(),
-                    onChanged: (value) {
-                      if (value == null) return;
-                      if (value == OwnerDateFilter.custom) {
-                        _pickCustomRange();
-                      } else {
-                        setState(() => _selectedFilter = value);
-                        _applyFilter();
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: AppTheme.s8),
-                Expanded(
-                  child: DropdownButtonFormField<OwnerTypeFilter>(
-                    initialValue: _selectedType,
-                    isDense: true,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      isDense: true,
-                    ),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    items: OwnerTypeFilter.values.map((f) =>
-                      DropdownMenuItem(
-                        value: f,
-                        child: Text(
-                          f.label,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    ).toList(),
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() => _selectedType = value);
-                      _applyFilter();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Cari transaksi...',
-                prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                          _applyFilter();
-                        },
-                      )
-                    : null,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 10),
-              ),
-              style: const TextStyle(fontSize: 14),
-              onChanged: _onSearchChanged,
-            ),
-          ),
-          const SizedBox(height: AppTheme.s8),
-          // Transaction list
-          Expanded(
-            child: listState.isLoading && listState.items.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : listState.items.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.receipt_long_rounded,
-                                size: 64,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
-                            const SizedBox(height: AppTheme.s12),
-                            Text('Tidak ada transaksi',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                )),
-                            if (listState.error != null) ...[
-                              const SizedBox(height: AppTheme.s8),
-                              Text(listState.error!, style: TextStyle(color: AppTheme.lossColor, fontSize: 12)),
-                            ],
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () => _currentNotifier().refresh(),
-                        child: ListView.separated(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(12),
-                          itemCount: listState.items.length + (listState.isLoading ? 1 : 0),
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: AppTheme.s8),
-                          itemBuilder: (context, index) {
-                            if (index >= listState.items.length) {
-                              return const Padding(
-                                padding: EdgeInsets.all(AppTheme.s16),
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            }
-
-                            final tx = listState.items[index];
-                            final isIncome =
-                                tx.type == AppConstants.typeIncome;
-                            return Card(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.all(12),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        color: (isIncome
-                                                ? AppTheme
-                                                    .profitColor
-                                                : AppTheme
-                                                    .lossColor)
-                                            .withValues(
-                                                alpha: 0.12),
-                                        borderRadius:
-                                            BorderRadius.circular(
-                                                12),
-                                      ),
-                                      child: Icon(
-                                        isIncome
-                                            ? Icons
-                                                .trending_up_rounded
-                                            : Icons
-                                                .trending_down_rounded,
-                                        color: isIncome
-                                            ? AppTheme.profitColor
-                                            : AppTheme.lossColor,
-                                      ),
-                                    ),
-                                    const SizedBox(width: AppTheme.s12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment
-                                                .start,
-                                        children: [
-                                          Text(
-                                            _findBusinessName(
-                                                tx.businessId),
-                                            style: AppTheme
-                                                .caption
-                                                .copyWith(
-                                              fontSize: 10,
-                                              color: Theme.of(
-                                                      context)
-                                                  .colorScheme
-                                                  .primary,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                              height: 2),
-                                          Text(
-                                            FormatHelpers.displayDate(
-                                                tx.transactionDate),
-                                            style: AppTheme
-                                                .caption
-                                                .copyWith(
-                                                fontSize:
-                                                    11),
-                                          ),
-                                          const SizedBox(
-                                              height: 4),
-                                          Text(
-                                            FormatHelpers.rupiah(
-                                                tx.amount),
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight:
-                                                  FontWeight.w600,
-                                              color: isIncome
-                                                  ? AppTheme
-                                                      .profitColor
-                                                  : AppTheme
-                                                      .lossColor,
-                                            ),
-                                          ),
-                                            if (tx.description
-                                                    ?.isNotEmpty ==
-                                                true)
-                                              Text(
-                                                tx.description!,
-                                                style: AppTheme
-                                                    .caption,
-                                                maxLines: 1,
-                                                overflow:
-                                                    TextOverflow
-                                                        .ellipsis,
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (canEdit) ...[
-                                        IconButton(
-                                          icon: const Icon(
-                                              Icons.edit_outlined,
-                                              size: 20),
-                                          onPressed: () =>
-                                              _handleEdit(tx),
-                                          tooltip: 'Edit',
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.delete_outline_rounded,
-                                            size: 20,
-                                            color: AppTheme.lossColor,
-                                          ),
-                                          onPressed: () =>
-                                              _handleDelete(tx),
-                                          tooltip: 'Hapus',
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
                     ),
                   ],
                 ),
-              ],
-            );
+              ),
+            ),
+            // Date filter + Type filter dropdowns
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<OwnerDateFilter>(
+                      initialValue: _selectedFilter,
+                      isDense: true,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        isDense: true,
+                      ),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      items: OwnerDateFilter.values
+                          .map(
+                            (f) => DropdownMenuItem(
+                              value: f,
+                              child: Text(
+                                f.label,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        if (value == OwnerDateFilter.custom) {
+                          _pickCustomRange();
+                        } else {
+                          setState(() => _selectedFilter = value);
+                          _applyFilter();
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.s8),
+                  Expanded(
+                    child: DropdownButtonFormField<OwnerTypeFilter>(
+                      initialValue: _selectedType,
+                      isDense: true,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        isDense: true,
+                      ),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      items: OwnerTypeFilter.values
+                          .map(
+                            (f) => DropdownMenuItem(
+                              value: f,
+                              child: Text(
+                                f.label,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _selectedType = value);
+                        _applyFilter();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Cari transaksi...',
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                            _applyFilter();
+                          },
+                        )
+                      : null,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+                style: const TextStyle(fontSize: 14),
+                onChanged: _onSearchChanged,
+              ),
+            ),
+            const SizedBox(height: AppTheme.s8),
+            // Transaction list
+            Expanded(
+              child: listState.isLoading && listState.items.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : listState.items.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.receipt_long_rounded,
+                            size: 64,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withValues(alpha: 0.4),
+                          ),
+                          const SizedBox(height: AppTheme.s12),
+                          Text(
+                            'Tidak ada transaksi',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          if (listState.error != null) ...[
+                            const SizedBox(height: AppTheme.s8),
+                            Text(
+                              listState.error!,
+                              style: TextStyle(
+                                color: AppTheme.lossColorTheme(context),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () => _currentNotifier().refresh(),
+                      child: ListView.separated(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(12),
+                        itemCount:
+                            listState.items.length +
+                            (listState.isLoading ? 1 : 0),
+                        separatorBuilder: (_, _) =>
+                            const SizedBox(height: AppTheme.s8),
+                        itemBuilder: (context, index) {
+                          if (index >= listState.items.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(AppTheme.s16),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+
+                          final tx = listState.items[index];
+                          final isIncome = tx.type == AppConstants.typeIncome;
+                          final isDark = Theme.of(context).brightness == Brightness.dark;
+                          return Card(
+                            child: InkWell(
+                              onTap: () => _showTransactionDetail(tx),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                              hoverColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.04),
+                              highlightColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.08),
+                              splashColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          (isIncome
+                                                  ? AppTheme.profitColorTheme(
+                                                      context,
+                                                    )
+                                                  : AppTheme.lossColorTheme(
+                                                      context,
+                                                    ))
+                                              .withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      isIncome
+                                          ? Icons.trending_up_rounded
+                                          : Icons.trending_down_rounded,
+                                      color: isIncome
+                                          ? AppTheme.profitColorTheme(context)
+                                          : AppTheme.lossColorTheme(context),
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppTheme.s12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Builder(
+                                          builder: (context) {
+                                            final isLight =
+                                                Theme.of(context).brightness ==
+                                                Brightness.light;
+                                            return Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 3,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: isLight
+                                                    ? const Color(0xFFEDEDEF)
+                                                    : const Color(0xFF2E2E2E),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                _findBusinessName(
+                                                  tx.businessId,
+                                                ),
+                                                style: TextStyle(
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isLight
+                                                      ? const Color(0xFF3D404D)
+                                                      : const Color(0xFFD2D2D2),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          FormatHelpers.displayDate(
+                                            tx.transactionDate,
+                                          ),
+                                          style: AppTheme.caption.copyWith(
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          FormatHelpers.rupiah(tx.amount),
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: isIncome
+                                                ? AppTheme.profitColorTheme(
+                                                    context,
+                                                  )
+                                                : AppTheme.lossColorTheme(
+                                                    context,
+                                                  ),
+                                          ),
+                                        ),
+                                        if (tx.description?.isNotEmpty == true)
+                                          Text(
+                                            tx.description!,
+                                            style: AppTheme.caption,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (canEdit) ...[
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        size: 20,
+                                      ),
+                                      onPressed: () => _handleEdit(tx),
+                                      tooltip: 'Edit',
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.delete_outline_rounded,
+                                        size: 20,
+                                        color: AppTheme.lossColorTheme(context),
+                                      ),
+                                      onPressed: () => _handleDelete(tx),
+                                      tooltip: 'Hapus',
+                                    ),
+                                    ],
+                                   ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
@@ -703,15 +762,10 @@ class _OwnerHistoryScreenState
           _filterAllBusinesses
               ? 'Riwayat Semua Bisnis'
               : _selectedBusinessId != null
-                  ? _findBusinessName(_selectedBusinessId!)
-                  : 'Riwayat Transaksi',
+              ? _findBusinessName(_selectedBusinessId!)
+              : 'Riwayat Transaksi',
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_rounded),
-            tooltip: 'QRIS Pembayaran',
-            onPressed: () => _showQrisPicker(),
-          ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Muat ulang',
@@ -723,54 +777,89 @@ class _OwnerHistoryScreenState
     );
   }
 
-  void _showQrisPicker() {
-    if (_businesses.isEmpty) return;
-
-    if (_businesses.length == 1) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              QrisDisplayScreen(business: _businesses.first),
-        ),
-      );
-      return;
-    }
+  void _showTransactionDetail(TransactionModel tx) async {
+    final businessId = tx.businessId;
+    final catName = await SupabaseService.instance
+        .getCategoryName(businessId, tx.categoryId);
+    if (!mounted) return;
+    final isIncome = tx.type == AppConstants.typeIncome;
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
-        title: const Text('Pilih Bisnis'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: _businesses.length,
-            separatorBuilder: (_, _) =>
-                const Divider(height: 1),
-            itemBuilder: (_, i) => ListTile(
-              leading: const Icon(Icons.store_rounded),
-              title: Text(_businesses[i].name),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => QrisDisplayScreen(
-                        business: _businesses[i]),
-                  ),
-                );
-              },
+        title: Row(
+          children: [
+            Icon(
+              isIncome
+                  ? Icons.trending_up_rounded
+                  : Icons.trending_down_rounded,
+              color: isIncome
+                  ? AppTheme.profitColorTheme(context)
+                  : AppTheme.lossColorTheme(context),
             ),
-          ),
+            const SizedBox(width: AppTheme.s8),
+            Text(isIncome ? 'Uang Masuk' : 'Uang Keluar'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _detailRow('Tanggal',
+                FormatHelpers.displayDate(tx.transactionDate)),
+            _detailRow('Kategori', catName),
+            _detailRow('Jumlah', FormatHelpers.rupiah(tx.amount)),
+            if (isIncome && tx.cogs > 0)
+              _detailRow('HPP', FormatHelpers.rupiah(tx.cogs)),
+            _detailRow('Metode Bayar', _paymentLabel(tx.paymentMethod)),
+            if (tx.description?.isNotEmpty == true)
+              _detailRow('Deskripsi', tx.description!),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
+            child: const Text('Tutup'),
           ),
         ],
-      )
+      ),
     );
   }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child:
+                Text(label, style: AppTheme.caption.copyWith(fontSize: 12)),
+          ),
+          Expanded(
+            child: Text(value,
+                style:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _paymentLabel(String method) {
+    switch (method) {
+      case AppConstants.paymentCash:
+        return 'Tunai';
+      case AppConstants.paymentTransfer:
+        return 'Transfer Bank';
+      case AppConstants.paymentQris:
+        return 'QRIS';
+      default:
+        return method;
+    }
+  }
+
 }
