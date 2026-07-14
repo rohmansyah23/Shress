@@ -130,7 +130,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppTheme.s16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -182,11 +182,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppTheme.s24),
 
-                  // === Trend Chart dengan Filter ===
                   Text('Tren Keuangan', style: AppTheme.heading3),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.s8),
                   Row(
                     children: [
                       Expanded(
@@ -203,8 +202,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             labelText: 'Periode Waktu',
                             floatingLabelBehavior: FloatingLabelBehavior.never,
                           ),
-                          style: TextStyle(
-                            fontSize: 12,
+                          style: AppTheme.labelSmall.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                           items: TrendFilter.values
@@ -213,8 +211,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   value: f,
                                   child: Text(
                                     _trendFilterLabel(f),
-                                    style: TextStyle(
-                                      fontSize: 12,
+                                    style: AppTheme.labelSmall.copyWith(
                                       color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
@@ -242,8 +239,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             labelText: 'Tipe Grafik',
                             floatingLabelBehavior: FloatingLabelBehavior.never,
                           ),
-                          style: TextStyle(
-                            fontSize: 12,
+                          style: AppTheme.labelSmall.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                           items: DashboardTrendTypeFilter.values
@@ -252,8 +248,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   value: f,
                                   child: Text(
                                     f.label,
-                                    style: TextStyle(
-                                      fontSize: 12,
+                                    style: AppTheme.labelSmall.copyWith(
                                       color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
@@ -268,7 +263,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.s16),
                   trendAsync.when(
                     data: (trendData) {
                       if (trendData.isEmpty) {
@@ -346,10 +341,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppTheme.s24),
 
                   Text('Aksi Cepat', style: AppTheme.heading3),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppTheme.s12),
                   Row(
                     children: [
                       Expanded(
@@ -364,7 +359,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppTheme.s12),
                       Expanded(
                         child: QuickActionButton(
                           icon: Icons.trending_down_rounded,
@@ -377,7 +372,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppTheme.s12),
                       Expanded(
                         child: QuickActionButton(
                           icon: Icons.history_rounded,

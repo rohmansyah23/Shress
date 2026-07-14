@@ -182,7 +182,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                     color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppTheme.s4),
                 Text(
                   '${widget.items.length} item dititipkan',
                   style: AppTheme.caption.copyWith(
@@ -208,7 +208,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
     final hasError = qtySold > item.quantity;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppTheme.s12),
       child: Padding(
         padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
@@ -219,8 +219,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                 Expanded(
                   child: Text(
                     item.productName,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600),
+                    style: AppTheme.title.copyWith(fontSize: 16),
                   ),
                 ),
                 Text(
@@ -278,17 +277,16 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                       const SizedBox(height: AppTheme.s4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 14),
+                            horizontal: AppTheme.s12, vertical: AppTheme.s12),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceContainerHighest
                               .withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         ),
                         child: Text(
                           '$qtyReturned pcs',
-                          style: TextStyle(
+                          style: AppTheme.subtitle.copyWith(
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
                             color: qtyReturned > 0
                                 ? AppTheme.warningColorTheme(context)
                                 : AppTheme.profitColorTheme(context),
@@ -312,8 +310,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                       Text('Pendapatan', style: AppTheme.labelSmall),
                       Text(
                         FormatHelpers.rupiah(fromSales),
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500),
+                        style: AppTheme.subtitle.copyWith(fontSize: 14),
                       ),
                     ],
                   ),
@@ -325,9 +322,8 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                       Text('Bayar pihak penitip', style: AppTheme.labelSmall),
                       Text(
                         FormatHelpers.rupiah(payment),
-                        style: TextStyle(
+                        style: AppTheme.subtitle.copyWith(
                           fontSize: 14,
-                          fontWeight: FontWeight.w500,
                           color: AppTheme.lossColorTheme(context),
                         ),
                       ),
@@ -382,11 +378,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
         Text(label, style: AppTheme.caption),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
+          style: AppTheme.amountMedium.copyWith(color: color),
         ),
       ],
     );

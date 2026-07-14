@@ -256,9 +256,8 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
               ),
               const SizedBox(height: AppTheme.s24),
 
-              const Text('Kategori',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Kategori',
+                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppTheme.s8),
               DropdownButtonFormField<CategoryModel>(
                 initialValue: _selectedCategory,
@@ -279,9 +278,8 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
               const SizedBox(height: AppTheme.s20),
 
-              const Text('Jumlah (Rp)',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Jumlah (Rp)',
+                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _amountController,
@@ -307,9 +305,8 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
               if (isIncome) ...[
                 const SizedBox(height: AppTheme.s20),
-                const Text('HPP (Harga Pokok Penjualan)',
-                    style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600)),
+                Text('HPP (Harga Pokok Penjualan)',
+                    style: AppTheme.subtitle.copyWith(fontSize: 14)),
                 const SizedBox(height: AppTheme.s8),
                 TextFormField(
                   controller: _cogsController,
@@ -324,9 +321,8 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
               ],
 
               const SizedBox(height: AppTheme.s20),
-              const Text('Deskripsi (opsional)',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Deskripsi (opsional)',
+                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _descController,

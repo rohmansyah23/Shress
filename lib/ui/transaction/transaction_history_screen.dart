@@ -284,8 +284,7 @@ class _TransactionHistoryScreenState
                         isDense: true,
                         filled: true,
                       ),
-                      style: TextStyle(
-                        fontSize: 12,
+                      style: AppTheme.labelSmall.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                       dropdownColor: Theme.of(context).colorScheme.surface,
@@ -294,8 +293,7 @@ class _TransactionHistoryScreenState
                           value: f,
                           child: Text(
                             f.label,
-                            style: TextStyle(
-                              fontSize: 12,
+                            style: AppTheme.labelSmall.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
@@ -326,8 +324,7 @@ class _TransactionHistoryScreenState
                         isDense: true,
                         filled: true,
                       ),
-                      style: TextStyle(
-                        fontSize: 12,
+                      style: AppTheme.labelSmall.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                       dropdownColor: Theme.of(context).colorScheme.surface,
@@ -336,8 +333,7 @@ class _TransactionHistoryScreenState
                           value: f,
                           child: Text(
                             f.label,
-                            style: TextStyle(
-                              fontSize: 12,
+                            style: AppTheme.labelSmall.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
@@ -376,7 +372,7 @@ class _TransactionHistoryScreenState
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 10),
                 ),
-                style: const TextStyle(fontSize: 14),
+                style: AppTheme.caption.copyWith(fontSize: 14),
                 onChanged: _onSearchChanged,
               ),
             ),
@@ -404,9 +400,8 @@ class _TransactionHistoryScreenState
                           color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
                       const SizedBox(height: AppTheme.s12),
                       Text('Tidak ada transaksi',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          style: AppTheme.title.copyWith(
                             fontSize: 18,
-                            fontWeight: FontWeight.w600,
                             color: Theme.of(context).colorScheme.onSurfaceVariant,
                           )),
                       if (listState.error != null) ...[
@@ -618,9 +613,7 @@ class _TransactionHistoryScreenState
                 style: AppTheme.caption.copyWith(fontSize: 12)),
           ),
           Expanded(
-            child: Text(value,
-                style:
-                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+            child: Text(value,                    style: AppTheme.subtitle.copyWith(fontSize: 13)),
           ),
         ],
       ),

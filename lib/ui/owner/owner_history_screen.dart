@@ -332,14 +332,13 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: AppTheme.s8),
         decoration: BoxDecoration(
           color: isSelected
               ? (isLight ? colorScheme.primary : AppTheme.accent)
               : (isLight
                     ? colorScheme.surfaceContainer
-                    : AppTheme.darkBackground),
-          borderRadius: BorderRadius.circular(20),
+                    : AppTheme.darkBackground),              borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
@@ -384,7 +383,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
           children: [
             // Business filter chips
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              padding: const EdgeInsets.fromLTRB(AppTheme.s12, AppTheme.s12, AppTheme.s12, 0),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -425,7 +424,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
             ),
             // Date filter + Type filter dropdowns
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              padding: const EdgeInsets.fromLTRB(AppTheme.s12, AppTheme.s8, AppTheme.s12, 0),
               child: Row(
                 children: [
                   Expanded(
@@ -516,7 +515,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
             ),
             // Search bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              padding: const EdgeInsets.fromLTRB(AppTheme.s12, AppTheme.s8, AppTheme.s12, 0),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
@@ -532,13 +531,12 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                           },
                         )
                       : null,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
+                  isDense: true,                    contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.s12,
+                    vertical: AppTheme.s12,
                   ),
                 ),
-                style: const TextStyle(fontSize: 14),
+                style: AppTheme.caption.copyWith(fontSize: 14),
                 onChanged: _onSearchChanged,
               ),
             ),
@@ -588,7 +586,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                       onRefresh: () => _currentNotifier().refresh(),
                       child: ListView.separated(
                         controller: _scrollController,
-                        padding: const EdgeInsets.all(12),
+                        padding:                        const EdgeInsets.all(AppTheme.s12),
                         itemCount:
                             listState.items.length +
                             (listState.isLoading ? 1 : 0),
@@ -611,7 +609,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                 AppTheme.radiusLarge,
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(12),
+                                padding:                        const EdgeInsets.all(AppTheme.s12),
                                 child: Row(
                                   children: [
                                     Container(
@@ -627,7 +625,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                                         context,
                                                       ))
                                                 .withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                                       ),
                                       child: Icon(
                                         isIncome
@@ -654,8 +652,8 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                               return Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 3,
+                                                      horizontal: AppTheme.s12,
+                                                      vertical: AppTheme.s4,
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.transparent,
@@ -672,9 +670,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                                             alpha: 0.5,
                                                           ),
                                                     width: 1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
+                                                  ),                      borderRadius: BorderRadius.circular(6),
                                                 ),
                                                 child: Text(
                                                   _findBusinessName(
@@ -695,7 +691,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                               );
                                             },
                                           ),
-                                          const SizedBox(height: 2),
+                                          const SizedBox(height: AppTheme.s4),
                                           Text(
                                             FormatHelpers.displayDate(
                                               tx.transactionDate,
@@ -704,7 +700,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                               fontSize: 11,
                                             ),
                                           ),
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: AppTheme.s4),
                                           Text(
                                             FormatHelpers.rupiah(tx.amount),
                                             style: TextStyle(

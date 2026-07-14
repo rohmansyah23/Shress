@@ -90,9 +90,8 @@ class AppBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: AppTheme.labelSmall.copyWith(
           fontSize: fontSize,
-          fontWeight: FontWeight.w600,
           color: themeColor,
         ),
       ),

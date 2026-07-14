@@ -195,7 +195,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
           Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                padding: const EdgeInsets.fromLTRB(AppTheme.s16, AppTheme.s16, AppTheme.s16, AppTheme.s16),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -253,7 +253,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                         ref.invalidate(transactionRefreshProvider);
                       },
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final b = filtered[index];
@@ -337,7 +337,7 @@ class _BusinessItemCard extends StatelessWidget {
         onTap: onTap,
 
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 4, 16),
+          padding: const EdgeInsets.fromLTRB(AppTheme.s16, AppTheme.s16, AppTheme.s4, AppTheme.s16),
           child: Row(
           children: [
             CircleAvatar(
@@ -345,8 +345,7 @@ class _BusinessItemCard extends StatelessWidget {
               backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
               child: Text(
                 _initials(business.name),
-                style: TextStyle(
-                  fontSize: 16,
+                style: AppTheme.subtitle.copyWith(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.primary,
                 ),
@@ -373,11 +372,10 @@ class _BusinessItemCard extends StatelessWidget {
                         size: 14,
                         color: hasQris ? AppTheme.profitColorTheme(context) : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: AppTheme.s4),
                       Text(
                         hasQris ? 'QRIS aktif' : 'Belum ada QRIS',
-                        style: TextStyle(
-                          fontSize: 11,
+                        style: AppTheme.labelSmall.copyWith(
                           color: hasQris ? AppTheme.profitColorTheme(context) : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                         ),
                       ),

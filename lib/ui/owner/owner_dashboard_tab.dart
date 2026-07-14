@@ -81,13 +81,13 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
             ref.invalidate(combinedBusinessSummaryProvider);
           },
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppTheme.s16),
             children: [
               Text(
                 'Halo, ${widget.user.displayName ?? widget.user.username}',
                 style: AppTheme.heading2,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppTheme.s4),
               Text(
                 'Owner • ${businesses.length} bisnis',
                 style: AppTheme.caption,
@@ -99,7 +99,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
 
               // === Trend Chart dengan Filter ===
               Text('Tren Keuangan', style: AppTheme.heading3),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppTheme.s8),
               Row(
                 children: [
                   Expanded(
@@ -181,7 +181,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               trendAsync.when(
                 data: (trendData) {
                   if (trendData.isEmpty) {
@@ -258,7 +258,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               const SizedBox(height: AppTheme.s12),
 
               Text('Bisnis Saya', style: AppTheme.heading3),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
 
               if (businesses.isEmpty)
                 _buildEmptyBusinesses()
@@ -310,7 +310,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               _buildFinanceOtherSummary(businesses),
               const SizedBox(height: AppTheme.s12),
               Text('Menu Lainnya', style: AppTheme.heading3),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               Row(
                 children: [
                   Expanded(
@@ -323,7 +323,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppTheme.s12),
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.receipt_long_rounded,
@@ -334,7 +334,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppTheme.s12),
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.inventory_2_rounded,
@@ -347,7 +347,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               Row(
                 children: [
                   Expanded(
@@ -366,7 +366,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppTheme.s12),
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.category_rounded,
@@ -377,7 +377,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppTheme.s12),
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.people_rounded,
@@ -394,7 +394,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               Row(
                 children: [
                   Expanded(
@@ -413,7 +413,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.s24),
             ],
           ),
         );
@@ -473,7 +473,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
   Widget _buildEmptyBusinesses() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppTheme.s24),
         child: Column(
           children: [
             Container(
@@ -481,7 +481,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               height: 64,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               ),
               child: Icon(
                 Icons.store_rounded,
@@ -499,8 +499,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               'Anda belum memiliki bisnis.\nBuat bisnis pertama Anda atau ikuti panduan\nuntuk memulai.',
               textAlign: TextAlign.center,
               style: AppTheme.caption.copyWith(height: 1.5),
-            ),
-            const SizedBox(height: 20),
+            ),              const SizedBox(height: AppTheme.s20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -515,7 +514,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     );
                   },
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppTheme.s12),
                 FilledButton.icon(
                   icon: const Icon(Icons.add_business_rounded, size: 18),
                   label: const Text('Buat Bisnis'),
@@ -551,7 +550,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Pilih Bisnis'),
         content: SizedBox(
           width: double.maxFinite,
@@ -598,7 +597,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Pilih Bisnis'),
         content: SizedBox(
           width: double.maxFinite,
@@ -660,7 +659,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               final activeCount = (snapshot.data?['activeCount'] as int?) ?? 0;
               return Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppTheme.s16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -682,7 +681,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                           color: AppTheme.warningColorTheme(context),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppTheme.s4),
                       Text(
                         '$activeCount hutang aktif',
                         style: AppTheme.caption,
@@ -717,7 +716,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               final activeCount = (snapshot.data?['activeCount'] as int?) ?? 0;
               return Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppTheme.s16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -732,14 +731,14 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                           Text('Titipan Aktif', style: AppTheme.labelSmall),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppTheme.s8),
                       Text(
                         FormatHelpers.rupiah(totalOwed),
                         style: AppTheme.amountMedium.copyWith(
                           color: AppTheme.secondaryColorTheme(context),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppTheme.s4),
                       Text(
                         '$activeCount titipan aktif',
                         style: AppTheme.caption,
@@ -771,7 +770,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Pilih Bisnis'),
         content: SizedBox(
           width: double.maxFinite,
@@ -819,7 +818,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
         title: const Text('Pilih Bisnis'),
         content: SizedBox(
           width: double.maxFinite,
@@ -888,10 +887,10 @@ class _BusinessCardWithSummary extends ConsumerWidget {
     return Card(
       child: InkWell(
 
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.s16),
           child: Row(
             children: [
               Container(
@@ -899,7 +898,7 @@ class _BusinessCardWithSummary extends ConsumerWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.darkDivider : AppTheme.secondaryBackground,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Icon(
                   Icons.store_rounded,
@@ -912,7 +911,7 @@ class _BusinessCardWithSummary extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(business.name, style: AppTheme.heading3),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppTheme.s4),
                     if (isLoading)
                       const Text('Memuat...', style: TextStyle(fontSize: 12))
                     else

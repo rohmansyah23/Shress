@@ -131,8 +131,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Simpan',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
+                : Text('Simpan',
+                    style: AppTheme.subtitle.copyWith(fontSize: 14)),
           ),
         ],
       ),
@@ -169,16 +169,14 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                     children: [
                       Text(
                         isEdit ? 'EDIT USER' : 'USER BARU',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                        style: AppTheme.labelSmall.copyWith(
                           letterSpacing: 1,
                           color: isEdit
                               ? AppTheme.infoColor
                               : AppTheme.profitColor,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppTheme.s4),
                       Text(
                         isEdit
                             ? 'Perbarui data user ${widget.user!.username}'
@@ -192,9 +190,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             ),
             const SizedBox(height: AppTheme.s24),
 
-            const Text('Nama Tampilan (Display Name)',
-                style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text('Nama Tampilan (Display Name)',
+                style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppTheme.s8),
             TextFormField(
               controller: _displayNameCtrl,
@@ -207,9 +204,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             ),
             const SizedBox(height: AppTheme.s20),
 
-            const Text('Nama Pengguna (Username)',
-                style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text('Nama Pengguna (Username)',
+                style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppTheme.s8),
             TextFormField(
               controller: _usernameCtrl,
@@ -223,9 +219,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             const SizedBox(height: AppTheme.s20),
 
             if (!isEdit) ...[
-              const Text('Email',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Email',
+                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _emailCtrl,
@@ -241,9 +236,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             ],
 
             if (!isEdit) ...[
-              const Text('Password',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Password',
+                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _pwdCtrl,
@@ -266,9 +260,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             ],
 
             if (isEdit) ...[
-              const Text('Email Baru (opsional)',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Email Baru (opsional)',
+                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _emailCtrl,
@@ -280,9 +273,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               ),
               const SizedBox(height: AppTheme.s20),
 
-              const Text('Password Baru (opsional)',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Password Baru (opsional)',
+                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _pwdCtrl,
@@ -294,9 +286,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               ),
               const SizedBox(height: AppTheme.s20),
 
-              const Text('Konfirmasi Password Baru',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Konfirmasi Password Baru',
+                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppTheme.s8),
               TextFormField(
                 controller: _confirmPwdCtrl,
@@ -316,9 +307,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               const SizedBox(height: AppTheme.s20),
             ],
 
-            const Text('Role',
-                style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text('Role',
+                style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppTheme.s8),
             DropdownButtonFormField<String>(
               initialValue: _selectedRole,

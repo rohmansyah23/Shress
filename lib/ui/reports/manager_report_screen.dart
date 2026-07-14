@@ -264,7 +264,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
           children: [
             for (final period in PeriodFilter.values)
               Padding(
-                padding: const EdgeInsets.only(right: 6),
+                padding: const EdgeInsets.only(right: AppTheme.s8),
                 child: GestureDetector(
                   onTap: () {
                     if (period == PeriodFilter.custom) {
@@ -275,7 +275,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16, vertical: AppTheme.s8),
                     decoration: BoxDecoration(
                       color: _selectedPeriod == period
                           ? (isLight ? colorScheme.primary : AppTheme.accent)

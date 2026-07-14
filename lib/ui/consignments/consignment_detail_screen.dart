@@ -170,11 +170,11 @@ class _ConsignmentDetailScreenState
               ),
               const SizedBox(height: AppTheme.s16),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppTheme.s12),
                 decoration: BoxDecoration(
                   color: AppTheme.infoColorTheme(context)
                       .withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Row(
                   children: [
@@ -243,7 +243,7 @@ class _ConsignmentDetailScreenState
                     ? Icons.wifi_off_rounded
                     : Icons.error_outline_rounded,
                     color: Theme.of(context).colorScheme.onError, size: 18),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.s8),
                 Expanded(child: Text(appError.userMessage)),
               ],
             ),                      backgroundColor: appError.isOffline
@@ -251,7 +251,7 @@ class _ConsignmentDetailScreenState
                 : AppTheme.lossColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
             ),
             action: SnackBarAction(
               label: 'Tutup',
@@ -277,15 +277,14 @@ class _ConsignmentDetailScreenState
         ? AppTheme.darkSecondaryText.withValues(alpha: 0.7)
         : (Theme.of(ctx).textTheme.bodySmall?.color ?? AppTheme.secondaryText);
     return InkWell(
-      onTap: () => setDialogState(() => _paymentMethod = value),
-      borderRadius: BorderRadius.circular(8),
+      onTap: () => setDialogState(() => _paymentMethod = value),            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: AppTheme.s12, vertical: AppTheme.s12),
         decoration: BoxDecoration(
           color: isSelected
               ? Theme.of(ctx).colorScheme.primary.withValues(alpha: 0.15)
               : Theme.of(ctx).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
           border: Border.all(
             color: isSelected
                 ? Theme.of(ctx).colorScheme.primary
@@ -595,7 +594,7 @@ class _ConsignmentDetailScreenState
     return FadeInEntrance(
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16, vertical: AppTheme.s12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
@@ -615,26 +614,19 @@ class _ConsignmentDetailScreenState
             const SizedBox(width: AppTheme.s8),
             Text(
               _statusLabel(_consignment.status),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
+              style: AppTheme.subtitle.copyWith(fontSize: 14, color: color),
             ),
             const SizedBox(width: AppTheme.s8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: AppTheme.s4),
               decoration: BoxDecoration(
                 color: _consignment.isDaily
                     ? AppTheme.infoColorTheme(context).withValues(alpha: 0.2)
-                    : AppTheme.primaryColorTheme(context).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(6),
+                    : AppTheme.primaryColorTheme(context).withValues(alpha: 0.2),                    borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
                 _consignment.isDaily ? 'Harian' : 'Reseller',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+                style: AppTheme.labelSmall.copyWith(
                   color: _consignment.isDaily
                       ? AppTheme.infoColorTheme(context)
                       : AppTheme.primaryColorTheme(context),
@@ -642,10 +634,10 @@ class _ConsignmentDetailScreenState
               ),
             ),
             if (_consignment.isDaily || _consignment.isReseller) ...[
-              const SizedBox(width: 6),
+              const SizedBox(width: AppTheme.s8),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: AppTheme.s4),
                 decoration: BoxDecoration(
                   color: _reportStatusColor(
                           _consignment.reportStatus, context)
@@ -654,12 +646,10 @@ class _ConsignmentDetailScreenState
                 ),
                 child: Text(
                   _reportStatusLabel(_consignment.reportStatus),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: _reportStatusColor(
-                        _consignment.reportStatus, context),
-                  ),
+                style: AppTheme.labelSmall.copyWith(
+                  color: _reportStatusColor(
+                      _consignment.reportStatus, context),
+                ),
                 ),
               ),
             ],
@@ -690,8 +680,7 @@ class _ConsignmentDetailScreenState
                         .substring(0, 2)
                         .toUpperCase()
                     : widget.consignor.name.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 14,
+                style: AppTheme.subtitle.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -778,7 +767,7 @@ class _ConsignmentDetailScreenState
                   Icon(Icons.event_outlined,
                       size: 14,
                       color: AppTheme.infoColorTheme(context)),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppTheme.s4),
                   Text(
                     'Jatuh tempo: ${FormatHelpers.displayDate(_consignment.dueDate!)}',
                     style: AppTheme.caption.copyWith(
@@ -817,11 +806,11 @@ class _ConsignmentDetailScreenState
             ),
             const Divider(height: 24),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppTheme.s12),
               decoration: BoxDecoration(
                 color: AppTheme.warningColorTheme(context)
                     .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
               ),
               child: Row(
                 children: [
@@ -857,7 +846,7 @@ class _ConsignmentDetailScreenState
                   Icon(Icons.event_outlined,
                       size: 14,
                       color: AppTheme.infoColorTheme(context)),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppTheme.s4),
                   Text(
                     'Jatuh tempo: ${FormatHelpers.displayDate(_consignment.dueDate!)}',
                     style: AppTheme.caption.copyWith(
@@ -933,11 +922,7 @@ class _ConsignmentDetailScreenState
         Text(label, style: AppTheme.caption),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
+          style: AppTheme.amountMedium.copyWith(color: color),
         ),
       ],
     );
@@ -951,11 +936,7 @@ class _ConsignmentDetailScreenState
         const SizedBox(height: AppTheme.s4),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
+          style: AppTheme.amountMedium.copyWith(color: color),
         ),
       ],
     );
@@ -987,7 +968,7 @@ class _ConsignmentDetailScreenState
             const SizedBox(height: AppTheme.s12),
             if (_items.isEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: AppTheme.s16),
                 child: Center(
                   child: Text(
                     'Tidak ada item',
@@ -1008,15 +989,15 @@ class _ConsignmentDetailScreenState
 
   Widget _buildItemRow(ConsignmentItemModel item, bool showSalesInfo) {
     if (showSalesInfo) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.s8),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               item.productName,
               style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  AppTheme.subtitle.copyWith(fontSize: 14),
             ),
             const SizedBox(height: AppTheme.s4),
             Row(
@@ -1024,7 +1005,7 @@ class _ConsignmentDetailScreenState
                 _buildQtyChip(
                     'Dititipkan', item.quantity, AppTheme.primaryColorTheme(context)),
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  padding: EdgeInsets.symmetric(horizontal: AppTheme.s4),
                   child: Icon(Icons.arrow_forward_rounded,
                       size: 14, color: AppTheme.secondaryText),
                 ),
@@ -1034,7 +1015,7 @@ class _ConsignmentDetailScreenState
                   AppTheme.profitColorTheme(context),
                 ),
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  padding: EdgeInsets.symmetric(horizontal: AppTheme.s4),
                   child: Icon(Icons.arrow_forward_rounded,
                       size: 14, color: AppTheme.secondaryText),
                 ),
@@ -1046,7 +1027,7 @@ class _ConsignmentDetailScreenState
               ],
             ),
             if (item.sellingPrice != null) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: AppTheme.s8),
               Row(
                 children: [
                   Text(
@@ -1074,7 +1055,7 @@ class _ConsignmentDetailScreenState
         item.quantitySold >= item.quantity;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.s8),
       child: Row(
         children: [
           Expanded(
@@ -1084,8 +1065,7 @@ class _ConsignmentDetailScreenState
               children: [
                 Text(
                   item.productName,
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w500),
+                  style:                  AppTheme.subtitle.copyWith(fontSize: 14),
                 ),
                 if (item.description != null &&
                     item.description!.isNotEmpty)
@@ -1096,7 +1076,7 @@ class _ConsignmentDetailScreenState
                       color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
                   ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppTheme.s4),
                 Text(
                   '${item.quantity} x ${FormatHelpers.rupiah(item.agreedPrice)}',
                   style: AppTheme.caption.copyWith(fontSize: 12),
@@ -1126,11 +1106,7 @@ class _ConsignmentDetailScreenState
                 Text('Subtotal', style: AppTheme.labelSmall),
                 Text(
                   FormatHelpers.rupiah(item.totalAgreedPrice),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.infoColorTheme(context),
-                  ),
+                  style: AppTheme.amountMedium.copyWith(color: AppTheme.infoColorTheme(context)),
                 ),
                 if (item.sellingPrice != null) ...[
                   const SizedBox(height: AppTheme.s4),
@@ -1140,11 +1116,7 @@ class _ConsignmentDetailScreenState
                   ),
                   Text(
                     FormatHelpers.rupiah(item.totalSellingPriceAll),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.profitColorTheme(context),
-                    ),
+                    style: AppTheme.caption.copyWith(fontWeight: FontWeight.w600, color: AppTheme.profitColorTheme(context)),
                   ),
                 ],
               ],
@@ -1156,19 +1128,14 @@ class _ConsignmentDetailScreenState
   }
 
   Widget _buildQtyChip(String label, int qty, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    return Container(                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: AppTheme.s4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         '$label: $qty',
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
+        style: AppTheme.labelSmall.copyWith(color: color),
       ),
     );
   }
@@ -1196,7 +1163,7 @@ class _ConsignmentDetailScreenState
             const SizedBox(height: AppTheme.s12),
             if (_settlements.isEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: AppTheme.s16),
                 child: Center(
                   child: Text(
                     'Belum ada pembayaran',
@@ -1216,7 +1183,7 @@ class _ConsignmentDetailScreenState
 
   Widget _buildSettlementRow(ConsignmentSettlementModel settlement) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.s8),
       child: Row(
         children: [
           Container(
@@ -1225,7 +1192,7 @@ class _ConsignmentDetailScreenState
             decoration: BoxDecoration(
               color: AppTheme.profitColorTheme(context)
                   .withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
             ),
             child: Icon(Icons.check_circle_rounded,
                 size: 18, color: AppTheme.profitColorTheme(context)),
@@ -1257,11 +1224,7 @@ class _ConsignmentDetailScreenState
           Flexible(
             child: Text(
               FormatHelpers.rupiah(settlement.amount),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.profitColorTheme(context),
-              ),
+              style: AppTheme.amountMedium.copyWith(color: AppTheme.profitColorTheme(context)),
               overflow: TextOverflow.visible,
             ),
           ),
@@ -1315,10 +1278,10 @@ class _ConsignmentDetailScreenState
     required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppTheme.s12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
@@ -1327,11 +1290,7 @@ class _ConsignmentDetailScreenState
           const SizedBox(width: AppTheme.s8),
           Text(
             '$label #$transactionId',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: color,
-            ),
+            style: AppTheme.caption.copyWith(fontWeight: FontWeight.w500, color: color),
           ),
         ],
       ),

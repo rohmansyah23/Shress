@@ -167,9 +167,7 @@ class _ConsignorDetailScreenState
                             .substring(0, 2)
                             .toUpperCase()
                         : widget.consignor.name.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    style: AppTheme.heading3.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
@@ -215,7 +213,7 @@ class _ConsignorDetailScreenState
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 64),
+        padding: const EdgeInsets.symmetric(vertical: AppTheme.s64),
         child: Column(
           children: [
             Icon(Icons.receipt_long_outlined,
@@ -247,7 +245,7 @@ class _ConsignorDetailScreenState
     final totalQty = items.fold<int>(0, (sum, i) => sum + i.quantity);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppTheme.s12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
@@ -288,11 +286,7 @@ class _ConsignorDetailScreenState
                                 ? consignment.paymentOwing
                                 : consignment.totalAmount,
                           ),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: color,
-                          ),
+                          style: AppTheme.amountMedium.copyWith(color: color),
                         ),
                       ],
                     ),
@@ -341,7 +335,7 @@ class _ConsignorDetailScreenState
                 ],
               ),
               if (items.isNotEmpty) ...[
-                const SizedBox(height: 10),
+                const SizedBox(height: AppTheme.s12),
                 Text(
                   '$totalQty pcs - $itemNames',
                   style: AppTheme.caption.copyWith(
@@ -352,42 +346,37 @@ class _ConsignorDetailScreenState
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              const SizedBox(height: 10),
+              const SizedBox(height: AppTheme.s12),
               Row(
                 children: [
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: AppTheme.s4),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       statusLabel,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: color,
-                      ),
+                      style: AppTheme.labelSmall.copyWith(color: color),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: AppTheme.s8),
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: AppTheme.s4),
                     decoration: BoxDecoration(
                       color: consignment.isDaily
                           ? AppTheme.infoColorTheme(context)
                               .withValues(alpha: 0.2)
                           : AppTheme.primaryColorTheme(context)
                               .withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       consignment.isDaily ? 'Harian' : 'Reseller',
-                      style: TextStyle(
+                      style: AppTheme.labelSmall.copyWith(
                         fontSize: 10,
-                        fontWeight: FontWeight.w600,
                         color: consignment.isDaily
                             ? AppTheme.infoColorTheme(context)
                             : AppTheme.primaryColorTheme(context),
@@ -396,7 +385,7 @@ class _ConsignorDetailScreenState
                   ),
                   const Spacer(),
                   Text('Dibayar', style: AppTheme.labelSmall),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppTheme.s4),
                   Text(
                     FormatHelpers.rupiah(consignment.settledAmount),
                     style: AppTheme.caption.copyWith(

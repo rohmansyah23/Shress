@@ -119,7 +119,7 @@ class _OfflineOverlayState extends ConsumerState<OfflineOverlay>
                 children: [
                   // Pulsing wifi-off icon
                   _AnimatedWifiOffIcon(),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: AppTheme.s24),
                   Text(
                     'Tidak Ada Koneksi Internet',
                     style: AppTheme.heading2.copyWith(
@@ -146,8 +146,7 @@ class _OfflineOverlayState extends ConsumerState<OfflineOverlay>
                     ref.watch(isOnlineProvider)
                         ? 'Tersambung kembali...'
                         : 'Menunggu koneksi...',
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: AppTheme.labelSmall.copyWith(
                       color: Colors.white.withValues(alpha: 0.4),
                     ),
                   ),
@@ -232,7 +231,7 @@ class _RetryButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: AppTheme.s32, vertical: AppTheme.s16),
       ),
     );
   }

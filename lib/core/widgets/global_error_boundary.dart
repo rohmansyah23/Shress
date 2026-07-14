@@ -134,7 +134,7 @@ class AppErrorScreen extends StatelessWidget {
               ),
               if (kDebugMode) ...[
                 const SizedBox(height: AppTheme.s24),                  Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(AppTheme.s12),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
@@ -276,14 +276,13 @@ AppErrorObserver initGlobalErrorHandlers({
       return Material(
         child: Container(
           color: Colors.yellow.shade50,
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(AppTheme.s8),
           child: Row(
-            children: [                  const Icon(Icons.bug_report_rounded, color: AppTheme.warningColor, size: 18),
-              const SizedBox(width: AppTheme.s8),
+            children: [                  const Icon(Icons.bug_report_rounded, color: AppTheme.warningColor, size: 18),                const SizedBox(width: AppTheme.s8),
               Expanded(
                 child: Text(
                   '${details.exception.runtimeType}: ${details.exception}',
-                  style: const TextStyle(fontSize: 11),
+                  style: AppTheme.labelSmall,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),

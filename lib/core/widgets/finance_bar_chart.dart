@@ -46,7 +46,7 @@ class FinanceBarChart extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+        padding: const EdgeInsets.fromLTRB(AppTheme.s4, AppTheme.s12, AppTheme.s4, AppTheme.s8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

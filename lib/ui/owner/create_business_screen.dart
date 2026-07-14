@@ -223,7 +223,7 @@ class _CreateBusinessScreenState
                             color: AppTheme.profitColor,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: AppTheme.s4),
                         Text(
                           'Lengkapi data bisnis untuk memulai',
                           style: AppTheme.caption.copyWith(fontSize: 13),
@@ -236,9 +236,8 @@ class _CreateBusinessScreenState
             ),
             const SizedBox(height: AppTheme.s24),
 
-            const Text('Nama Bisnis*',
-                style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text('Nama Bisnis*',
+                style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppTheme.s8),
             TextFormField(
               controller: _nameController,
@@ -252,9 +251,8 @@ class _CreateBusinessScreenState
             ),
             const SizedBox(height: AppTheme.s20),
 
-            const Text('Deskripsi (opsional)',
-                style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text('Deskripsi (opsional)',
+                style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppTheme.s8),
             TextFormField(
               controller: _descController,
@@ -270,10 +268,9 @@ class _CreateBusinessScreenState
 
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text('QRIS (opsional)',
-                      style: TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w600)),
+                      style: AppTheme.subtitle.copyWith(fontSize: 14)),
                 ),
                 if (_hasQris)
                   TextButton(

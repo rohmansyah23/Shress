@@ -337,8 +337,7 @@ class _UserCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assignedIdsAsync = ref.watch(userBusinessIdsProvider(user.userId));
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppTheme.s16),
+    return Card(          margin: const EdgeInsets.only(bottom: AppTheme.s16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -358,7 +357,7 @@ class _UserCard extends ConsumerWidget {
                     _initials(user.displayName?.isNotEmpty == true
                         ? user.displayName!
                         : user.username),
-                    style: TextStyle(
+                    style: AppTheme.subtitle.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: _roleColor(context, user.role),
@@ -381,7 +380,7 @@ class _UserCard extends ConsumerWidget {
                           '@${user.username}',
                           style: AppTheme.caption.copyWith(fontSize: 12),
                         ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppTheme.s4),
                       AppBadge.role(user.role),
                     ],
                   ),
@@ -515,12 +514,11 @@ class _UserCard extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => const Padding(
-                padding: EdgeInsets.all(12),
+              loading: () => const Padding(                      padding: EdgeInsets.all(AppTheme.s12),
                 child: LinearProgressIndicator(),
               ),
               error: (e, _) => Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppTheme.s12),
                 child: Text(
                   ErrorHandler.classify(e).userMessage,
                   style:

@@ -228,7 +228,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                   height: 40,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Icon(Icons.inventory_2_outlined,
                       size: 20, color: Theme.of(context).colorScheme.primary),
@@ -286,7 +286,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 64),
+        padding: const EdgeInsets.symmetric(vertical: AppTheme.s64),
         child: Column(
           children: [
             Icon(Icons.people_outline_rounded,
@@ -315,7 +315,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
     final statusLabel = _getConsignorStatusLabel(consignor.id);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppTheme.s12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
@@ -332,8 +332,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                   consignor.name.length >= 2
                       ? consignor.name.substring(0, 2).toUpperCase()
                       : consignor.name.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTheme.subtitle.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -359,15 +358,13 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                 children: [
                   Text(
                     FormatHelpers.rupiah(totalActive),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                    style: AppTheme.amountMedium.copyWith(
                       color: statusLabel == 'Selesai'
                           ? AppTheme.profitColorTheme(context)
                           : AppTheme.warningColorTheme(context),
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppTheme.s4),
                   Text(
                     statusLabel,
                     style: AppTheme.caption.copyWith(
@@ -380,7 +377,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: AppTheme.s4),
               PopupMenuButton<String>(
                 icon: Icon(
                   Icons.more_vert_rounded,

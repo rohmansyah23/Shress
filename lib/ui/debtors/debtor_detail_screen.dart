@@ -328,7 +328,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                   if (_debts.isEmpty)
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: AppTheme.s40),
                         child: Center(
                           child: Column(
                             children: [
@@ -445,9 +445,8 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                   child: Center(
                     child: Text(
                       _getInitials(_debtor?.name ?? widget.debtor.name),
-                      style: TextStyle(
+                      style: AppTheme.title.copyWith(
                         fontSize: 18,
-                        fontWeight: FontWeight.w700,
                         color: AppTheme.warningColorTheme(context),
                       ),
                     ),
@@ -465,7 +464,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
                       if ((_debtor?.phone ?? widget.debtor.phone) != null &&
                           (_debtor?.phone ?? widget.debtor.phone)!.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.only(top: 2),
+                          padding: const EdgeInsets.only(top: AppTheme.s4),
                           child: Text(
                             _debtor?.phone ?? widget.debtor.phone!,
                             style: AppTheme.caption,
@@ -543,20 +542,16 @@ class _DebtCard extends StatelessWidget {
                   children: [
                     Text(
                       FormatHelpers.rupiah(debt.amount),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTheme.subtitle.copyWith(fontSize: 15),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppTheme.s4),
                     Text(
                       FormatHelpers.displayDate(debt.debtDate),
                       style: AppTheme.caption.copyWith(fontSize: 11),
                     ),
                     if (debt.description != null &&
                         debt.description!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
+                      Padding(                           padding: const EdgeInsets.only(top: AppTheme.s4),
                         child: Text(
                           debt.description!,
                           style: AppTheme.caption.copyWith(fontSize: 10),
@@ -572,18 +567,14 @@ class _DebtCard extends StatelessWidget {
                 children: [
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: AppTheme.s4),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       statusLabel,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
+                      style: AppTheme.labelSmall.copyWith(color: statusColor),
                     ),
                   ),
                   if (!debt.isPaid) ...[
@@ -842,7 +833,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXL)),
       ),
       child: Column(
         children: [
@@ -944,7 +935,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                             decoration: BoxDecoration(
                               color: AppTheme.profitColorTheme(context)
                                   .withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                             ),
                             child: Icon(
                               Icons.check_circle_outline_rounded,
@@ -954,10 +945,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                           ),
                           title: Text(
                             FormatHelpers.rupiah(payment.amount),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppTheme.subtitle.copyWith(fontSize: 14),
                           ),
                           subtitle: Text(
                             FormatHelpers.displayDate(payment.paymentDate),
@@ -1327,24 +1315,22 @@ class _InfoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(AppTheme.s12),
         decoration: BoxDecoration(
           color: (color ?? AppTheme.infoColorTheme(context))
               .withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label, style: AppTheme.caption.copyWith(fontSize: 10)),
-            const SizedBox(height: 2),
+            const SizedBox(height: AppTheme.s4),
             Text(
-              value,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color ?? AppTheme.infoColorTheme(context),
-              ),
+              value,                      style: AppTheme.caption.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: color ?? AppTheme.infoColorTheme(context),
+                      ),
             ),
           ],
         ),
@@ -1362,10 +1348,7 @@ class _FormLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
+      style: AppTheme.subtitle.copyWith(fontSize: 14),
     );
   }
 }

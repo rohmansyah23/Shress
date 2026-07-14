@@ -181,7 +181,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
               height: MediaQuery.of(context).size.height * 0.7,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXL)),
               ),
               child: Column(
                 children: [
@@ -213,7 +213,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                       decoration: const InputDecoration(
                         hintText: 'Cari nama penghutang...',
                         prefixIcon: Icon(Icons.search_rounded),
-                        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        contentPadding: EdgeInsets.symmetric(vertical: AppTheme.s12, horizontal: AppTheme.s16),
                       ),
                       onChanged: (val) {
                         setSheetState(() {
@@ -242,7 +242,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                                     backgroundColor: AppTheme.warningColorTheme(context).withValues(alpha: 0.12),
                                     child: Text(
                                       debtor.name.isNotEmpty ? debtor.name[0].toUpperCase() : '?',
-                                      style: TextStyle(
+                                      style: AppTheme.subtitle.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: AppTheme.warningColorTheme(context),
                                       ),
@@ -250,7 +250,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                                   ),
                                   title: Text(
                                     debtor.name,
-                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                    style: AppTheme.subtitle.copyWith(fontWeight: FontWeight.w600),
                                   ),
                                   subtitle: debtor.phone != null && debtor.phone!.isNotEmpty
                                       ? Text(debtor.phone!)
@@ -357,8 +357,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
       ),
       body: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset + 20),
+        child: SingleChildScrollView(                      padding: EdgeInsets.fromLTRB(AppTheme.s20, AppTheme.s16, AppTheme.s20, bottomInset + AppTheme.s20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -366,7 +365,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                 Text('Data Penghutang', style: AppTheme.heading3),
                 const SizedBox(height: AppTheme.s16),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppTheme.s12),
                   decoration: BoxDecoration(
                     color: AppTheme.infoColorTheme(context)
                         .withValues(alpha: 0.08),
@@ -379,17 +378,14 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                         size: 20,
                         color: AppTheme.infoColorTheme(context),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: AppTheme.s12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               _selectedDebtor!.name,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: AppTheme.subtitle.copyWith(fontSize: 15),
                             ),
                             if (_selectedDebtor!.phone != null &&
                                 _selectedDebtor!.phone!.isNotEmpty)
@@ -434,12 +430,10 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   children: [
                     const Expanded(child: Divider()),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
                       child: Text(
                         'ATAU BUAT BARU',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                        style: AppTheme.labelSmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -586,10 +580,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                       : const Icon(Icons.save_rounded),
                   label: Text(
                     _isSaving ? 'Menyimpan...' : 'Simpan Hutang',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTheme.title.copyWith(fontSize: 16),
                   ),
                 ),
               ),
@@ -610,10 +601,7 @@ class _FormLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
+      style: AppTheme.subtitle.copyWith(fontSize: 14),
     );
   }
 }

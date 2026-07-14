@@ -57,12 +57,12 @@ class DebtorsScreen extends ConsumerWidget {
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppTheme.s12,
-                      AppTheme.s16,
-                      AppTheme.s12,
-                      0,
-                    ),
+                padding: const EdgeInsets.fromLTRB(
+                  AppTheme.s12,
+                  AppTheme.s16,
+                  AppTheme.s12,
+                  0,
+                ),
                     child: summary_card.SummaryCard(
                       title: 'Ringkasan Piutang',
                       titleIcon: Icons.account_balance_wallet_outlined,
@@ -90,12 +90,8 @@ class DebtorsScreen extends ConsumerWidget {
                             const SizedBox(height: AppTheme.s8),
                             Text(
                               'Belum ada penghutang',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(
+                              style: AppTheme.title.copyWith(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w600,
                                     color: Theme.of(context)
                                         .colorScheme
                                         .onSurfaceVariant,
@@ -353,8 +349,7 @@ class _DebtorCard extends StatelessWidget {
                 alignment: Alignment.center,
                 child: Text(
                   _getInitials(debtor.name),
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: AppTheme.subtitle.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppTheme.warningColorTheme(context),
                   ),
@@ -368,14 +363,11 @@ class _DebtorCard extends StatelessWidget {
                   children: [
                     Text(
                       debtor.name,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTheme.subtitle.copyWith(fontSize: 15),
                     ),
                     if (debtor.phone != null && debtor.phone!.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(top: 2),
+                        padding: const EdgeInsets.only(top: AppTheme.s4),
                         child: Text(
                           debtor.phone!,
                           style: AppTheme.caption.copyWith(fontSize: 11),
@@ -394,9 +386,8 @@ class _DebtorCard extends StatelessWidget {
                   const SizedBox(height: AppTheme.s4),
                   Text(
                     FormatHelpers.rupiah(remainingAmount),
-                    style: TextStyle(
+                    style: AppTheme.subtitle.copyWith(
                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
                       color: remainingAmount > 0
                           ? AppTheme.lossColorTheme(context)
                           : AppTheme.profitColorTheme(context),

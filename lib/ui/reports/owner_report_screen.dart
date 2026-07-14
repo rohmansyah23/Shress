@@ -284,7 +284,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                       children: [
                         for (final period in OwnerPeriodFilter.values)
                           Padding(
-                            padding: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.only(right: AppTheme.s8),
                             child: _buildFilterChip(
                               label: period.label,
                               isSelected: _selectedPeriod == period,
@@ -387,7 +387,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
           ),
           const SizedBox(width: 8),
           ..._businesses.map((b) => Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.only(right: AppTheme.s8),
                 child: _buildFilterChip(
                   label: b.name.length > 15 ? '${b.name.substring(0, 15)}...' : b.name,
                   isSelected: _selectedBusinessId == b.businessId,
@@ -416,7 +416,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16, vertical: AppTheme.s8),
         decoration: BoxDecoration(
           color: isSelected
               ? (isLight ? colorScheme.primary : AppTheme.accent)

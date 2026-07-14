@@ -42,7 +42,7 @@ class TrendChart extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 16, 16, 12),
+        padding: const EdgeInsets.fromLTRB(AppTheme.s8, AppTheme.s16, AppTheme.s16, AppTheme.s12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

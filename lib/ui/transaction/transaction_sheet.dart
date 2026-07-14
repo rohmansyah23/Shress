@@ -268,7 +268,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXL)),
       ),
       child: Form(
         key: _formKey,
@@ -454,8 +454,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.payment_outlined),
                       ),
-                      items: const [
-                        DropdownMenuItem(
+                      items: [
+                        const DropdownMenuItem(
                           value: AppConstants.paymentCash,
                           child: Row(
                             children: [
@@ -465,7 +465,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                             ],
                           ),
                         ),
-                        DropdownMenuItem(
+                        const DropdownMenuItem(
                           value: AppConstants.paymentTransfer,
                           child: Row(
                             children: [
@@ -475,7 +475,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                             ],
                           ),
                         ),
-                        DropdownMenuItem(
+                        const DropdownMenuItem(
                           value: AppConstants.paymentQris,
                           child: Row(
                             children: [
@@ -485,7 +485,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                             ],
                           ),
                         ),
-                        DropdownMenuItem(
+                        const DropdownMenuItem(
                           value: 'other',
                           child: Row(
                             children: [
@@ -521,7 +521,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       ),
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppTheme.s16),
 
                     SizedBox(
                       width: double.infinity,
@@ -548,10 +548,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                               : _isIncome
                                   ? 'Simpan Uang Masuk'
                                   : 'Simpan Uang Keluar',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTheme.buttonText.copyWith(fontSize: 16),
                         ),
                       ),
                     ),
@@ -579,13 +576,9 @@ class _FormLabel extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTheme.subtitle.copyWith(fontSize: 14),
         ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 2),
+        if (subtitle != null) ...[                    const SizedBox(height: AppTheme.s2),
           Text(
             subtitle!,
             style: AppTheme.caption.copyWith(fontSize: 11),

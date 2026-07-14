@@ -25,14 +25,14 @@ class SettingsScreen extends ConsumerWidget {
         title: const Text('Pengaturan'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.s16),
         children: [
           // === Info Akun ===
           Text('Akun', style: AppTheme.heading3),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.s12),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppTheme.s16),
               child: Row(
                 children: [
                   CircleAvatar(
@@ -42,26 +42,21 @@ class SettingsScreen extends ConsumerWidget {
                       user?.username.isNotEmpty == true
                           ? user!.username[0].toUpperCase()
                           : '?',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                      style: AppTheme.heading2.copyWith(
                         color: colorScheme.primary,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: AppTheme.s16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           user?.username ?? 'User',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTheme.subtitle,
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: AppTheme.s4),
                         AppBadge.role(user?.role ?? ''),
                       ],
                     ),
@@ -72,14 +67,14 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.s24),
 
           // === Tampilan ===
           Text('Tampilan', style: AppTheme.heading3),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.s12),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppTheme.s16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -93,16 +88,13 @@ class SettingsScreen extends ConsumerWidget {
                         size: 20,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Tema Aplikasi',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTheme.subtitle.copyWith(fontSize: 14),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppTheme.s12),
                   SizedBox(
                     width: double.infinity,
                     child: SegmentedButton<ThemeMode>(
@@ -110,17 +102,17 @@ class SettingsScreen extends ConsumerWidget {
                         ButtonSegment(
                           value: ThemeMode.light,
                           icon: Icon(Icons.light_mode_rounded, size: 18),
-                          label: Text('Terang', style: TextStyle(fontSize: 12)),
+                          label: Text('Terang'),
                         ),
                         ButtonSegment(
                           value: ThemeMode.system,
                           icon: Icon(Icons.settings_brightness_rounded, size: 18),
-                          label: Text('Sistem', style: TextStyle(fontSize: 12)),
+                          label: Text('Sistem'),
                         ),
                         ButtonSegment(
                           value: ThemeMode.dark,
                           icon: Icon(Icons.dark_mode_rounded, size: 18),
-                          label: Text('Gelap', style: TextStyle(fontSize: 12)),
+                          label: Text('Gelap'),
                         ),
                       ],
                       selected: {themeMode},
@@ -132,7 +124,7 @@ class SettingsScreen extends ConsumerWidget {
                       showSelectedIcon: false,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.s8),
                   Text(
                     themeMode == ThemeMode.system
                         ? 'Mengikuti pengaturan tema perangkat'
@@ -145,17 +137,17 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.s24),
 
           // === Notifikasi ===
           Text('Notifikasi', style: AppTheme.heading3),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.s12),
           const _NotificationReminderCard(),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.s24),
 
           // === Keamanan ===
           Text('Keamanan', style: AppTheme.heading3),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.s12),
           Card(
             child: ListTile(
               leading: const Icon(Icons.lock_outlined),
@@ -165,11 +157,11 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => _showChangePasswordDialog(context, ref),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppTheme.s24),
 
           // === Tentang ===
           Text('Tentang', style: AppTheme.heading3),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.s12),
           Card(
             child: Column(
               children: [
@@ -208,7 +200,7 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppTheme.s32),
         ],
       ),
     );
@@ -233,7 +225,7 @@ class SettingsScreen extends ConsumerWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall)),
           title: const Text('Ubah Password'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -247,7 +239,7 @@ class SettingsScreen extends ConsumerWidget {
                   prefixIcon: Icon(Icons.lock_outlined),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppTheme.s12),
               TextField(
                 controller: confirmPwdCtrl,
                 obscureText: true,
@@ -362,7 +354,7 @@ class _NotificationReminderCardState
                   height: 36,
                   decoration: BoxDecoration(
                     color: colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                   child: Icon(
                     Icons.notifications_outlined,
@@ -375,19 +367,15 @@ class _NotificationReminderCardState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Pengingat Transaksi Harian',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTheme.subtitle.copyWith(fontSize: 14),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppTheme.s4),
                       Text(
                         'Dapatkan notifikasi setiap hari\n'
                         'untuk mencatat transaksi',
-                        style: TextStyle(
-                          fontSize: 12,
+                        style: AppTheme.caption.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -424,7 +412,7 @@ class _NotificationReminderCardState
               ],
             ),
             if (settings.enabled) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.s16),
               Row(
                 children: [
                   Icon(

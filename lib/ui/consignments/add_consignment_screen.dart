@@ -326,10 +326,10 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             _consignmentType == AppConstants.consignmentTypeReseller) ...[
           const SizedBox(height: AppTheme.s12),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(AppTheme.s12),
             decoration: BoxDecoration(
               color: AppTheme.warningColorTheme(context).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
               border: Border.all(
                 color: AppTheme.warningColorTheme(context).withValues(alpha: 0.3),
               ),
@@ -397,15 +397,14 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: AppTheme.subtitle.copyWith(
                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
                       color: isSelected
                           ? scheme.primary
                           : Theme.of(context).textTheme.bodySmall?.color,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppTheme.s4),
                   Text(
                     subtitle,
                     style: AppTheme.caption.copyWith(fontSize: 12),
@@ -529,7 +528,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
   Widget _buildItemCard(int index) {
     final item = _items[index];
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppTheme.s12),
       child: Padding(
         padding: const EdgeInsets.all(AppTheme.s16),
         child: Column(
@@ -633,7 +632,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 (int.tryParse(item.qtyController.text) ?? 0) > 0 &&
                 FormatHelpers.unformatRupiah(item.priceController.text) > 0)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: AppTheme.s8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -650,7 +649,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                     if (item.sellingPriceController.text.isNotEmpty &&
                         FormatHelpers.unformatRupiah(item.sellingPriceController.text) > 0)
                       Padding(
-                        padding: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.only(top: AppTheme.s4),
                         child: Text(
                           'Potensi Omzet: ${FormatHelpers.rupiah(
                             (int.tryParse(item.qtyController.text) ?? 0) *

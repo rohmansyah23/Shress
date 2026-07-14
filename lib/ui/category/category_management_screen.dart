@@ -222,7 +222,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            padding: const EdgeInsets.fromLTRB(AppTheme.s16, AppTheme.s16, AppTheme.s16, AppTheme.s16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -278,7 +278,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                     return RefreshIndicator(
                       onRefresh: _load,
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final c = filtered[index];
@@ -287,7 +287,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                             margin: const EdgeInsets.only(bottom: AppTheme.s16),
                             clipBehavior: Clip.antiAlias,
                             child: Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                              padding: const EdgeInsets.fromLTRB(AppTheme.s16, AppTheme.s12, AppTheme.s8, AppTheme.s12),
                               child: Row(
                                 children: [
                                   CircleAvatar(

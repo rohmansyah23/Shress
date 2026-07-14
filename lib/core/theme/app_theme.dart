@@ -8,43 +8,29 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // ── Light Theme Colors ──────────────────────────────────────
-  static const Color background = Color(
-    0xFFF1F5F9,
-  ); // Slate 100 // Slate 200 // Background utama
-  static const Color secondaryBackground = Color(0xFFE2E8F0); // Section/list
-  // Menggunakan putih yang sedikit bergeser ke arah warna background (sangat bersih & premium)
-  static const Color card = Color(0xFFF8FAFC); // Slate 50
+ // ── Light Theme Colors ──────────────────────────────────────
+  static const Color background = Color(0xFFF1F5F9); 
+  static const Color secondaryBackground = Color(0xFFE2E8F0); 
+  static const Color card = Color(0xFFF8FAFC); 
 
-  static const Color primary = Color(0xFF1E293B); // Slate 800
-  static const Color accent = Color(0xFF22C55E); // Green modern
+  static const Color primary = Color(0xFF1E293B); 
+  static const Color accent = Color(0xFF22C55E); 
 
   static const Color success = Color(0xFF16A34A);
   static const Color warning = Color(0xFFF59E0B);
   static const Color danger = Color(0xFFEF4444);
 
-  static const Color primaryText = Color(0xFF0F172A); // Hampir hitam
-  static const Color secondaryText = Color(0xFF64748B); // Slate 500
+  static const Color primaryText = Color(0xFF0F172A); 
+  static const Color secondaryText = Color(0xFF64748B); 
 
   static const Color divider = Color(0xFFE2E8F0);
 
   // ── Backward Compatible Constants ───────────────────────────
-  /// Old name for [primary] — use [primary] for new code
   static const Color primaryColor = primary;
-
-  /// Old secondary/teal — kept for backward compat; use [accent] for green accent
   static const Color secondaryColor = Color(0xFF00897B);
-
-  /// Old name — use [profitColorTheme(context)] for theme-aware
   static const Color profitColor = Color(0xFF2E7D32);
-
-  /// Old name — use [lossColorTheme(context)] for theme-aware
   static const Color lossColor = Color(0xFFC62828);
-
-  /// Old name — use [warningColorTheme(context)] for theme-aware
   static const Color warningColor = Color(0xFFF57F17);
-
-  /// Old name — use [infoColorTheme(context)] for theme-aware
   static const Color infoColor = Color(0xFF1565C0);
 
   // ── Dark Theme Colors ───────────────────────────────────────
@@ -460,7 +446,7 @@ class AppTheme {
         ),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        shadowColor: accent.withValues(alpha: 0.2),
+        shadowColor: primary.withValues(alpha: 0.2),
       ),
 
       // ── Divider ─────────────────────────────────────────────
@@ -503,22 +489,7 @@ class AppTheme {
         elevation: 8,
         color: card,
         surfaceTintColor: Colors.transparent,
-        shadowColor: accent.withValues(alpha: 0.2),
-      ),
-
-      // ── Dropdown Menu ────────────────────────────────────────
-      dropdownMenuTheme: DropdownMenuThemeData(
-        menuStyle: MenuStyle(
-          shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radiusSmall),
-            ),
-          ),
-          elevation: WidgetStateProperty.all(8),
-          shadowColor: WidgetStateProperty.all(
-            accent.withValues(alpha: 0.2),
-          ),
-        ),
+        shadowColor: primary.withValues(alpha: 0.2),
       ),
     );
   }
@@ -598,7 +569,7 @@ class AppTheme {
           borderRadius: BorderRadius.vertical(top: Radius.circular(radiusXL)),
         ),
         elevation: 0,
-        shadowColor: darkAccent.withValues(alpha: 0.25),
+        shadowColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         backgroundColor: darkCard,
       ),
@@ -756,10 +727,8 @@ class AppTheme {
         ),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        backgroundColor: darkElevatedCard,
-        shadowColor: darkAccent.withValues(alpha: 0.4),
-        titleTextStyle: heading3.copyWith(color: darkPrimaryText),
-        contentTextStyle: bodyText.copyWith(color: darkPrimaryText),
+        backgroundColor: darkCard,
+        shadowColor: accent.withValues(alpha: 0.2),
       ),
 
       // ── Divider ─────────────────────────────────────────────
@@ -803,28 +772,10 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusSmall),
         ),
-        elevation: 6,
-        color: darkSecondaryBackground,
+        elevation: 8,
+        color: darkCard,
         surfaceTintColor: Colors.transparent,
-        shadowColor: darkAccent.withValues(alpha: 0.25),
-      ),
-
-      // ── Dropdown Menu ────────────────────────────────────────
-      dropdownMenuTheme: DropdownMenuThemeData(
-        menuStyle: MenuStyle(
-          shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radiusSmall),
-            ),
-          ),
-          elevation: WidgetStateProperty.all(6),
-          shadowColor: WidgetStateProperty.all(
-            darkAccent.withValues(alpha: 0.25),
-          ),
-          backgroundColor: WidgetStateProperty.all(
-            darkSecondaryBackground,
-          ),
-        ),
+        shadowColor: accent.withValues(alpha: 0.2),
       ),
     );
   }

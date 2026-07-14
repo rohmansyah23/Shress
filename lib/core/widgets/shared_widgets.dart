@@ -344,8 +344,7 @@ class NetProfitCard extends StatelessWidget {
       ),
       child: Text(
         isProfit ? 'LABA' : 'RUGI',
-        style: TextStyle(
-          fontSize: 12,
+        style: AppTheme.labelSmall.copyWith(
           fontWeight: FontWeight.bold,
           letterSpacing: 1,
           color: pc,
@@ -516,9 +515,8 @@ class TransactionCard extends StatelessWidget {
                   const SizedBox(height: AppTheme.s4),
                   Text(
                     amount,
-                    style: TextStyle(
+                    style: AppTheme.amountMedium.copyWith(
                       fontSize: 15,
-                      fontWeight: FontWeight.w600,
                       color: color,
                     ),
                   ),
@@ -575,8 +573,7 @@ class PfStatRow extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(
-                fontSize: 13,
+              style: AppTheme.caption.copyWith(
                 fontWeight: FontWeight.w500,
                 color: valueColor,
               ),
@@ -1010,7 +1007,7 @@ class _PfNavItem extends StatelessWidget {
             const SizedBox(height: 4),
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
-              style: TextStyle(
+              style: AppTheme.labelSmall.copyWith(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 color: isSelected ? activeColor : inactiveColor,
@@ -1096,10 +1093,9 @@ class _PfAddNavButton extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Tambah',
-              style: TextStyle(
+              style: AppTheme.labelSmall.copyWith(
                 fontSize: 10,
                 color: activeColor,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],

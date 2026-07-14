@@ -37,12 +37,12 @@ class ErrorRetryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(AppTheme.s32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 64, color: iconColor),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppTheme.s20),
             Text(
               message,
               textAlign: TextAlign.center,
@@ -51,17 +51,16 @@ class ErrorRetryWidget extends StatelessWidget {
               ),
             ),
             if (technicalDetails != null && technicalDetails!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              // Show technical detail collapsed
+              const SizedBox(height: AppTheme.s8),
               Text(
                 technicalDetails!,
-                style: AppTheme.caption.copyWith(fontSize: 10),
+                style: AppTheme.labelSmall.copyWith(fontSize: 10),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
             ],
-            const SizedBox(height: 24),
+            const SizedBox(height: AppTheme.s24),
             if (onRetry != null)
               FilledButton.icon(
                 icon: const Icon(Icons.refresh_rounded, size: 18),
@@ -69,8 +68,8 @@ class ErrorRetryWidget extends StatelessWidget {
                 onPressed: onRetry,
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
+                    horizontal: AppTheme.s24,
+                    vertical: AppTheme.s12,
                   ),
                 ),
               ),
@@ -115,9 +114,7 @@ class OfflineBanner extends StatelessWidget {
           Expanded(
             child: Text(
               'Tidak ada koneksi internet',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              style: AppTheme.labelSmall.copyWith(
                 color: AppTheme.warning,
               ),
             ),
@@ -155,14 +152,14 @@ class ErrorSnackbar {
         content: Row(
           children: [
             Icon(icon, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppTheme.s8),
             Expanded(child: Text(message)),
           ],
         ),
         backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         ),
         action: actionLabel != null
             ? SnackBarAction(

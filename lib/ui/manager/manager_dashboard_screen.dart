@@ -177,7 +177,7 @@ class _ManagerDashboardScreenState
                     isDense: true,
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                     decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.s12, vertical: AppTheme.s8),
                       isDense: true,
                       labelText: 'Periode Waktu',
                       floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -213,7 +213,7 @@ class _ManagerDashboardScreenState
                     isDense: true,
                     borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                     decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.s12, vertical: AppTheme.s8),
                       isDense: true,
                       labelText: 'Tipe Grafik',
                       floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -443,7 +443,7 @@ class _ManagerDashboardScreenState
                   ),
                   child: Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(AppTheme.s12),
                       child: Row(
                         children: [
                           Container(
@@ -454,8 +454,7 @@ class _ManagerDashboardScreenState
                                   (isIncome
                                           ? AppTheme.profitColorTheme(context)
                                           : AppTheme.lossColorTheme(context))
-                                      .withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
+                                      .withValues(alpha: 0.12),                               borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                             ),
                             child: Icon(
                               isIncome
@@ -678,7 +677,7 @@ class _ManagerDashboardScreenState
               Expanded(
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(AppTheme.s12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -722,7 +721,7 @@ class _ManagerDashboardScreenState
               Expanded(
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(AppTheme.s12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

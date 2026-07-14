@@ -54,9 +54,7 @@ class ProfileScreen extends ConsumerWidget {
                   hasDisplayName
                       ? user.displayName![0].toUpperCase()
                       : (user.username.isNotEmpty ? user.username[0].toUpperCase() : '?'),
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
+                  style: AppTheme.heading1.copyWith(
                     color: colorScheme.primary,
                   ),
                 ),
@@ -151,17 +149,14 @@ class ProfileScreen extends ConsumerWidget {
             leading: Icon(Icons.logout_rounded, color: AppTheme.lossColorTheme(context)),
             title: Text(
               'Keluar',
-              style: TextStyle(
+              style: AppTheme.subtitle.copyWith(
                 color: AppTheme.lossColorTheme(context),
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
               ),
             ),
             subtitle: Text(
               'Logout dari akun Anda',
               style: AppTheme.caption.copyWith(
                 color: AppTheme.lossColorTheme(context),
-                fontSize: 15,
               ),
             ),
             trailing: Icon(Icons.chevron_right_rounded, color: AppTheme.lossColorTheme(context)),
@@ -309,7 +304,7 @@ class _InfoRow extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: AppTheme.subtitle.copyWith(fontSize: 14),
             overflow: TextOverflow.ellipsis,
           ),
         ),
