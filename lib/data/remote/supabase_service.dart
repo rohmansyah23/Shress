@@ -1706,6 +1706,7 @@ class SupabaseService {
       final transactions = _parseTransactions(data as List);
 
       final Map<String, double> incomeMap = {};
+      final Map<String, double> cogsMap = {};
       final Map<String, double> expenseMap = {};
 
       for (final tx in transactions) {
@@ -1737,6 +1738,11 @@ class SupabaseService {
             (v) => v + tx.amount,
             ifAbsent: () => tx.amount,
           );
+          cogsMap.update(
+            key,
+            (v) => v + tx.cogs,
+            ifAbsent: () => tx.cogs,
+          );
         } else {
           expenseMap.update(
             key,
@@ -1755,8 +1761,9 @@ class SupabaseService {
           final key =
               '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
+          final cogs = cogsMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
-          result.add((period: key, income: income, expense: expense, netProfit: income - expense));
+          result.add((period: key, income: income, expense: expense, netProfit: income - cogs - expense));
         }
       } else if (filter == TrendFilter.weekly) {
         final currentMonday = DateTime(
@@ -1770,8 +1777,9 @@ class SupabaseService {
           final key =
               '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
+          final cogs = cogsMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
-          result.add((period: key, income: income, expense: expense, netProfit: income - expense));
+          result.add((period: key, income: income, expense: expense, netProfit: income - cogs - expense));
         }
       } else if (filter == TrendFilter.monthly) {
         const months = 6;
@@ -1779,8 +1787,9 @@ class SupabaseService {
           final d = DateTime(now.year, now.month - months + 1 + i, 1);
           final key = '${d.year}-${d.month.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
+          final cogs = cogsMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
-          result.add((period: key, income: income, expense: expense, netProfit: income - expense));
+          result.add((period: key, income: income, expense: expense, netProfit: income - cogs - expense));
         }
       } else {
         // yearly
@@ -1788,8 +1797,9 @@ class SupabaseService {
           final year = now.year - 4 + i;
           final key = '$year';
           final income = incomeMap[key] ?? 0;
+          final cogs = cogsMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
-          result.add((period: key, income: income, expense: expense, netProfit: income - expense));
+          result.add((period: key, income: income, expense: expense, netProfit: income - cogs - expense));
         }
       }
 

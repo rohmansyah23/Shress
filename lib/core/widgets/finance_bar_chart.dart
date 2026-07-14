@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -43,12 +42,11 @@ class FinanceBarChart extends StatelessWidget {
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
-    // Calculate scrollable width based on data length. 64px per bar.
-    final double chartWidth = math.max(screenWidth - 32, data.length * 64.0);
+    final double chartWidth = screenWidth - 32;
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 16, 16, 12),
+        padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -76,6 +74,7 @@ class FinanceBarChart extends StatelessWidget {
                           minY: minY,
                           maxY: maxY,
                           alignment: BarChartAlignment.spaceAround,
+                          groupsSpace: 4,
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
@@ -141,7 +140,7 @@ class FinanceBarChart extends StatelessWidget {
                                 getTitlesWidget: (value, meta) {
                                   if (value == 0) return const SizedBox.shrink();
                                   return Padding(
-                                    padding: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.only(right: 0),
                                     child: Text(
                                       _compactAmount(value),
                                       style: TextStyle(
@@ -206,7 +205,7 @@ class FinanceBarChart extends StatelessWidget {
                                 BarChartRodData(
                                   toY: val,
                                   color: color,
-                                  width: 16,
+                                  width: 36,
                                   borderRadius: isNegative
                                       ? const BorderRadius.vertical(bottom: Radius.circular(4))
                                       : const BorderRadius.vertical(top: Radius.circular(4)),

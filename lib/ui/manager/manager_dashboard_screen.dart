@@ -6,10 +6,12 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
+import '../../core/widgets/finance_bar_chart.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/business_providers.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../transaction/transaction_sheet.dart';
 import '../debtors/debtors_screen.dart';
@@ -42,6 +44,7 @@ class _ManagerDashboardScreenState
     extends ConsumerState<ManagerDashboardScreen> {
   List<TransactionModel> _recentTransactions = [];
   bool _recentLoading = true;
+  TrendFilter _selectedTrendFilter = TrendFilter.daily;
 
   @override
   void initState() {
@@ -83,15 +86,25 @@ class _ManagerDashboardScreenState
       if (prev != null && prev != next) _loadRecentTransactions();
     });
     final cs = Theme.of(context).colorScheme;
+    final currentUser = ref.watch(currentUserProvider);
+    final isManager = currentUser?.role == AppConstants.roleManager;
     final summaryAsync = ref.watch(
       businessSummaryProvider(widget.selectedBusiness.businessId),
     );
+    final trendAsync = isManager
+        ? ref.watch(
+            businessNetProfitsTrendProvider((
+              businessId: widget.selectedBusiness.businessId,
+              filter: _selectedTrendFilter,
+            )),
+          )
+        : null;
 
     final body = summaryAsync.when(
       data: (summary) {
         final netProfit = summary['netProfit'] ?? 0;
         final isProfit = netProfit >= 0;
-        return _buildContent(cs, summary, netProfit, isProfit);
+        return _buildContent(cs, summary, netProfit, isProfit, trendAsync, isManager);
       },
       loading: () => _buildLoadingState(cs),
       error: (error, _) => ErrorRetryWidget(
@@ -119,6 +132,8 @@ class _ManagerDashboardScreenState
     Map<String, double> summary,
     double netProfit,
     bool isProfit,
+    AsyncValue<List<({String period, double income, double expense, double netProfit})>>? trendAsync,
+    bool isManager,
   ) {
     return RefreshIndicator(
       onRefresh: () async {
@@ -140,6 +155,82 @@ class _ManagerDashboardScreenState
           const SizedBox(height: AppTheme.s12),
           _buildNetProfitCard(netProfit, isProfit),
           const SizedBox(height: AppTheme.s12),
+          if (isManager) ...[
+            // === Trend Chart ===
+            Text('Tren Keuangan', style: AppTheme.heading3),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<TrendFilter>(
+              initialValue: _selectedTrendFilter,
+              isDense: true,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                isDense: true,
+                labelText: 'Periode Waktu',
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+              ),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              items: TrendFilter.values
+                  .map(
+                    (f) => DropdownMenuItem(
+                      value: f,
+                      child: Text(
+                        _trendFilterLabel(f),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() => _selectedTrendFilter = value);
+              },
+            ),
+            const SizedBox(height: 12),
+            trendAsync!.when(
+              data: (trendData) {
+                if (trendData.isEmpty) {
+                  return SizedBox(
+                    height: 160,
+                    child: Center(
+                      child: Text('Belum ada data grafik', style: AppTheme.caption),
+                    ),
+                  );
+                }
+                final barPoints = trendData
+                    .map((d) => FinanceBarDataPoint(
+                          period: d.period,
+                          value: d.netProfit,
+                        ))
+                    .toList();
+                final timeLabel = _selectedTrendFilter == TrendFilter.daily
+                    ? '7 Hari Terakhir'
+                    : _selectedTrendFilter == TrendFilter.weekly
+                        ? '5 Minggu Terakhir'
+                        : _selectedTrendFilter == TrendFilter.monthly
+                            ? '6 Bulan Terakhir'
+                            : '5 Tahun Terakhir';
+                return FinanceBarChart(
+                  data: barPoints,
+                  title: 'Tren Laba/Rugi Bersih ($timeLabel)',
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => SizedBox(
+                height: 160,
+                child: Center(
+                  child: Text('Gagal memuat grafik', style: AppTheme.caption),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppTheme.s12),
+          ],
           Text('Aksi Cepat', style: AppTheme.heading3),
           const SizedBox(height: AppTheme.s12),
           Row(
@@ -174,7 +265,7 @@ class _ManagerDashboardScreenState
                 child: QuickActionButton(
                   icon: Icons.qr_code_rounded,
                   label: 'QRIS',
-                  color: AppTheme.infoColor,
+                  color: AppTheme.infoColorTheme(context),
                   onTap: widget.onShowQris,
                 ),
               ),
@@ -511,7 +602,7 @@ class _ManagerDashboardScreenState
                             Icon(
                               Icons.receipt_long_rounded,
                               size: 14,
-                              color: AppTheme.warningColor,
+                  color: AppTheme.warningColorTheme(context),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -555,7 +646,7 @@ class _ManagerDashboardScreenState
                             Icon(
                               Icons.inventory_2_rounded,
                               size: 14,
-                              color: AppTheme.secondaryColor,
+                  color: AppTheme.secondaryColorTheme(context),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -588,5 +679,14 @@ class _ManagerDashboardScreenState
         );
       },
     );
+  }
+
+  String _trendFilterLabel(TrendFilter filter) {
+    return switch (filter) {
+      TrendFilter.daily => 'Harian',
+      TrendFilter.weekly => 'Mingguan',
+      TrendFilter.monthly => 'Bulanan',
+      TrendFilter.yearly => 'Tahunan',
+    };
   }
 }

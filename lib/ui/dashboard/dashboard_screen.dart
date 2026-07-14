@@ -4,13 +4,22 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../core/widgets/trend_chart.dart';
+import '../../core/widgets/finance_bar_chart.dart';
 import '../../core/network/connectivity_service.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/business_providers.dart';
 import '../transaction/transaction_sheet.dart';
 import '../transaction/transaction_history_screen.dart';
+
+enum DashboardTrendTypeFilter {
+  netProfit('Laba/Rugi Bersih'),
+  income('Uang Masuk'),
+  expense('Uang Keluar');
+
+  final String label;
+  const DashboardTrendTypeFilter(this.label);
+}
 
 class DashboardScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
@@ -32,6 +41,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   TrendFilter _selectedTrendFilter = TrendFilter.daily;
+  DashboardTrendTypeFilter _selectedTypeFilter = DashboardTrendTypeFilter.netProfit;
 
   @override
   Widget build(BuildContext context) {
@@ -175,20 +185,90 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   const SizedBox(height: 24),
 
                   // === Trend Chart dengan Filter ===
-                  Text('Tren Laba/Rugi', style: AppTheme.heading3),
+                  Text('Tren Keuangan', style: AppTheme.heading3),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      _buildTrendFilterChip('Harian', TrendFilter.daily),
-                      const SizedBox(width: 8),
-                      _buildTrendFilterChip('Mingguan', TrendFilter.weekly),
-                      const SizedBox(width: 8),
-                      _buildTrendFilterChip('Bulanan', TrendFilter.monthly),
-                      const SizedBox(width: 8),
-                      _buildTrendFilterChip('Tahunan', TrendFilter.yearly),
+                      Expanded(
+                        child: DropdownButtonFormField<TrendFilter>(
+                          initialValue: _selectedTrendFilter,
+                          isDense: true,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            isDense: true,
+                            labelText: 'Periode Waktu',
+                            floatingLabelBehavior: FloatingLabelBehavior.never,
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          items: TrendFilter.values
+                              .map(
+                                (f) => DropdownMenuItem(
+                                  value: f,
+                                  child: Text(
+                                    _trendFilterLabel(f),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value == null) return;
+                            setState(() => _selectedTrendFilter = value);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.s8),
+                      Expanded(
+                        child: DropdownButtonFormField<DashboardTrendTypeFilter>(
+                          initialValue: _selectedTypeFilter,
+                          isDense: true,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            isDense: true,
+                            labelText: 'Tipe Grafik',
+                            floatingLabelBehavior: FloatingLabelBehavior.never,
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          items: DashboardTrendTypeFilter.values
+                              .map(
+                                (f) => DropdownMenuItem(
+                                  value: f,
+                                  child: Text(
+                                    f.label,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value == null) return;
+                            setState(() => _selectedTypeFilter = value);
+                          },
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   trendAsync.when(
                     data: (trendData) {
                       if (trendData.isEmpty) {
@@ -202,22 +282,56 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                         );
                       }
-                      return TrendChart(
-                        data: trendData
-                            .map(
-                              (d) => TrendDataPoint(
-                                month: d.period,
-                                netProfit: d.netProfit,
-                              ),
-                            )
-                            .toList(),
-                        title: _selectedTrendFilter == TrendFilter.daily
-                            ? 'Tren Laba/Rugi 7 Hari Terakhir'
-                            : _selectedTrendFilter == TrendFilter.weekly
-                            ? 'Tren Laba/Rugi 5 Minggu Terakhir'
-                            : _selectedTrendFilter == TrendFilter.monthly
-                            ? 'Tren Laba/Rugi 6 Bulan Terakhir'
-                            : 'Tren Laba/Rugi 5 Tahun Terakhir',
+
+                      final barPoints = trendData.map((d) {
+                        double val = 0;
+                        switch (_selectedTypeFilter) {
+                          case DashboardTrendTypeFilter.netProfit:
+                            val = d.netProfit;
+                            break;
+                          case DashboardTrendTypeFilter.income:
+                            val = d.income;
+                            break;
+                          case DashboardTrendTypeFilter.expense:
+                            val = d.expense;
+                            break;
+                        }
+                        return FinanceBarDataPoint(
+                          period: d.period,
+                          value: val,
+                        );
+                      }).toList();
+
+                      final timeLabel = _selectedTrendFilter == TrendFilter.daily
+                          ? '7 Hari Terakhir'
+                          : _selectedTrendFilter == TrendFilter.weekly
+                          ? '5 Minggu Terakhir'
+                          : _selectedTrendFilter == TrendFilter.monthly
+                          ? '6 Bulan Terakhir'
+                          : '5 Tahun Terakhir';
+                      final chartTitle = 'Tren ${_selectedTypeFilter.label} ($timeLabel)';
+
+                      Color? customBarColor;
+                      if (_selectedTypeFilter == DashboardTrendTypeFilter.income) {
+                        customBarColor = AppTheme.profitColorTheme(context);
+                      } else if (_selectedTypeFilter == DashboardTrendTypeFilter.expense) {
+                        customBarColor = AppTheme.lossColorTheme(context);
+                      }
+
+                      return FinanceBarChart(
+                        data: barPoints,
+                        title: chartTitle,
+                        barColor: customBarColor,
+                        tooltipColorBuilder: (val) {
+                          if (_selectedTypeFilter == DashboardTrendTypeFilter.income) {
+                            return AppTheme.profitColorTheme(context);
+                          } else if (_selectedTypeFilter == DashboardTrendTypeFilter.expense) {
+                            return AppTheme.lossColorTheme(context);
+                          }
+                          return val >= 0
+                              ? AppTheme.profitColorTheme(context)
+                              : AppTheme.lossColorTheme(context);
+                        },
                       );
                     },
                     loading: () =>
@@ -242,7 +356,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         child: QuickActionButton(
                           icon: Icons.trending_up_rounded,
                           label: 'Uang\nMasuk',
-                          color: AppTheme.profitColor,
+                          color: AppTheme.profitColorTheme(context),
                           onTap: () => TransactionSheet.show(
                             context,
                             widget.business,
@@ -255,7 +369,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         child: QuickActionButton(
                           icon: Icons.trending_down_rounded,
                           label: 'Uang\nKeluar',
-                          color: AppTheme.lossColor,
+                          color: AppTheme.lossColorTheme(context),
                           onTap: () => TransactionSheet.show(
                             context,
                             widget.business,
@@ -268,7 +382,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         child: QuickActionButton(
                           icon: Icons.history_rounded,
                           label: 'Riwayat\nTransaksi',
-                          color: AppTheme.infoColor,
+                          color: AppTheme.infoColorTheme(context),
                           onTap: () {
                             if (widget.onNavigateToRiwayat != null) {
                               widget.onNavigateToRiwayat!();
@@ -295,40 +409,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildTrendFilterChip(String label, TrendFilter value) {
-    final isSelected = _selectedTrendFilter == value;
-    final colorScheme = Theme.of(context).colorScheme;
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedTrendFilter = value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (isLight ? colorScheme.primary : AppTheme.accent)
-              : (isLight
-                    ? colorScheme.surfaceContainer
-                    : AppTheme.darkBackground),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : (isLight ? colorScheme.outlineVariant : AppTheme.accent),
-            width: 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            color: isSelected
-                ? AppTheme.card
-                : (isLight ? colorScheme.onSurfaceVariant : AppTheme.accent),
-          ),
-        ),
-      ),
-    );
+  String _trendFilterLabel(TrendFilter filter) {
+    return switch (filter) {
+      TrendFilter.daily => 'Harian',
+      TrendFilter.weekly => 'Mingguan',
+      TrendFilter.monthly => 'Bulanan',
+      TrendFilter.yearly => 'Tahunan',
+    };
   }
 }
