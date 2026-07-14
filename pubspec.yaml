@@ -11,11 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.8
-
   # State Management
   flutter_riverpod: ^2.6.1
-  riverpod_annotation: ^2.6.1
 
   # Supabase Backend
   supabase_flutter: ^2.16.0
@@ -25,9 +22,6 @@ dependencies:
 
   # Networking & Connectivity
   connectivity_plus: ^6.1.1
-
-  # Image Caching (QRIS)
-  cached_network_image: ^3.4.1
 
   # SVG Rendering (for QRIS images)
   flutter_svg: ^2.0.17
@@ -44,7 +38,6 @@ dependencies:
   # Utilities
   intl: ^0.20.2
   path_provider: ^2.1.5
-  uuid: ^4.5.1
   sentry: ^9.24.0
   flutter_local_notifications: ^22.0.1
   shared_preferences: ^2.5.5
@@ -56,9 +49,6 @@ dev_dependencies:
 
   flutter_lints: ^6.0.0
 
-  # Code Generation
-  build_runner: ^2.4.14
-
   # Launcher Icons Generator
   flutter_launcher_icons: ^0.14.3
 
@@ -69,18 +59,6 @@ flutter:
     - .env
     - assets/icons/
     - assets/images/qris/
-
-  fonts:
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Inter-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700
 
 # Launcher Icons Configuration
 # Place your source icon as assets/icons/app_icon.png (1024x1024 recommended)

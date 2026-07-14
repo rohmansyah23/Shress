@@ -33,17 +33,5 @@ class QueryCache {
     return entry.data as T;
   }
 
-  void invalidate(String key) => _cache.remove(key);
-
-  void invalidateAll(Iterable<String> keys) {
-    for (final k in keys) {
-      _cache.remove(k);
-    }
-  }
-
   void clear() => _cache.clear();
-
-  void invalidateByPrefix(String prefix) {
-    _cache.removeWhere((k, _) => k.startsWith(prefix));
-  }
 }

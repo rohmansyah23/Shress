@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -303,35 +301,3 @@ AppErrorObserver initGlobalErrorHandlers({
   return AppErrorObserver(onProviderError: onProviderError);
 }
 
-/// Run the app with zone-based error handling.
-///
-/// Wraps [appRunner] in [runZonedGuarded] so any unhandled async errors
-/// are caught and logged, and reported to Sentry, instead of crashing silently.
-void runWithErrorZone(Future<void> Function() appRunner) {
-  runZonedGuarded(
-    () async {
-      try {
-        await appRunner();
-      } catch (e, stack) {
-        // ignore: avoid_print
-        print('[Fatal] Unhandled error in app runner: $e');
-        SentryService.instance.captureException(
-          e,
-          stackTrace: stack,
-          category: 'fatal',
-          extras: {'source': 'app_runner'},
-        );
-      }
-    },
-    (Object error, StackTrace stack) {
-      // ignore: avoid_print
-      print('[Zone] Unhandled async error: $error');
-      SentryService.instance.captureException(
-        error,
-        stackTrace: stack,
-        category: 'zone',
-        extras: {'source': 'unhandled_async'},
-      );
-    },
-  );
-}

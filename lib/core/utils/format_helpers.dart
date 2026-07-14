@@ -11,13 +11,6 @@ class FormatHelpers {
     return formatter.format(amount);
   }
 
-  /// Format amount with 2 decimal places
-  static String rupiahDecimal(double amount) {
-    final formatter =
-        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2);
-    return formatter.format(amount);
-  }
-
   /// Format date string (YYYY-MM-DD) to display format (dd MMMM yyyy)
   static String displayDate(String dateStr) {
     try {

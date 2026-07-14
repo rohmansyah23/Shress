@@ -253,14 +253,4 @@ class ErrorHandler {
     }
   }
 
-  /// Helper to wrap a Future with error handling that returns a Result type
-  static Future<({T? data, AppError? error})> safeAwait<T>(
-      Future<T> Function() fn) async {
-    try {
-      final data = await fn();
-      return (data: data, error: null);
-    } catch (e) {
-      return (data: null, error: classify(e));
-    }
-  }
 }

@@ -19,10 +19,6 @@ class AppConstants {
   static const String paymentTransfer = 'transfer';
   static const String paymentQris = 'qris';
 
-  // Report Status
-  static const String statusLaba = 'laba';
-  static const String statusRugi = 'rugi';
-
   // Debt Status
   static const String debtUnpaid = 'unpaid';
   static const String debtPartial = 'partial';
@@ -44,23 +40,8 @@ class AppConstants {
 
   // Consignment Categories
   static const String categoryKomisiTitipan = 'Komisi Titipan';
-  static const String categoryBayarTitipan = 'Bayar Titipan';
   static const String categoryPiutang = 'Piutang';
-
-  // Sync
-  static const int syncIntervalSeconds = 30;
-  static const int syncBatchSize = 50;
-  static const int qrisCacheDays = 30;
 
   // Storage Keys
   static const String keySessionUser = 'session_user';
-  static const String keyAuthToken = 'auth_token';
-  static const String keyRefreshToken = 'refresh_token';
-  static const String keyLastSyncTime = 'last_sync_time';
-
-  // Date Format
-  static const String dateFormat = 'yyyy-MM-dd';
-  static const String periodFormat = 'yyyy-MM';
-  static const String displayDateFormat = 'dd MMMM yyyy';
-  static const String displayPeriodFormat = 'MMMM yyyy';
 }

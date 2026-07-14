@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 import '../utils/format_helpers.dart';
-import '../constants/constants.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // POCKETFUND DESIGN SYSTEM — Reusable Components
@@ -792,59 +790,6 @@ class PfBalanceCard extends StatelessWidget {
   }
 }
 
-// ── Financial Calculator ──────────────────────────────────────
-class FinancialCalculator {
-  const FinancialCalculator._();
-
-  static Map<String, double> computeSummary(
-    List<({String type, double amount, double cogs})> transactions,
-  ) {
-    double totalIncome = 0, totalCogs = 0, totalExpense = 0;
-
-    for (final tx in transactions) {
-      if (tx.type == AppConstants.typeIncome) {
-        totalIncome += tx.amount;
-        totalCogs += tx.cogs;
-      } else {
-        totalExpense += tx.amount;
-      }
-    }
-
-    final grossProfit = totalIncome - totalCogs;
-    return {
-      'totalIncome': totalIncome,
-      'totalCogs': totalCogs,
-      'grossProfit': grossProfit,
-      'totalExpense': totalExpense,
-      'netProfit': grossProfit - totalExpense,
-    };
-  }
-
-  static bool isProfit(double netProfit) => netProfit >= 0;
-
-  static String periodLabel(String periodKey) {
-    final parts = periodKey.split('-');
-    if (parts.length != 2) return periodKey;
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mei',
-      'Jun',
-      'Jul',
-      'Agu',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Des',
-    ];
-    final month = int.tryParse(parts[1]);
-    if (month == null || month < 1 || month > 12) return periodKey;
-    return '${months[month - 1]} ${parts[0]}';
-  }
-}
-
 // ═══════════════════════════════════════════════════════════════
 // PAGE TRANSITION — Horizontal slide for tab-based navigation
 // ═══════════════════════════════════════════════════════════════
@@ -1164,34 +1109,3 @@ class _PfAddNavButton extends StatelessWidget {
   }
 }
 
-// ── IDR Currency Input Formatter ──────────────────────────────
-class IdrInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final text = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (text.isEmpty) return newValue.copyWith(text: '');
-
-    final value = int.tryParse(text) ?? 0;
-    final formatted = _formatIdr(value);
-
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-
-  String _formatIdr(int value) {
-    final s = value.toString();
-    final result = StringBuffer();
-    for (int i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) {
-        result.write('.');
-      }
-      result.write(s[i]);
-    }
-    return result.toString();
-  }
-}
