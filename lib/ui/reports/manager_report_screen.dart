@@ -228,7 +228,18 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
       ),
     );
 
-    if (!widget.showAppBar) return body;
+    final mainContent = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!widget.showAppBar) ...[
+          const SizedBox(height: AppTheme.s12),
+          _buildPeriodSelector(colorScheme),
+        ],
+        Expanded(child: body),
+      ],
+    );
+
+    if (!widget.showAppBar) return SafeArea(child: mainContent);
 
     return Scaffold(
       appBar: AppBar(

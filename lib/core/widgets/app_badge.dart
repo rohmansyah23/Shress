@@ -57,12 +57,35 @@ class AppBadge extends StatelessWidget {
   }
   
 
+  Color _themeAwareColor(BuildContext context, Color staticColor, String labelText) {
+    final cleanLabel = labelText.toLowerCase();
+    if (cleanLabel == 'owner') {
+      return AppTheme.warningColorTheme(context);
+    } else if (cleanLabel == 'manager') {
+      return AppTheme.infoColorTheme(context);
+    } else if (cleanLabel == 'staff') {
+      return AppTheme.secondaryColorTheme(context);
+    } else if (cleanLabel == 'laba') {
+      return AppTheme.profitColorTheme(context);
+    } else if (cleanLabel == 'rugi') {
+      return AppTheme.lossColorTheme(context);
+    }
+
+    if (staticColor == AppTheme.warningColor) return AppTheme.warningColorTheme(context);
+    if (staticColor == AppTheme.infoColor) return AppTheme.infoColorTheme(context);
+    if (staticColor == AppTheme.secondaryColor) return AppTheme.secondaryColorTheme(context);
+    if (staticColor == AppTheme.profitColor) return AppTheme.profitColorTheme(context);
+    if (staticColor == AppTheme.lossColor) return AppTheme.lossColorTheme(context);
+    return staticColor;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final themeColor = _themeAwareColor(context, color, label);
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: themeColor.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: Text(
@@ -70,7 +93,7 @@ class AppBadge extends StatelessWidget {
         style: TextStyle(
           fontSize: fontSize,
           fontWeight: FontWeight.w600,
-          color: color,
+          color: themeColor,
         ),
       ),
     );
