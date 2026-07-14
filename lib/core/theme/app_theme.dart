@@ -460,6 +460,7 @@ class AppTheme {
         ),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        shadowColor: accent.withValues(alpha: 0.2),
       ),
 
       // ── Divider ─────────────────────────────────────────────
@@ -502,6 +503,22 @@ class AppTheme {
         elevation: 8,
         color: card,
         surfaceTintColor: Colors.transparent,
+        shadowColor: accent.withValues(alpha: 0.2),
+      ),
+
+      // ── Dropdown Menu ────────────────────────────────────────
+      dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radiusSmall),
+            ),
+          ),
+          elevation: WidgetStateProperty.all(8),
+          shadowColor: WidgetStateProperty.all(
+            accent.withValues(alpha: 0.2),
+          ),
+        ),
       ),
     );
   }
@@ -581,7 +598,7 @@ class AppTheme {
           borderRadius: BorderRadius.vertical(top: Radius.circular(radiusXL)),
         ),
         elevation: 0,
-        shadowColor: Colors.transparent,
+        shadowColor: darkAccent.withValues(alpha: 0.25),
         surfaceTintColor: Colors.transparent,
         backgroundColor: darkCard,
       ),
@@ -740,6 +757,9 @@ class AppTheme {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         backgroundColor: darkElevatedCard,
+        shadowColor: darkAccent.withValues(alpha: 0.4),
+        titleTextStyle: heading3.copyWith(color: darkPrimaryText),
+        contentTextStyle: bodyText.copyWith(color: darkPrimaryText),
       ),
 
       // ── Divider ─────────────────────────────────────────────
@@ -783,9 +803,28 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusSmall),
         ),
-        elevation: 8,
-        color: darkElevatedCard,
+        elevation: 6,
+        color: darkSecondaryBackground,
         surfaceTintColor: Colors.transparent,
+        shadowColor: darkAccent.withValues(alpha: 0.25),
+      ),
+
+      // ── Dropdown Menu ────────────────────────────────────────
+      dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radiusSmall),
+            ),
+          ),
+          elevation: WidgetStateProperty.all(6),
+          shadowColor: WidgetStateProperty.all(
+            darkAccent.withValues(alpha: 0.25),
+          ),
+          backgroundColor: WidgetStateProperty.all(
+            darkSecondaryBackground,
+          ),
+        ),
       ),
     );
   }

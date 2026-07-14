@@ -318,15 +318,52 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                                       ],
                                     ),
                                   ),
-                                  IconButton(
-                                    icon: const Icon(Icons.edit_outlined, size: 20, color: AppTheme.infoColor),
-                                    tooltip: 'Edit Kategori',
-                                    onPressed: () => _showEdit(c),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppTheme.lossColor),
-                                    tooltip: 'Hapus Kategori',
-                                    onPressed: () => _confirmDelete(c),
+                                  PopupMenuButton<String>(
+                                    icon: Icon(
+                                      Icons.more_vert_rounded,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      size: 20,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                    ),
+                                    onSelected: (value) {
+                                      switch (value) {
+                                        case 'edit':
+                                          _showEdit(c);
+                                          break;
+                                        case 'delete':
+                                          _confirmDelete(c);
+                                          break;
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem<String>(
+                                        value: 'edit',
+                                        child: ListTile(
+                                          leading: Icon(Icons.edit_outlined,
+                                              color: Theme.of(context).colorScheme.onSurface),
+                                          title: Text('Edit Kategori',
+                                              style: TextStyle(
+                                                  color: Theme.of(context).colorScheme.onSurface)),
+                                          dense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                        ),
+                                      ),
+                                      const PopupMenuDivider(),
+                                      PopupMenuItem<String>(
+                                        value: 'delete',
+                                        child: ListTile(
+                                          leading: Icon(Icons.delete_outline_rounded,
+                                              color: AppTheme.lossColorTheme(context)),
+                                          title: Text('Hapus Kategori',
+                                              style: TextStyle(
+                                                  color: AppTheme.lossColorTheme(context))),
+                                          dense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

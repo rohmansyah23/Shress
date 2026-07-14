@@ -279,6 +279,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             child: const Text('Hapus'),
           ),
@@ -729,27 +730,68 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                         ],
                                       ),
                                     ),
-                                    if (canEdit) ...[
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.edit_outlined,
-                                          size: 20,
-                                        ),
-                                        onPressed: () => _handleEdit(tx),
-                                        tooltip: 'Edit',
-                                      ),
-                                      IconButton(
+                                    if (canEdit)
+                                      PopupMenuButton<String>(
                                         icon: Icon(
-                                          Icons.delete_outline_rounded,
+                                          Icons.more_vert_rounded,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
                                           size: 20,
-                                          color: AppTheme.lossColorTheme(
-                                            context,
-                                          ),
                                         ),
-                                        onPressed: () => _handleDelete(tx),
-                                        tooltip: 'Hapus',
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(AppTheme.radiusSmall),
+                                        ),
+                                        onSelected: (value) {
+                                          switch (value) {
+                                            case 'edit':
+                                              _handleEdit(tx);
+                                              break;
+                                            case 'delete':
+                                              _handleDelete(tx);
+                                              break;
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          PopupMenuItem<String>(
+                                            value: 'edit',
+                                            child: ListTile(
+                                              leading: Icon(
+                                                  Icons.edit_outlined,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurface),
+                                              title: Text('Edit',
+                                                  style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface)),
+                                              dense: true,
+                                              contentPadding:
+                                                  EdgeInsets.zero,
+                                            ),
+                                          ),
+                                          const PopupMenuDivider(),
+                                          PopupMenuItem<String>(
+                                            value: 'delete',
+                                            child: ListTile(
+                                              leading: Icon(
+                                                  Icons.delete_outline_rounded,
+                                                  color: AppTheme.lossColorTheme(
+                                                      context)),
+                                              title: Text('Hapus',
+                                                  style: TextStyle(
+                                                      color: AppTheme
+                                                          .lossColorTheme(
+                                                              context))),
+                                              dense: true,
+                                              contentPadding:
+                                                  EdgeInsets.zero,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
                                   ],
                                 ),
                               ),

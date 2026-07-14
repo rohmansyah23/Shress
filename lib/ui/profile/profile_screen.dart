@@ -276,8 +276,8 @@ class ProfileScreen extends ConsumerWidget {
               }
             },
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColor,
-              foregroundColor: Colors.white,
+              backgroundColor: AppTheme.lossColorTheme(context),
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             child: const Text('Keluar'),
           ),

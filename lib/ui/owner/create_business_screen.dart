@@ -188,19 +188,7 @@ class _CreateBusinessScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Buat Bisnis Baru'),
-        actions: [
-          TextButton(
-            onPressed: _isSaving ? null : _handleCreate,
-            child: _isSaving
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Simpan',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ],
+
       ),
       body: Form(
         key: _formKey,

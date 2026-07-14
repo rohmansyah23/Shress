@@ -166,19 +166,7 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('QRIS - ${widget.business.name}'),
-        actions: [
-          TextButton(
-            onPressed: _isUploading ? null : _uploadQris,
-            child: _isUploading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Simpan',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ],
+
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppTheme.s20),

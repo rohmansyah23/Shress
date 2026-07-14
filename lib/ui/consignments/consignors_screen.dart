@@ -521,6 +521,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             child: const Text('Hapus'),
           ),

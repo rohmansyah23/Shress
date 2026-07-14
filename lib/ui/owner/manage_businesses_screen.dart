@@ -444,9 +444,10 @@ class _BusinessItemCard extends StatelessWidget {
                   value: 'delete',
                   child: ListTile(
                     leading: Icon(Icons.delete_outline_rounded,
-                        color: AppTheme.lossColor),
+                        color: AppTheme.lossColorTheme(context)),
                     title: Text('Hapus Bisnis',
-                        style: TextStyle(color: AppTheme.lossColor)),
+                        style: TextStyle(
+                            color: AppTheme.lossColorTheme(context))),
                     dense: true,
                     contentPadding: EdgeInsets.zero,
                   ),

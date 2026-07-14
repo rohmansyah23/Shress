@@ -295,6 +295,7 @@ class DebtorsScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             child: const Text('Hapus'),
           ),

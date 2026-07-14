@@ -17,6 +17,15 @@ import '../transaction/transaction_sheet.dart';
 import '../debtors/debtors_screen.dart';
 import '../consignments/consignors_screen.dart';
 
+enum _TrendTypeFilter {
+  netProfit('Laba/Rugi Bersih'),
+  income('Uang Masuk'),
+  expense('Uang Keluar');
+
+  final String label;
+  const _TrendTypeFilter(this.label);
+}
+
 class ManagerDashboardScreen extends ConsumerStatefulWidget {
   final BusinessModel selectedBusiness;
   final List<BusinessModel> businesses;
@@ -45,6 +54,7 @@ class _ManagerDashboardScreenState
   List<TransactionModel> _recentTransactions = [];
   bool _recentLoading = true;
   TrendFilter _selectedTrendFilter = TrendFilter.daily;
+  _TrendTypeFilter _selectedTypeFilter = _TrendTypeFilter.netProfit;
 
   @override
   void initState() {
@@ -159,38 +169,80 @@ class _ManagerDashboardScreenState
             // === Trend Chart ===
             Text('Tren Keuangan', style: AppTheme.heading3),
             const SizedBox(height: 8),
-            DropdownButtonFormField<TrendFilter>(
-              initialValue: _selectedTrendFilter,
-              isDense: true,
-              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-              decoration: const InputDecoration(
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                isDense: true,
-                labelText: 'Periode Waktu',
-                floatingLabelBehavior: FloatingLabelBehavior.never,
-              ),
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              items: TrendFilter.values
-                  .map(
-                    (f) => DropdownMenuItem(
-                      value: f,
-                      child: Text(
-                        _trendFilterLabel(f),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<TrendFilter>(
+                    initialValue: _selectedTrendFilter,
+                    isDense: true,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      isDense: true,
+                      labelText: 'Periode Waktu',
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
                     ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() => _selectedTrendFilter = value);
-              },
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    items: TrendFilter.values
+                        .map(
+                          (f) => DropdownMenuItem(
+                            value: f,
+                            child: Text(
+                              _trendFilterLabel(f),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => _selectedTrendFilter = value);
+                    },
+                  ),
+                ),
+                const SizedBox(width: AppTheme.s8),
+                Expanded(
+                  child: DropdownButtonFormField<_TrendTypeFilter>(
+                    initialValue: _selectedTypeFilter,
+                    isDense: true,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      isDense: true,
+                      labelText: 'Tipe Grafik',
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                    ),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    items: _TrendTypeFilter.values
+                        .map(
+                          (f) => DropdownMenuItem(
+                            value: f,
+                            child: Text(
+                              f.label,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => _selectedTypeFilter = value);
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             trendAsync!.when(
@@ -204,10 +256,24 @@ class _ManagerDashboardScreenState
                   );
                 }
                 final barPoints = trendData
-                    .map((d) => FinanceBarDataPoint(
-                          period: d.period,
-                          value: d.netProfit,
-                        ))
+                    .map((d) {
+                      double val = 0;
+                      switch (_selectedTypeFilter) {
+                        case _TrendTypeFilter.netProfit:
+                          val = d.netProfit;
+                          break;
+                        case _TrendTypeFilter.income:
+                          val = d.income;
+                          break;
+                        case _TrendTypeFilter.expense:
+                          val = d.expense;
+                          break;
+                      }
+                      return FinanceBarDataPoint(
+                        period: d.period,
+                        value: val,
+                      );
+                    })
                     .toList();
                 final timeLabel = _selectedTrendFilter == TrendFilter.daily
                     ? '7 Hari Terakhir'
@@ -216,9 +282,28 @@ class _ManagerDashboardScreenState
                         : _selectedTrendFilter == TrendFilter.monthly
                             ? '6 Bulan Terakhir'
                             : '5 Tahun Terakhir';
+
+                Color? customBarColor;
+                if (_selectedTypeFilter == _TrendTypeFilter.income) {
+                  customBarColor = AppTheme.profitColorTheme(context);
+                } else if (_selectedTypeFilter == _TrendTypeFilter.expense) {
+                  customBarColor = AppTheme.lossColorTheme(context);
+                }
+
                 return FinanceBarChart(
                   data: barPoints,
-                  title: 'Tren Laba/Rugi Bersih ($timeLabel)',
+                  title: 'Tren ${_selectedTypeFilter.label} ($timeLabel)',
+                  barColor: customBarColor,
+                  tooltipColorBuilder: (val) {
+                    if (_selectedTypeFilter == _TrendTypeFilter.income) {
+                      return AppTheme.profitColorTheme(context);
+                    } else if (_selectedTypeFilter == _TrendTypeFilter.expense) {
+                      return AppTheme.lossColorTheme(context);
+                    }
+                    return val >= 0
+                        ? AppTheme.profitColorTheme(context)
+                        : AppTheme.lossColorTheme(context);
+                  },
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),

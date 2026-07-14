@@ -212,7 +212,10 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.lossColor),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.lossColorTheme(context),
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             child: const Text('Hapus'),
           ),
         ],
@@ -786,7 +789,10 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.lossColor),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.lossColorTheme(context),
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             child: const Text('Hapus'),
           ),
         ],

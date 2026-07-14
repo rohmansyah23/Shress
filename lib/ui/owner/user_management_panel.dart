@@ -137,7 +137,10 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.lossColor),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.lossColorTheme(context),
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             child: const Text('Hapus'),
           ),
         ],
@@ -383,19 +386,50 @@ class _UserCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.edit_outlined,
-                      size: 20, color: AppTheme.infoColor),
-                  tooltip: 'Edit user',
-                  onPressed: onEdit,
-                ),
-                if (user.role != AppConstants.roleOwner)
-                  IconButton(
-                    icon: Icon(Icons.delete_outline_rounded,
-                        size: 20, color: AppTheme.lossColor),
-                    tooltip: 'Hapus user',
-                    onPressed: onDelete,
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert_rounded,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    size: 20,
                   ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  ),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit':
+                        onEdit();
+                        break;
+                      case 'delete':
+                        onDelete();
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem<String>(
+                      value: 'edit',
+                      child: ListTile(
+                        leading: Icon(Icons.edit_outlined),
+                        title: Text('Edit User'),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: ListTile(
+                        leading: Icon(Icons.delete_outline_rounded,
+                            color: AppTheme.lossColorTheme(context)),
+                        title: Text('Hapus User',
+                            style: TextStyle(
+                                color: AppTheme.lossColorTheme(context))),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

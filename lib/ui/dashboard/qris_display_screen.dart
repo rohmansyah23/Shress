@@ -65,7 +65,7 @@ class QrisDisplayScreen extends StatelessWidget {
                                   return const Center(
                                       child: CircularProgressIndicator());
                                 },
-                                  errorBuilder: (_, _, _) => _buildFallback(),
+                                  errorBuilder: (_, _, _) => _buildFallback(context),
                               ),
                       ),
                     ),
@@ -78,7 +78,7 @@ class QrisDisplayScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
                       ),
-                      child: _buildFallback(),
+                      child: _buildFallback(context),
                     ),
                     const SizedBox(height: AppTheme.s16),                      Text(
                       'QRIS belum tersedia untuk bisnis ini',
@@ -95,16 +95,17 @@ class QrisDisplayScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFallback() {
-    // Warna statis — fallback widget jarang terlihat,
-    // dan menggunakan warna netral yang berfungsi di kedua mode.
+  Widget _buildFallback(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.qr_code, size: 80, color: AppTheme.secondaryText),
+        Icon(Icons.qr_code, size: 80,
+            color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(height: AppTheme.s8),
         Text('QRIS Tidak Tersedia',
-            style: TextStyle(fontSize: 12, color: AppTheme.secondaryText)),
+            style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant)),
       ],
     );
   }

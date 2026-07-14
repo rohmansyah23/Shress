@@ -402,7 +402,8 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                       ),
                       if (widget.existingDebtor == null)
                         IconButton(
-                          icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                          icon: Icon(Icons.close_rounded,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant),
                           onPressed: () {
                             setState(() {
                               _selectedDebtor = null;
@@ -429,21 +430,21 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   onPressed: _showDebtorSelectionSheet,
                 ),
                 const SizedBox(height: AppTheme.s16),
-                const Row(
+                Row(
                   children: [
-                    Expanded(child: Divider()),
+                    const Expanded(child: Divider()),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'ATAU BUAT BARU',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
-                    Expanded(child: Divider()),
+                    const Expanded(child: Divider()),
                   ],
                 ),
                 const SizedBox(height: AppTheme.s16),
