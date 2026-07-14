@@ -84,7 +84,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   Widget _buildContent(
     Map<String, double> summary,
-    AsyncValue<List<({String period, double netProfit})>> trendAsync,
+    AsyncValue<List<({String period, double income, double expense, double netProfit})>> trendAsync,
     bool isTrendLoading,
   ) {
     final netProfit = summary['netProfit'] ?? 0;

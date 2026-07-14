@@ -1652,7 +1652,7 @@ class SupabaseService {
 
   /// Get net profit trend based on the TrendFilter (weekly, monthly, yearly).
   /// Works for single or multiple businesses.
-  Future<List<({String period, double netProfit})>> getNetProfitsTrend({
+  Future<List<({String period, double income, double expense, double netProfit})>> getNetProfitsTrend({
     required List<int> businessIds,
     required TrendFilter filter,
   }) async {
@@ -1746,7 +1746,7 @@ class SupabaseService {
         }
       }
 
-      final result = <({String period, double netProfit})>[];
+      final result = <({String period, double income, double expense, double netProfit})>[];
 
       if (filter == TrendFilter.daily) {
         final startDay = now.subtract(const Duration(days: 6));
@@ -1756,7 +1756,7 @@ class SupabaseService {
               '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
-          result.add((period: key, netProfit: income - expense));
+          result.add((period: key, income: income, expense: expense, netProfit: income - expense));
         }
       } else if (filter == TrendFilter.weekly) {
         final currentMonday = DateTime(
@@ -1771,7 +1771,7 @@ class SupabaseService {
               '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
-          result.add((period: key, netProfit: income - expense));
+          result.add((period: key, income: income, expense: expense, netProfit: income - expense));
         }
       } else if (filter == TrendFilter.monthly) {
         const months = 6;
@@ -1780,7 +1780,7 @@ class SupabaseService {
           final key = '${d.year}-${d.month.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
-          result.add((period: key, netProfit: income - expense));
+          result.add((period: key, income: income, expense: expense, netProfit: income - expense));
         }
       } else {
         // yearly
@@ -1789,7 +1789,7 @@ class SupabaseService {
           final key = '$year';
           final income = incomeMap[key] ?? 0;
           final expense = expenseMap[key] ?? 0;
-          result.add((period: key, netProfit: income - expense));
+          result.add((period: key, income: income, expense: expense, netProfit: income - expense));
         }
       }
 

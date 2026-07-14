@@ -21,7 +21,7 @@ final combinedBusinessSummaryProvider =
 
 /// Tren laba/rugi berdasarkan filter untuk satu bisnis (harian, mingguan, bulanan, tahunan).
 final businessNetProfitsTrendProvider = FutureProvider.family<
-    List<({String period, double netProfit})>,
+    List<({String period, double income, double expense, double netProfit})>,
     ({int businessId, TrendFilter filter})>((ref, params) async {
   ref.watch(transactionRefreshProvider);
   return SupabaseService.instance.getNetProfitsTrend(
@@ -32,7 +32,7 @@ final businessNetProfitsTrendProvider = FutureProvider.family<
 
 /// Gabungan tren laba/rugi berdasarkan filter untuk banyak bisnis (Owner view).
 final allBusinessesNetProfitsTrendProvider = FutureProvider.family<
-    List<({String period, double netProfit})>,
+    List<({String period, double income, double expense, double netProfit})>,
     ({String businessIdsKey, TrendFilter filter})>((ref, params) async {
   ref.watch(transactionRefreshProvider);
   if (params.businessIdsKey.isEmpty) return [];
