@@ -45,8 +45,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Lupa Password')),
       body: SafeArea(
@@ -63,7 +61,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   size: 72,
                   color: _emailSent
                       ? AppTheme.profitColor
-                      : colorScheme.primary,
+                      : AppTheme.primaryColorTheme(context),
                 ),
                 const SizedBox(height: AppTheme.s16),
                 Text(
@@ -117,7 +115,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                     height: 24,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Theme.of(context).colorScheme.onPrimary,
+                                      color: AppTheme.onPrimaryColorTheme(context),
                                     ),
                                   )
                                 : const Text(

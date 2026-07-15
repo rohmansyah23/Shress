@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/sentry_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/error_handler.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 /// Riverpod [ProviderObserver] that logs provider errors globally.
 ///
@@ -89,23 +93,23 @@ class AppErrorScreen extends StatelessWidget {
       child: Container(
         color: AppTheme.lightTheme.scaffoldBackgroundColor,
         child: Padding(
-          padding: const EdgeInsets.all(AppTheme.s32),
+          padding: const EdgeInsets.all(AppSpacing.s32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.error_outline_rounded,
-                size: 72,
+                size: AppIconSize.s72,
                 color: AppTheme.lossColor.withValues(alpha: 0.6),
               ),
-              const SizedBox(height: AppTheme.s24),
+              const SizedBox(height: AppSpacing.s24),
               Text(
                 'Terjadi Kesalahan',
                 style: AppTheme.heading2.copyWith(
                   color: AppTheme.lossColor,
                 ),
               ),
-              const SizedBox(height: AppTheme.s12),
+              const SizedBox(height: AppSpacing.s12),
               Text(
                 appError.userMessage,
                 textAlign: TextAlign.center,
@@ -113,31 +117,31 @@ class AppErrorScreen extends StatelessWidget {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               if (appError.isOffline)
                 Text(
                   'Periksa koneksi internet Anda',
                   textAlign: TextAlign.center,
                   style: AppTheme.caption,
                 ),
-              const SizedBox(height: AppTheme.s32),
+              const SizedBox(height: AppSpacing.s32),
               FilledButton.icon(
-                icon: const Icon(Icons.refresh_rounded, size: 18),
+                icon: const Icon(Icons.refresh_rounded, size: AppIconSize.s18),
                 label: const Text('Muat Ulang'),
                 onPressed: () => _handleReload(context),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 14,
+                    horizontal: AppSpacing.s32,
+                    vertical: AppSpacing.s14,
                   ),
                 ),
               ),
               if (kDebugMode) ...[
-                const SizedBox(height: AppTheme.s24),                  Container(
-                    padding: const EdgeInsets.all(AppTheme.s12),
+                const SizedBox(height: AppSpacing.s24),                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.s12),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      color: AppTheme.surfaceContainerHighestColorTheme(context),
+                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                     ),
                   child: Text(
                     errorDetails.exception.toString(),
@@ -213,16 +217,15 @@ class _SplashRedirectorState extends State<_SplashRedirector> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => const Scaffold(
+          MaterialPageRoute(                  builder: (_) => Scaffold(
               body: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.refresh_rounded, size: 48, color: AppTheme.secondaryText),
-                    SizedBox(height: AppTheme.s16),
+                    Icon(Icons.refresh_rounded, size: AppIconSize.s48, color: AppTheme.secondaryText),
+                    SizedBox(height: AppSpacing.s16),
                     Text('Aplikasi dimuat ulang...'),
-                    SizedBox(height: AppTheme.s16),
+                    SizedBox(height: AppSpacing.s16),
                     CircularProgressIndicator(),
                   ],
                 ),
@@ -275,10 +278,10 @@ AppErrorObserver initGlobalErrorHandlers({
     if (kDebugMode) {
       return Material(
         child: Container(
-          color: Colors.yellow.shade50,
-          padding: const EdgeInsets.all(AppTheme.s8),
+          color: AppTheme.warning.withValues(alpha: 0.12),
+          padding: const EdgeInsets.all(AppSpacing.s8),
           child: Row(
-            children: [                  const Icon(Icons.bug_report_rounded, color: AppTheme.warningColor, size: 18),                const SizedBox(width: AppTheme.s8),
+            children: [                  const Icon(Icons.bug_report_rounded, color: AppTheme.warningColor, size: AppIconSize.s18),                const SizedBox(width: AppSpacing.s8),
               Expanded(
                 child: Text(
                   '${details.exception.runtimeType}: ${details.exception}',

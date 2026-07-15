@@ -10,6 +10,10 @@ import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../settings/settings_screen.dart';
 import '../widgetbook/widgetbook_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class ProfileScreen extends ConsumerWidget {
   final bool showAppBar;
@@ -32,8 +36,6 @@ class ProfileScreen extends ConsumerWidget {
 
   Widget _buildBody(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-
     if (user == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -41,7 +43,7 @@ class ProfileScreen extends ConsumerWidget {
     final hasDisplayName = user.displayName?.isNotEmpty == true;
 
     return ListView(
-      padding: const EdgeInsets.all(AppTheme.s16),
+      padding: const EdgeInsets.all(AppSpacing.s16),
       children: [
         // Avatar & Info
         Center(
@@ -49,54 +51,54 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 48,
-                backgroundColor: colorScheme.primaryContainer,
+                backgroundColor: AppTheme.primaryColorTheme(context),
                 child: Text(
                   hasDisplayName
                       ? user.displayName![0].toUpperCase()
                       : (user.username.isNotEmpty ? user.username[0].toUpperCase() : '?'),
                   style: AppTheme.heading1.copyWith(
-                    color: colorScheme.primary,
+                    color: Colors.white,
                   ),
                 ),
               ),
-              const SizedBox(height: AppTheme.s16),
+              const SizedBox(height: AppSpacing.s16),
               Text(
                 hasDisplayName ? user.displayName! : user.username,
                 style: AppTheme.heading2,
               ),
               if (hasDisplayName) ...[
-                const SizedBox(height: 2),
+                const SizedBox(height: AppSpacing.s2),
                 Text('@${user.username}', style: AppTheme.caption),
               ],
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               AppBadge.role(user.role, fontSize: 12),
             ],
           ),
         ),
-        const SizedBox(height: AppTheme.s20),
+        const SizedBox(height: AppSpacing.s20),
 
         // Info Akun
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(AppTheme.s16),
+            padding: const EdgeInsets.all(AppSpacing.s16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Informasi Akun', style: AppTheme.heading3),
-                const SizedBox(height: AppTheme.s16),
+                const SizedBox(height: AppSpacing.s16),
                 _InfoRow(
                     icon: Icons.badge_outlined,
                     label: 'Nama Tampilan',
                     value: user.displayName?.isNotEmpty == true ? user.displayName! : '-'),
-                const SizedBox(height: AppTheme.s12),
+                const SizedBox(height: AppSpacing.s12),
                 _InfoRow(icon: Icons.person_outlined, label: 'Username', value: user.username),
-                const SizedBox(height: AppTheme.s12),
+                const SizedBox(height: AppSpacing.s12),
                 _InfoRow(icon: Icons.badge_outlined, label: 'Role', value: user.role),
               ],
             ),
           ),
         ),
-        const SizedBox(height: AppTheme.s16),
+        const SizedBox(height: AppSpacing.s16),
 
         // Menu & Pengaturan
         Card(
@@ -143,7 +145,7 @@ class ProfileScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: AppTheme.s16),
+        const SizedBox(height: AppSpacing.s16),
         Card(
           child: ListTile(
             leading: Icon(Icons.logout_rounded, color: AppTheme.lossColorTheme(context)),
@@ -179,7 +181,7 @@ class ProfileScreen extends ConsumerWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+              borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
           title: const Text('Ubah Nama Tampilan'),
           content: SizedBox(
             width: double.maxFinite,
@@ -251,7 +253,7 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+            borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: const Text('Konfirmasi Keluar'),
         content: const Text('Apakah Anda yakin ingin keluar dari akun saat ini?'),
         actions: [
@@ -272,7 +274,7 @@ class ProfileScreen extends ConsumerWidget {
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: Theme.of(context).colorScheme.onError,
+              foregroundColor: AppTheme.onDangerColorTheme(context),
             ),
             child: const Text('Keluar'),
           ),
@@ -298,8 +300,8 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
-        const SizedBox(width: AppTheme.s12),
+        Icon(icon, size: AppIconSize.s20, color: AppTheme.onSurfaceVariantColorTheme(context)),
+        const SizedBox(width: AppSpacing.s12),
         Text('$label: ', style: AppTheme.caption),
         Expanded(
           child: Text(

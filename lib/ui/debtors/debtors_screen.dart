@@ -13,6 +13,10 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/debt_consignment_provider.dart';
 import 'add_debt_screen.dart';
 import 'debtor_detail_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 String _getInitials(String name) {
   final words = name.trim().split(RegExp(r'\s+'));
@@ -58,9 +62,9 @@ class DebtorsScreen extends ConsumerWidget {
                 SliverToBoxAdapter(
                   child: Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppTheme.s12,
-                  AppTheme.s16,
-                  AppTheme.s12,
+                  AppSpacing.s12,
+                  AppSpacing.s16,
+                  AppSpacing.s12,
                   0,
                 ),
                     child: summary_card.SummaryCard(
@@ -81,29 +85,23 @@ class DebtorsScreen extends ConsumerWidget {
                           children: [
                             Icon(
                               Icons.people_outline_rounded,
-                              size: 64,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant
+                              size: AppIconSize.s64,
+                              color: AppTheme.onSurfaceVariantColorTheme(context)
                                   .withValues(alpha: 0.4),
                             ),
-                            const SizedBox(height: AppTheme.s8),
+                            const SizedBox(height: AppSpacing.s8),
                             Text(
                               'Belum ada penghutang',
                               style: AppTheme.title.copyWith(
                                     fontSize: 18,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
+                                    color: AppTheme.onSurfaceVariantColorTheme(context),
                                   ),
                             ),
-                            const SizedBox(height: AppTheme.s12),
+                            const SizedBox(height: AppSpacing.s12),
                             Text(
                               'Tekan + untuk menambah hutang baru',
                               style: AppTheme.caption.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: AppTheme.onSurfaceVariantColorTheme(context),
                               ),
                             ),
                           ],
@@ -121,10 +119,10 @@ class DebtorsScreen extends ConsumerWidget {
                           delay: Duration(milliseconds: index * 50),
                           child: Padding(
                             padding: EdgeInsets.only(
-                              left: AppTheme.s12,
-                              right: AppTheme.s12,
-                              bottom: AppTheme.s8,
-                              top: index == 0 ? AppTheme.s8 : 0,
+                              left: AppSpacing.s12,
+                              right: AppSpacing.s12,
+                              bottom: AppSpacing.s8,
+                              top: index == 0 ? AppSpacing.s8 : 0,
                             ),
                             child: _DebtorCard(
                               debtor: debtor,
@@ -156,10 +154,10 @@ class DebtorsScreen extends ConsumerWidget {
           ),
           bottomNavigationBar: Container(
             padding: EdgeInsets.fromLTRB(
-              AppTheme.s16,
+              AppSpacing.s16,
               0,
-              AppTheme.s16,
-              MediaQuery.of(context).viewInsets.bottom + AppTheme.s16,
+              AppSpacing.s16,
+              MediaQuery.of(context).viewInsets.bottom + AppSpacing.s16,
             ),
             child: SizedBox(
               width: double.infinity,
@@ -204,7 +202,7 @@ class DebtorsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
         ),
         title: const Text('Edit Penghutang'),
         content: Column(
@@ -214,13 +212,13 @@ class DebtorsScreen extends ConsumerWidget {
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Nama'),
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             TextField(
               controller: phoneController,
               decoration: const InputDecoration(labelText: 'Telepon'),
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             TextField(
               controller: notesController,
               decoration: const InputDecoration(labelText: 'Catatan'),
@@ -276,7 +274,7 @@ class DebtorsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
         ),
         title: const Text('Hapus Penghutang'),
         content: Text(
@@ -291,7 +289,7 @@ class DebtorsScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: Theme.of(context).colorScheme.onError,
+              foregroundColor: AppTheme.onDangerColorTheme(context),
             ),
             child: const Text('Hapus'),
           ),
@@ -333,10 +331,10 @@ class _DebtorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(AppTheme.s12),
+          padding: const EdgeInsets.all(AppSpacing.s12),
           child: Row(
             children: [
               Container(
@@ -344,7 +342,7 @@ class _DebtorCard extends StatelessWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   color: AppTheme.warningColorTheme(context).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -355,7 +353,7 @@ class _DebtorCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: AppTheme.s12),
+              const SizedBox(width: AppSpacing.s12),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -367,7 +365,7 @@ class _DebtorCard extends StatelessWidget {
                     ),
                     if (debtor.phone != null && debtor.phone!.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(top: AppTheme.s4),
+                        padding: const EdgeInsets.only(top: AppSpacing.s4),
                         child: Text(
                           debtor.phone!,
                           style: AppTheme.caption.copyWith(fontSize: 11),
@@ -383,7 +381,7 @@ class _DebtorCard extends StatelessWidget {
                     'Sisa Hutang',
                     style: AppTheme.caption.copyWith(fontSize: 10),
                   ),
-                  const SizedBox(height: AppTheme.s4),
+                  const SizedBox(height: AppSpacing.s4),
                   Text(
                     FormatHelpers.rupiah(remainingAmount),
                     style: AppTheme.subtitle.copyWith(
@@ -395,12 +393,12 @@ class _DebtorCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(width: AppTheme.s4),
+              const SizedBox(width: AppSpacing.s4),
               PopupMenuButton<String>(
                 icon: Icon(
                   Icons.more_vert_rounded,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: AppIconSize.s20,
+                  color: AppTheme.onSurfaceVariantColorTheme(context),
                 ),
                 onSelected: (value) {
                   if (value == 'edit') onEdit();
@@ -411,8 +409,8 @@ class _DebtorCard extends StatelessWidget {
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: AppTheme.s8),
+                        Icon(Icons.edit_outlined, size: AppIconSize.s18),
+                        SizedBox(width: AppSpacing.s8),
                         Text('Edit'),
                       ],
                     ),
@@ -424,10 +422,10 @@ class _DebtorCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.delete_outline_rounded,
-                          size: 18,
+                          size: AppIconSize.s18,
                           color: AppTheme.lossColorTheme(context),
                         ),
-                        const SizedBox(width: AppTheme.s8),
+                        const SizedBox(width: AppSpacing.s8),
                         Text(
                           'Hapus',
                           style: TextStyle(color: AppTheme.lossColorTheme(context)),

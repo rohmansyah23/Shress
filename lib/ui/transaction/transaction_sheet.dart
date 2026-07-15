@@ -11,6 +11,10 @@ import '../../data/local/models/category_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 /// Smart Transaction Sheet with real-time IDR currency formatting.
 class TransactionSheet extends ConsumerStatefulWidget {
@@ -267,8 +271,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXL)),
+        color: AppTheme.backgroundColorTheme(context),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.radiusXL)),
       ),
       child: Form(
         key: _formKey,
@@ -280,14 +284,14 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+                color: AppTheme.outlineVariantColorTheme(context),
+                borderRadius: BorderRadius.circular(AppRadius.s2),
               ),
             ),
 
             // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.s20, AppSpacing.s16, AppSpacing.s20, 0),
               child: Row(
                 children: [
                   Text('Tambah Transaksi', style: AppTheme.heading2),
@@ -301,51 +305,123 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
             ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s20),
               child: Text(
                 widget.business.name,
-                style: AppTheme.caption.copyWith(fontSize: 13),
+                style: AppTheme.caption,
               ),
             ),
 
-            const SizedBox(height: AppTheme.s16),
+            const SizedBox(height: AppSpacing.s16),
 
-            // Segmented tab
+             // Segmented tab
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: SegmentedButton<int>(
-                  segments: const [
-                    ButtonSegment(
-                      value: 0,
-                      label: Text('Uang Masuk'),
-                      icon: Icon(Icons.trending_up_rounded),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s20),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.15)
+                      : AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
+                ),
+                child: Row(
+                  children: [
+                    // Tab 0: Uang Masuk (Income)
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _onTabChanged(0),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.s10),
+                          decoration: BoxDecoration(
+                            color: _selectedTabIndex == 0
+                                ? AppTheme.profitColorTheme(context)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.trending_up_rounded,
+                                size: AppIconSize.s18,
+                                color: _selectedTabIndex == 0
+                                    ? Colors.white
+                                    : AppTheme.onSurfaceVariantColorTheme(context),
+                              ),
+                              const SizedBox(width: AppSpacing.s8),
+                              Text(
+                                'Uang Masuk',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: _selectedTabIndex == 0 ? FontWeight.w600 : FontWeight.normal,
+                                  color: _selectedTabIndex == 0
+                                      ? Colors.white
+                                      : AppTheme.onSurfaceVariantColorTheme(context),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    ButtonSegment(
-                      value: 1,
-                      label: Text('Uang Keluar'),
-                      icon: Icon(Icons.trending_down_rounded),
+                    const SizedBox(width: 4),
+                    // Tab 1: Uang Keluar (Expense)
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _onTabChanged(1),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.s10),
+                          decoration: BoxDecoration(
+                            color: _selectedTabIndex == 1
+                                ? AppTheme.lossColorTheme(context)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.trending_down_rounded,
+                                size: AppIconSize.s18,
+                                color: _selectedTabIndex == 1
+                                    ? Colors.white
+                                    : AppTheme.onSurfaceVariantColorTheme(context),
+                              ),
+                              const SizedBox(width: AppSpacing.s8),
+                              Text(
+                                'Uang Keluar',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: _selectedTabIndex == 1 ? FontWeight.w600 : FontWeight.normal,
+                                  color: _selectedTabIndex == 1
+                                      ? Colors.white
+                                      : AppTheme.onSurfaceVariantColorTheme(context),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ],
-                  selected: {_selectedTabIndex},
-                  onSelectionChanged: (selected) =>
-                      _onTabChanged(selected.first),
                 ),
               ),
             ),
 
-            const SizedBox(height: AppTheme.s20),
+            const SizedBox(height: AppSpacing.s20),
 
             // Scrollable form
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, bottomInset + 20),
+                padding: EdgeInsets.fromLTRB(AppSpacing.s20, 0, AppSpacing.s20, bottomInset + AppSpacing.s20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _FormLabel('Kategori'),
-                    const SizedBox(height: AppTheme.s8),
+                    const SizedBox(height: AppSpacing.s8),
                     DropdownButtonFormField<CategoryModel>(
                       initialValue: _selectedCategory,
                       decoration: const InputDecoration(
@@ -363,10 +439,10 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           value == null ? 'Pilih kategori' : null,
                     ),
 
-                    const SizedBox(height: AppTheme.s20),
+                    const SizedBox(height: AppSpacing.s20),
 
                     _FormLabel('Tanggal Transaksi'),
-                    const SizedBox(height: AppTheme.s8),
+                    const SizedBox(height: AppSpacing.s8),
                     TextFormField(
                       controller: _dateTextController,
                       readOnly: true,
@@ -379,7 +455,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           value == null || value.isEmpty ? 'Pilih tanggal' : null,
                     ),
 
-                    const SizedBox(height: AppTheme.s20),
+                    const SizedBox(height: AppSpacing.s20),
 
                     // Amount with IDR formatting
                     _FormLabel(
@@ -388,7 +464,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           ? 'Pendapatan'
                           : 'Pengeluaran',
                     ),
-                    const SizedBox(height: AppTheme.s8),
+                    const SizedBox(height: AppSpacing.s8),
                     TextFormField(
                       controller: _amountController,
                       keyboardType: TextInputType.number,
@@ -421,12 +497,12 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: AppTheme.s20),
+                                const SizedBox(height: AppSpacing.s20),
                                 _FormLabel(
                                   'HPP (Harga Pokok Penjualan)',
                                   subtitle: 'Modal barang yang terjual',
                                 ),
-                                const SizedBox(height: AppTheme.s8),
+                                const SizedBox(height: AppSpacing.s8),
                                 TextFormField(
                                   controller: _cogsController,
                                   keyboardType: TextInputType.number,
@@ -445,10 +521,10 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           : const SizedBox.shrink(),
                     ),
 
-                    const SizedBox(height: AppTheme.s20),
+                    const SizedBox(height: AppSpacing.s20),
 
                     _FormLabel('Metode Pembayaran'),
-                    const SizedBox(height: AppTheme.s8),
+                    const SizedBox(height: AppSpacing.s8),
                     DropdownButtonFormField<String>(
                       initialValue: _paymentMethod,
                       decoration: const InputDecoration(
@@ -459,8 +535,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           value: AppConstants.paymentCash,
                           child: Row(
                             children: [
-                              Icon(Icons.money_rounded, size: 18),
-                              SizedBox(width: AppTheme.s8),
+                              Icon(Icons.money_rounded, size: AppIconSize.s18),
+                              SizedBox(width: AppSpacing.s8),
                               Text('Tunai'),
                             ],
                           ),
@@ -469,8 +545,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           value: AppConstants.paymentTransfer,
                           child: Row(
                             children: [
-                              Icon(Icons.account_balance_rounded, size: 18),
-                              SizedBox(width: AppTheme.s8),
+                              Icon(Icons.account_balance_rounded, size: AppIconSize.s18),
+                              SizedBox(width: AppSpacing.s8),
                               Text('Transfer Bank'),
                             ],
                           ),
@@ -479,8 +555,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           value: AppConstants.paymentQris,
                           child: Row(
                             children: [
-                              Icon(Icons.qr_code_rounded, size: 18),
-                              SizedBox(width: AppTheme.s8),
+                              Icon(Icons.qr_code_rounded, size: AppIconSize.s18),
+                              SizedBox(width: AppSpacing.s8),
                               Text('QRIS'),
                             ],
                           ),
@@ -489,8 +565,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                           value: 'other',
                           child: Row(
                             children: [
-                              Icon(Icons.more_horiz_rounded, size: 18),
-                              SizedBox(width: AppTheme.s8),
+                              Icon(Icons.more_horiz_rounded, size: AppIconSize.s18),
+                              SizedBox(width: AppSpacing.s8),
                               Text('Lainnya'),
                             ],
                           ),
@@ -503,10 +579,10 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       },
                     ),
 
-                    const SizedBox(height: AppTheme.s20),
+                    const SizedBox(height: AppSpacing.s20),
 
                     _FormLabel('Deskripsi (opsional)'),
-                    const SizedBox(height: AppTheme.s8),
+                    const SizedBox(height: AppSpacing.s8),
                     TextFormField(
                       controller: _descriptionController,
                       maxLines: 3,
@@ -521,7 +597,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       ),
                     ),
 
-                    const SizedBox(height: AppTheme.s16),
+                    const SizedBox(height: AppSpacing.s16),
 
                     SizedBox(
                       width: double.infinity,
@@ -534,7 +610,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Theme.of(context).colorScheme.onPrimary,
+                                  color: AppTheme.onPrimaryColorTheme(context),
                                 ),
                               )
                             : Icon(
@@ -578,7 +654,7 @@ class _FormLabel extends StatelessWidget {
           label,
           style: AppTheme.subtitle.copyWith(fontSize: 14),
         ),
-        if (subtitle != null) ...[                    const SizedBox(height: AppTheme.s2),
+        if (subtitle != null) ...[                    const SizedBox(height: AppSpacing.s2),
           Text(
             subtitle!,
             style: AppTheme.caption.copyWith(fontSize: 11),

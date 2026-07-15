@@ -10,6 +10,8 @@ import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/transaction_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
 
 // ==================== Data Models ====================
 
@@ -217,10 +219,8 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
       endDate: _endDate,
     );
     final reportAsync = ref.watch(managerReportProvider(params));
-    final colorScheme = Theme.of(context).colorScheme;
-
     final body = reportAsync.when(
-      data: (data) => _buildSummary(data, colorScheme),
+      data: (data) => _buildSummary(data),
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) => ErrorRetryWidget.fromAppError(
         ErrorHandler.classify(error),
@@ -232,8 +232,8 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (!widget.showAppBar) ...[
-          const SizedBox(height: AppTheme.s12),
-          _buildPeriodSelector(colorScheme),
+          const SizedBox(height: AppSpacing.s12),
+          _buildPeriodSelector(),
         ],
         Expanded(child: body),
       ],
@@ -247,24 +247,24 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
         actions: null,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
-          child: _buildPeriodSelector(colorScheme),
+          child: _buildPeriodSelector(),
         ),
       ),
       body: body,
     );
   }
 
-  Widget _buildPeriodSelector(ColorScheme colorScheme) {
+  Widget _buildPeriodSelector() {
     final isLight = Theme.of(context).brightness == Brightness.light;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.s16, 0, AppSpacing.s16, AppSpacing.s12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
             for (final period in PeriodFilter.values)
               Padding(
-                padding: const EdgeInsets.only(right: AppTheme.s8),
+                padding: const EdgeInsets.only(right: AppSpacing.s8),
                 child: GestureDetector(
                   onTap: () {
                     if (period == PeriodFilter.custom) {
@@ -275,18 +275,18 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16, vertical: AppTheme.s8),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
                     decoration: BoxDecoration(
                       color: _selectedPeriod == period
-                          ? (isLight ? colorScheme.primary : AppTheme.accent)
+                          ? (isLight ? AppTheme.primaryColorTheme(context) : AppTheme.accent)
                           : (isLight
-                                ? colorScheme.surfaceContainer
+                                ? AppTheme.surfaceContainerColorTheme(context)
                                 : AppTheme.darkBackground),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppRadius.s20),
                       border: Border.all(
                         color: _selectedPeriod == period
                             ? Colors.transparent
-                            : (isLight ? colorScheme.outlineVariant : AppTheme.accent),
+                            : AppTheme.outlineVariantColorTheme(context),
                         width: 1,
                       ),
                     ),
@@ -297,7 +297,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                         fontWeight: _selectedPeriod == period ? FontWeight.w600 : FontWeight.normal,
                             color: _selectedPeriod == period
                                 ? AppTheme.card
-                                : (isLight ? colorScheme.onSurfaceVariant : AppTheme.accent),
+                                : AppTheme.onSurfaceVariantColorTheme(context),
                       ),
                     ),
                   ),
@@ -315,7 +315,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
     endDate: _endDate,
   );
 
-  Widget _buildSummary(ManagerReportData data, ColorScheme colorScheme) {
+  Widget _buildSummary(ManagerReportData data) {
     final p = _currentParams;
     return RefreshIndicator(
       onRefresh: () async {
@@ -323,19 +323,19 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(_periodLabel,
                 style: AppTheme.labelSmall.copyWith(fontSize: 12)),
-            const SizedBox(height: AppTheme.s16),
+            const SizedBox(height: AppSpacing.s16),
 
             NetProfitCard(
               netProfit: data.netProfit,
-              style: NetProfitCardStyle.accentBar,
+              style: NetProfitCardStyle.row,
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
 
             // Detail cards grid
             Row(
@@ -348,7 +348,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                     color: AppTheme.profitColorTheme(context),
                   ),
                 ),
-                const SizedBox(width: AppTheme.s12),
+                const SizedBox(width: AppSpacing.s12),
                 Expanded(
                   child: SummaryCard(
                     title: 'HPP',
@@ -359,7 +359,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             Row(
               children: [
                 Expanded(
@@ -370,7 +370,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                     color: AppTheme.infoColorTheme(context),
                   ),
                 ),
-                const SizedBox(width: AppTheme.s12),
+                const SizedBox(width: AppSpacing.s12),
                 Expanded(
                   child: SummaryCard(
                     title: 'Pengeluaran',

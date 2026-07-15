@@ -9,6 +9,10 @@ import '../../core/widgets/error_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,7 +21,6 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final themeMode = ref.watch(themeModeProvider);
-    final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -25,29 +28,29 @@ class SettingsScreen extends ConsumerWidget {
         title: const Text('Pengaturan'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         children: [
           // === Info Akun ===
           Text('Akun', style: AppTheme.heading3),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(AppTheme.s16),
+              padding: const EdgeInsets.all(AppSpacing.s16),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: colorScheme.primaryContainer,
+                    backgroundColor: AppTheme.primaryColorTheme(context),
                     child: Text(
                       user?.username.isNotEmpty == true
                           ? user!.username[0].toUpperCase()
                           : '?',
                       style: AppTheme.heading2.copyWith(
-                        color: colorScheme.primary,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppTheme.s16),
+                  const SizedBox(width: AppSpacing.s16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,25 +59,25 @@ class SettingsScreen extends ConsumerWidget {
                           user?.username ?? 'User',
                           style: AppTheme.subtitle,
                         ),
-                        const SizedBox(height: AppTheme.s4),
+                        const SizedBox(height: AppSpacing.s4),
                         AppBadge.role(user?.role ?? ''),
                       ],
                     ),
                   ),
                   Icon(Icons.chevron_right_rounded,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      color: AppTheme.onSurfaceVariantColorTheme(context)),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppSpacing.s24),
 
           // === Tampilan ===
           Text('Tampilan', style: AppTheme.heading3),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(AppTheme.s16),
+              padding: const EdgeInsets.all(AppSpacing.s16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -85,33 +88,33 @@ class SettingsScreen extends ConsumerWidget {
                             ? Icons.dark_mode_rounded
                             : Icons.light_mode_rounded,
                         color: AppTheme.warningColorTheme(context),
-                        size: 20,
+                        size: AppIconSize.s20,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.s8),
                       Text(
                         'Tema Aplikasi',
                         style: AppTheme.subtitle.copyWith(fontSize: 14),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppTheme.s12),
+                  const SizedBox(height: AppSpacing.s12),
                   SizedBox(
                     width: double.infinity,
                     child: SegmentedButton<ThemeMode>(
                       segments: const [
                         ButtonSegment(
                           value: ThemeMode.light,
-                          icon: Icon(Icons.light_mode_rounded, size: 18),
+                          icon: Icon(Icons.light_mode_rounded, size: AppIconSize.s18),
                           label: Text('Terang'),
                         ),
                         ButtonSegment(
                           value: ThemeMode.system,
-                          icon: Icon(Icons.settings_brightness_rounded, size: 18),
+                          icon: Icon(Icons.settings_brightness_rounded, size: AppIconSize.s18),
                           label: Text('Sistem'),
                         ),
                         ButtonSegment(
                           value: ThemeMode.dark,
-                          icon: Icon(Icons.dark_mode_rounded, size: 18),
+                          icon: Icon(Icons.dark_mode_rounded, size: AppIconSize.s18),
                           label: Text('Gelap'),
                         ),
                       ],
@@ -122,9 +125,14 @@ class SettingsScreen extends ConsumerWidget {
                             .setThemeMode(selected.first);
                       },
                       showSelectedIcon: false,
+                      style: SegmentedButton.styleFrom(
+                        foregroundColor: isDark ? Colors.white : AppTheme.primary,
+                        selectedForegroundColor: Colors.white,
+                        selectedBackgroundColor: AppTheme.primaryColorTheme(context),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: AppTheme.s8),
+                  const SizedBox(height: AppSpacing.s8),
                   Text(
                     themeMode == ThemeMode.system
                         ? 'Mengikuti pengaturan tema perangkat'
@@ -137,17 +145,17 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppSpacing.s24),
 
           // === Notifikasi ===
           Text('Notifikasi', style: AppTheme.heading3),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           const _NotificationReminderCard(),
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppSpacing.s24),
 
           // === Keamanan ===
           Text('Keamanan', style: AppTheme.heading3),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Card(
             child: ListTile(
               leading: const Icon(Icons.lock_outlined),
@@ -157,21 +165,21 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => _showChangePasswordDialog(context, ref),
             ),
           ),
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppSpacing.s24),
 
           // === Tentang ===
           Text('Tentang', style: AppTheme.heading3),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Card(
             child: Column(
               children: [
                 ListTile(
                   leading: Icon(Icons.info_outline,
-                      color: colorScheme.primary),
+                      color: AppTheme.primaryColorTheme(context)),
                   title: const Text('Versi Aplikasi'),
                   trailing: Text(
                     AppConstants.appVersion,
-                    style: AppTheme.caption.copyWith(fontSize: 13),
+                    style: AppTheme.caption,
                   ),
                 ),
                 const Divider(height: 1, indent: 16, endIndent: 16),
@@ -194,13 +202,13 @@ class SettingsScreen extends ConsumerWidget {
                   title: const Text('Laporkan Masalah'),
                   subtitle: const Text('Hubungi pengembang'),
                   trailing:
-                      const Icon(Icons.open_in_new_rounded, size: 18),
+                      const Icon(Icons.open_in_new_rounded, size: AppIconSize.s18),
                   onTap: () => _showComingSoon(context),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: AppTheme.s32),
+          const SizedBox(height: AppSpacing.s32),
         ],
       ),
     );
@@ -225,7 +233,7 @@ class SettingsScreen extends ConsumerWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusSmall)),
+              borderRadius: BorderRadius.circular(AppRadius.radiusSmall)),
           title: const Text('Ubah Password'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -239,7 +247,7 @@ class SettingsScreen extends ConsumerWidget {
                   prefixIcon: Icon(Icons.lock_outlined),
                 ),
               ),
-              const SizedBox(height: AppTheme.s12),
+              const SizedBox(height: AppSpacing.s12),
               TextField(
                 controller: confirmPwdCtrl,
                 obscureText: true,
@@ -336,14 +344,85 @@ class _NotificationReminderCard extends ConsumerStatefulWidget {
 
 class _NotificationReminderCardState
     extends ConsumerState<_NotificationReminderCard> {
+  /// Menampilkan feedback ke user berdasarkan jenis izin yang ditolak.
+  ///
+  /// - [notificationDenied]: Snackbar — arahkan ke Settings > Notifikasi
+  /// - [exactAlarmDenied]: Dialog — jelaskan konsekuensi + tombol buka Settings
+  /// - [schedulingBlocked]: Snackbar — informatif saja
+  void _showPermissionDeniedFeedback(
+    BuildContext context,
+    PermissionResult result,
+  ) {
+    switch (result) {
+      case PermissionResult.notificationDenied:
+        ErrorSnackbar.showMessage(
+          context,
+          'Izin notifikasi diperlukan. Aktifkan di Pengaturan perangkat '
+          'Anda > Notifikasi > Sheress.',
+        );
+
+      case PermissionResult.exactAlarmDenied:
+        _showExactAlarmDialog(context);
+
+      case PermissionResult.schedulingBlocked:
+        ErrorSnackbar.showMessage(
+          context,
+          'Pengingat akan berjalan, namun mungkin tidak tepat waktu '
+          'saat perangkat dalam mode hemat daya.',
+          isError: false,
+        );
+
+      case PermissionResult.granted:
+        break;
+    }
+  }
+
+  /// Dialog khusus untuk izin [SCHEDULE_EXACT_ALARM] yang ditolak.
+  ///
+  /// Izin ini diperlukan agar notifikasi tetap terkirim tepat waktu meskipun
+  /// perangkat dalam mode Doze / hemat daya.
+  void _showExactAlarmDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+        ),
+        icon: Icon(
+          Icons.alarm_rounded,
+          size: AppIconSize.s40,
+          color: AppTheme.primaryColorTheme(ctx),
+        ),
+        title: const Text('Izin Alarm Presisi'),
+        content: const Text(
+          'Agar notifikasi pengingat tetap terkirim tepat waktu meskipun '
+          'perangkat dalam mode hemat daya (Doze), aplikasi memerlukan '
+          'izin "Alarms & reminders" khusus.\n\n'
+          'Anda dapat mengaktifkannya melalui:\n'
+          'Pengaturan > Aplikasi > Sheress > Alarms & reminders\n\n'
+          'Tanpa izin ini, notifikasi mungkin tertunda saat perangkat '
+          'sedang tidak digunakan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Nanti Saja'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Mengerti'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(notificationProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -353,16 +432,16 @@ class _NotificationReminderCardState
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    color: AppTheme.primaryColorTheme(context),
+                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.notifications_outlined,
-                    color: colorScheme.primary,
-                    size: 20,
+                    color: Colors.white,
+                    size: AppIconSize.s20,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.s12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,12 +450,12 @@ class _NotificationReminderCardState
                         'Pengingat Transaksi Harian',
                         style: AppTheme.subtitle.copyWith(fontSize: 14),
                       ),
-                      const SizedBox(height: AppTheme.s4),
+                      const SizedBox(height: AppSpacing.s4),
                       Text(
                         'Dapatkan notifikasi setiap hari\n'
                         'untuk mencatat transaksi',
                         style: AppTheme.caption.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: AppTheme.onSurfaceVariantColorTheme(context),
                         ),
                       ),
                     ],
@@ -385,42 +464,33 @@ class _NotificationReminderCardState
                 Switch(
                   value: settings.enabled,
                   onChanged: (val) async {
-                    if (val) {
-                      final granted = await NotificationService
-                          .instance
-                          .requestPermission();
-                      if (granted) {
-                        await ref
-                            .read(notificationProvider.notifier)
-                            .setEnabled(true);
-                      } else {
-                        if (context.mounted) {
-                          ErrorSnackbar.showMessage(
-                            context,
-                            'Izin notifikasi diperlukan. '
-                            'Aktifkan di Pengaturan perangkat Anda.',
-                          );
-                        }
-                      }
-                    } else {
-                      await ref
-                          .read(notificationProvider.notifier)
-                          .setEnabled(false);
+                    final result = await ref
+                        .read(notificationProvider.notifier)
+                        .setEnabled(val);
+
+                    if (!val) return; // disabling always succeeds
+
+                    if (context.mounted &&
+                        result != PermissionResult.granted) {
+                      _showPermissionDeniedFeedback(
+                        context,
+                        result,
+                      );
                     }
                   },
                 ),
               ],
             ),
             if (settings.enabled) ...[
-              const SizedBox(height: AppTheme.s16),
+              const SizedBox(height: AppSpacing.s16),
               Row(
                 children: [
                   Icon(
                     Icons.schedule_rounded,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    size: AppIconSize.s18,
+                    color: AppTheme.onSurfaceVariantColorTheme(context),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.s8),
                   Text('Waktu pengingat',
                       style: AppTheme.caption),
                   const Spacer(),
@@ -432,7 +502,7 @@ class _NotificationReminderCardState
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    label: const Icon(Icons.edit_calendar_rounded, size: 18),
+                    label: const Icon(Icons.edit_calendar_rounded, size: AppIconSize.s18),
                     onPressed: () async {
                       final picked = await showTimePicker(
                         context: context,

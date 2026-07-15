@@ -13,6 +13,10 @@ import '../transaction/transaction_history_screen.dart';
 import '../reports/manager_report_screen.dart';
 import '../profile/profile_screen.dart';
 import 'manager_dashboard_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class ManagerShell extends ConsumerStatefulWidget {
   const ManagerShell({super.key});
@@ -75,20 +79,20 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXL)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.radiusXL)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppTheme.s20),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.s20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.s20),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s20),
               child: Row(
                 children: [
-                  const Icon(Icons.swap_horiz_rounded, size: 20),
-                  const SizedBox(width: AppTheme.s8),
+                  const Icon(Icons.swap_horiz_rounded, size: AppIconSize.s20),
+                  const SizedBox(width: AppSpacing.s8),
                   Text(
                     'Ganti Bisnis',
                     style: AppTheme.title,
@@ -101,22 +105,58 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
                 ],
               ),
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             const Divider(height: 1),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             ..._businesses.map((b) => ListTile(
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                    ),
-                    child: Icon(
-                      Icons.store_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 22,
-                    ),
+                  leading: Builder(
+                    builder: (context) {
+                      final isDark = Theme.of(context).brightness == Brightness.dark;
+                      final bgColor = isDark ? AppTheme.accent : AppTheme.primary;
+                      return Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                          gradient: LinearGradient(
+                            colors: [
+                              isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08),
+                              bgColor,
+                              bgColor.withValues(alpha: 0.85),
+                            ],
+                            stops: const [0.0, 0.1, 1.0],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          boxShadow: isDark
+                              ? [
+                                  BoxShadow(
+                                    color: bgColor.withValues(alpha: 0.25),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha: 0.05),
+                                    blurRadius: 2,
+                                    spreadRadius: -1,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ]
+                              : [
+                                  BoxShadow(
+                                    color: bgColor.withValues(alpha: 0.18),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                        ),
+                        child: const Icon(
+                          Icons.store_rounded,
+                          color: Colors.white,
+                          size: AppIconSize.s22,
+                        ),
+                      );
+                    }
                   ),
                   title: Text(
                     b.name,
@@ -166,7 +206,7 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(),
-              SizedBox(height: AppTheme.s16),
+              SizedBox(height: AppSpacing.s16),
               Text('Memuat sesi...'),
             ],
           ),
@@ -250,7 +290,7 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     return Center(
       key: key,
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s32),
+        padding: const EdgeInsets.all(AppSpacing.s32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -258,16 +298,16 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(AppRadius.radiusXL),
               ),
               child: Icon(
                 Icons.store_rounded,
-                size: 36,
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                size: AppIconSize.s36,
+                color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.4),
               ),
             ),
-            const SizedBox(height: AppTheme.s16),
+            const SizedBox(height: AppSpacing.s16),
             Text(
               message,
               textAlign: TextAlign.center,

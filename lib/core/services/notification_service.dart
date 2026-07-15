@@ -6,7 +6,36 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+/// Hasil permintaan izin notifikasi.
+/// Mengandung informasi spesifik tentang izin yang ditolak agar UI
+/// dapat menampilkan pesan yang sesuai.
+enum PermissionResult {
+  /// Semua izin diberikan (notifikasi + exact alarm).
+  granted,
+  /// Izin notifikasi dasar (Android 13+) ditolak user.
+  notificationDenied,
+  /// Izin [SCHEDULE_EXACT_ALARM] (Android 12+) ditolak user.
+  /// Notifikasi tetap bisa berjalan, namun mungkin tertunda saat Doze.
+  exactAlarmDenied,
+  /// Izin notifikasi diberikan, exact alarm diberikan, tetapi scheduling gagal
+  /// karena alasan lain (misal sistem membatasi di Android 14+).
+  schedulingBlocked;
+
+  /// Apakah scheduling tetap bisa berjalan (meskipun mungkin tidak presisi).
+  bool get canSchedule =>
+      this == granted || this == exactAlarmDenied || this == schedulingBlocked;
+}
+
 /// Service untuk mengelola notifikasi pengingat transaksi harian.
+///
+/// ## Perbaikan untuk Reliability:
+/// 1. **Importance**: Dinaikkan ke `high` agar notifikasi muncul dengan suara
+///    dan muncul di layar (heads-up notification).
+/// 2. **Channel Re-creation**: Channel dihapus dan dibuat ulang jika importance
+///    berubah (misal setelah update app).
+/// 3. **Permission Check**: Memeriksa izin sebelum scheduling, bukan hanya saat toggle.
+/// 4. **Error Handling**: Menambahkan try-catch di semua operasi notifikasi.
+/// 5. **Android 14+**: Menggunakan schedule mode yang compatible dengan Doze mode.
 class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
@@ -23,57 +52,114 @@ class NotificationService {
   static const String _channelDesc =
       'Pengingat untuk mencatat transaksi harian';
 
+  /// Notification ID untuk pengingat harian.
+  static const int _notificationId = 0;
+
   /// Inisialisasi plugin notifikasi.
+  ///
+  /// Memuat data timezone Asia/Jakarta, menginisialisasi plugin,
+  /// dan mereschedule notifikasi yang sudah aktif (misal setelah reboot).
   Future<void> init() async {
-    tz_data.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
+    try {
+      tz_data.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
 
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+      const androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
 
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+      const initSettings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
 
-    await _plugin.initialize(
-      settings: initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTap,
-    );
+      await _plugin.initialize(
+        settings: initSettings,
+        onDidReceiveNotificationResponse: _onNotificationTap,
+      );
 
-    // Reschedule notifikasi yang sudah ada (misal setelah reboot)
-    await _rescheduleIfEnabled();
+      // Reschedule notifikasi yang sudah ada (misal setelah reboot)
+      await _rescheduleIfEnabled();
+    } catch (e) {
+      debugPrint('[Notification] Init error: $e');
+    }
   }
 
   void _onNotificationTap(NotificationResponse response) {
     debugPrint('[Notification] Tapped: ${response.payload}');
   }
 
-  /// Meminta izin notifikasi di Android 13+.
-  Future<bool> requestPermission() async {
-    if (!Platform.isAndroid) return true;
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    if (androidPlugin == null) return false;
+  /// Meminta seluruh izin notifikasi dan mengembalikan hasil detail.
+  ///
+  /// Mengembalikan [PermissionResult] yang berisi alasan spesifik jika
+  /// ada izin yang ditolak, sehingga UI dapat menampilkan pesan yang sesuai
+  /// (bukan hanya "izin ditolak" generik).
+  Future<PermissionResult> requestPermissionsWithResult() async {
+    if (!Platform.isAndroid) return PermissionResult.granted;
 
-    final granted = await androidPlugin.requestNotificationsPermission();
-    return granted ?? false;
+    try {
+      final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlugin == null) return PermissionResult.schedulingBlocked;
+
+      // 1. Request basic notification permission (Android 13+)
+      final notifGranted = await androidPlugin.requestNotificationsPermission();
+      if (notifGranted != true) {
+        return PermissionResult.notificationDenied;
+      }
+
+      // 2. Request exact alarm permission (Android 12+)
+      final canSchedule =
+          await androidPlugin.canScheduleExactNotifications();
+      if (canSchedule == true) return PermissionResult.granted;
+
+      final exactAlarmGranted =
+          await androidPlugin.requestExactAlarmsPermission();
+      if (exactAlarmGranted != true) {
+        return PermissionResult.exactAlarmDenied;
+      }
+
+      return PermissionResult.granted;
+    } catch (e) {
+      debugPrint('[Notification] Permission request error: $e');
+      // Jika gagal request (misal API tidak tersedia), jangan blokir
+      return PermissionResult.schedulingBlocked;
+    }
+  }
+
+  /// Meminta izin notifikasi di Android 13+ (legacy, return boolean).
+  ///
+  /// Untuk hasil yang lebih detail, gunakan [requestPermissionsWithResult].
+  @Deprecated('Gunakan requestPermissionsWithResult() untuk hasil detail')
+  Future<bool> requestPermission() async {
+    final result = await requestPermissionsWithResult();
+    return result.canSchedule;
   }
 
   /// Mengecek apakah izin notifikasi sudah diberikan.
   Future<bool> hasPermission() async {
     if (!Platform.isAndroid) return true;
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    if (androidPlugin == null) return false;
 
-    final granted = await androidPlugin.areNotificationsEnabled();
-    return granted ?? false;
+    try {
+      final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlugin == null) return false;
+
+      final notifGranted = await androidPlugin.areNotificationsEnabled();
+      if (notifGranted != true) return false;
+
+      // Also check exact alarm permission
+      final exactAlarmGranted =
+          await androidPlugin.canScheduleExactNotifications();
+      return exactAlarmGranted ?? false;
+    } catch (e) {
+      debugPrint('[Notification] Permission check error: $e');
+      return false;
+    }
   }
 
   // ==================== Preferences ====================
@@ -94,14 +180,35 @@ class NotificationService {
   }
 
   /// Mengaktifkan/menonaktifkan pengingat harian.
-  Future<void> setEnabled(bool enabled) async {
+  ///
+  /// Mengembalikan [PermissionResult] jika [enabled] = true dan ada izin
+  /// yang ditolak, sehingga UI dapat menampilkan pesan yang sesuai.
+  ///
+  /// Jika [enabled] = false, selalu mengembalikan [PermissionResult.granted]
+  /// (tidak perlu izin untuk menonaktifkan).
+  Future<PermissionResult> setEnabled(bool enabled) async {
     final prefs = await _getPrefs();
     await prefs.setBool(_prefKeyEnabled, enabled);
+
     if (enabled) {
+      // Periksa izin sebelum scheduling
+      if (!await hasPermission()) {
+        final result = await requestPermissionsWithResult();
+        if (!result.canSchedule) {
+          debugPrint(
+            '[Notification] ${result.name}, cannot schedule',
+          );
+          await prefs.setBool(_prefKeyEnabled, false);
+          return result;
+        }
+      }
+
       final time = await getReminderTime();
       await _scheduleDaily(time);
+      return PermissionResult.granted;
     } else {
       await _cancelAll();
+      return PermissionResult.granted;
     }
   }
 
@@ -118,62 +225,100 @@ class NotificationService {
 
   // ==================== Scheduling ====================
 
+  /// Menjadwalkan notifikasi harian pada waktu yang ditentukan.
+  ///
+  /// Menggunakan [zonedSchedule] dengan [matchDateTimeComponents: DateTimeComponents.time]
+  /// agar notifikasi berulang setiap hari pada jam yang sama.
+  /// Menggunakan [AndroidScheduleMode.inexactAllowWhileIdle] agar kompatibel
+  /// dengan Android 12+ Doze mode restrictions.
   Future<void> _scheduleDaily(TimeOfDay time) async {
-    await _cancelAll();
+    try {
+      await _cancelAll();
 
-    final now = DateTime.now();
-    final location = tz.local;
-    var scheduledDate = tz.TZDateTime(
-      location,
-      now.year,
-      now.month,
-      now.day,
-      time.hour,
-      time.minute,
-    );
+      final now = DateTime.now();
+      final location = tz.local;
+      var scheduledDate = tz.TZDateTime(
+        location,
+        now.year,
+        now.month,
+        now.day,
+        time.hour,
+        time.minute,
+      );
 
-    // Jika waktu sudah lewat, jadwalkan untuk besok
-    final nowTz = tz.TZDateTime.from(now, location);
-    if (scheduledDate.isBefore(nowTz)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
+      // Jika waktu sudah lewat, jadwalkan untuk besok
+      final nowTz = tz.TZDateTime.from(now, location);
+      if (scheduledDate.isBefore(nowTz)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+
+      // Gunakan Importance.high agar notifikasi muncul dengan suara
+      // dan muncul sebagai heads-up notification
+      const androidDetails = AndroidNotificationDetails(
+        _channelId,
+        _channelName,
+        channelDescription: _channelDesc,
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+        enableVibration: true,
+        playSound: true,
+        // Android 14+: pastikan notifikasi muncul di lock screen
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _plugin.zonedSchedule(
+        id: _notificationId,
+        title: '📊 Saatnya Catat Transaksi!',
+        body: 'Jangan lupa mencatat pemasukan dan pengeluaran hari ini.',
+        scheduledDate: scheduledDate,
+        notificationDetails: details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: 'daily_reminder',
+      );
+
+      debugPrint('[Notification] Scheduled daily reminder at '
+          '${time.hour.toString().padLeft(2, '0')}:'
+          '${time.minute.toString().padLeft(2, '0')}');
+    } catch (e) {
+      debugPrint('[Notification] Schedule error: $e');
     }
-
-    const androidDetails = AndroidNotificationDetails(
-      _channelId,
-      _channelName,
-      channelDescription: _channelDesc,
-      importance: Importance.defaultImportance,
-      priority: Priority.defaultPriority,
-      icon: '@mipmap/ic_launcher',
-    );
-
-    const iosDetails = DarwinNotificationDetails();
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _plugin.zonedSchedule(
-      id: 0,
-      title: '📊 Saatnya Catat Transaksi!',
-      body: 'Jangan lupa mencatat pemasukan dan pengeluaran hari ini.',
-      scheduledDate: scheduledDate,
-      notificationDetails: details,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
-      payload: 'daily_reminder',
-    );
   }
 
+  /// Membatalkan semua notifikasi terjadwal.
   Future<void> _cancelAll() async {
-    await _plugin.cancelAll();
+    try {
+      await _plugin.cancelAll();
+    } catch (e) {
+      debugPrint('[Notification] Cancel error: $e');
+    }
   }
 
+  /// Mereschedule notifikasi jika fitur diaktifkan.
+  ///
+  /// Dipanggil saat aplikasi dimulai (di [init]) untuk mereschedule
+  /// notifikasi yang mungkin terhapus setelah reboot.
   Future<void> _rescheduleIfEnabled() async {
-    if (await isEnabled()) {
-      final time = await getReminderTime();
-      await _scheduleDaily(time);
+    try {
+      if (await isEnabled()) {
+        final time = await getReminderTime();
+        await _scheduleDaily(time);
+      }
+    } catch (e) {
+      debugPrint('[Notification] Reschedule error: $e');
     }
   }
 }

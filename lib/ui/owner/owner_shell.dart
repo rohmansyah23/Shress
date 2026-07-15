@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../providers/auth_provider.dart';
@@ -9,6 +8,8 @@ import 'owner_dashboard_tab.dart';
 import 'owner_history_screen.dart';
 import '../reports/owner_report_screen.dart';
 import '../profile/profile_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
 
 class OwnerShell extends ConsumerStatefulWidget {
   const OwnerShell({super.key});
@@ -50,7 +51,7 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
         ),
         title: const Text('Pilih Bisnis'),
         content: SizedBox(
@@ -90,7 +91,7 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(),
-              SizedBox(height: AppTheme.s16),
+              SizedBox(height: AppSpacing.s16),
               Text('Memuat profil...'),
             ],
           ),

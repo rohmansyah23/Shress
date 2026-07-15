@@ -10,6 +10,10 @@ import '../../data/local/models/user_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import 'user_form_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 final userBusinessIdsProvider =
     FutureProvider.family<Set<int>, String>((ref, userId) async {
@@ -127,7 +131,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: const Text('Hapus User'),
         content: Text('Yakin ingin menghapus user "${user.username}"?'),
         actions: [
@@ -139,7 +143,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: Theme.of(context).colorScheme.onError,
+              foregroundColor: AppTheme.onDangerColorTheme(context),
             ),
             child: const Text('Hapus'),
           ),
@@ -199,7 +203,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
     return Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -234,8 +238,8 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.person_search_rounded,
-                            size: 64, color: AppTheme.secondaryText),
-                        const SizedBox(height: AppTheme.s16),
+                            size: AppIconSize.s64, color: AppTheme.secondaryText),
+                        const SizedBox(height: AppSpacing.s16),
                         Text(
                           _searchQuery.isNotEmpty
                               ? 'Tidak ada user ditemukan'
@@ -254,7 +258,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
                     await _loadBusinesses();
                   },
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final user = filtered[index];
@@ -313,13 +317,13 @@ class _UserCard extends ConsumerWidget {
     // Dark mode: use lighter variants for contrast
     switch (role) {
       case AppConstants.roleOwner:
-        return const Color(0xFFFFB74D); // lighter amber
+        return AppTheme.darkWarning; // lighter amber
       case AppConstants.roleManager:
-        return const Color(0xFF64B5F6); // lighter blue
+        return AppTheme.darkInfo; // lighter blue
       case AppConstants.roleStaff:
-        return const Color(0xFF80CBC4); // lighter teal
+        return AppTheme.darkSuccess; // lighter teal
       default:
-        return Colors.grey;
+        return AppTheme.textSecondary;
     }
   }
 
@@ -337,7 +341,7 @@ class _UserCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assignedIdsAsync = ref.watch(userBusinessIdsProvider(user.userId));
 
-    return Card(          margin: const EdgeInsets.only(bottom: AppTheme.s16),
+    return Card(          margin: const EdgeInsets.only(bottom: AppSpacing.s16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -346,7 +350,7 @@ class _UserCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
+            padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s8, 0),
             child: Row(
               children: [
                 CircleAvatar(
@@ -364,7 +368,7 @@ class _UserCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: AppTheme.s12),
+                const SizedBox(width: AppSpacing.s12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,7 +384,7 @@ class _UserCard extends ConsumerWidget {
                           '@${user.username}',
                           style: AppTheme.caption.copyWith(fontSize: 12),
                         ),
-                      const SizedBox(height: AppTheme.s4),
+                      const SizedBox(height: AppSpacing.s4),
                       AppBadge.role(user.role),
                     ],
                   ),
@@ -388,11 +392,11 @@ class _UserCard extends ConsumerWidget {
                 PopupMenuButton<String>(
                   icon: Icon(
                     Icons.more_vert_rounded,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    size: 20,
+                    color: AppTheme.onSurfaceVariantColorTheme(context),
+                    size: AppIconSize.s20,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                   ),
                   onSelected: (value) {
                     switch (value) {
@@ -433,20 +437,20 @@ class _UserCard extends ConsumerWidget {
             ),
           ),
           if (user.role != AppConstants.roleOwner) ...[
-            const SizedBox(height: AppTheme.s4),
+            const SizedBox(height: AppSpacing.s4),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
               child: Row(
                 children: [
                   Text('Role:',
                       style: AppTheme.caption.copyWith(fontSize: 12)),
-                  const SizedBox(width: AppTheme.s8),
+                  const SizedBox(width: AppSpacing.s8),
                   SizedBox(
                     height: 32,
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: user.role,
-                        icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                        icon: const Icon(Icons.swap_horiz_rounded, size: AppIconSize.s18),
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -470,23 +474,23 @@ class _UserCard extends ConsumerWidget {
             ),
             const Divider(height: 24),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
               child: Text('Akses ke Bisnis:',
                   style: AppTheme.caption.copyWith(
                       fontWeight: FontWeight.w600, fontSize: 12)),
             ),
-            const SizedBox(height: AppTheme.s4),
+            const SizedBox(height: AppSpacing.s4),
             assignedIdsAsync.when(
               data: (assignedIds) {
                 if (businesses.isEmpty) {
                   return Padding(
-                    padding: EdgeInsets.all(AppTheme.s16),
+                    padding: EdgeInsets.all(AppSpacing.s16),
                     child: Text('Belum ada bisnis',
                         style: AppTheme.caption),
                   );
                 }
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.s12, 0, AppSpacing.s12, AppSpacing.s12),
                   child: Wrap(
                     spacing: 6,
                     runSpacing: 4,
@@ -514,11 +518,11 @@ class _UserCard extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => const Padding(                      padding: EdgeInsets.all(AppTheme.s12),
+              loading: () => const Padding(                      padding: EdgeInsets.all(AppSpacing.s12),
                 child: LinearProgressIndicator(),
               ),
               error: (e, _) => Padding(
-                padding: const EdgeInsets.all(AppTheme.s12),
+                padding: const EdgeInsets.all(AppSpacing.s12),
                 child: Text(
                   ErrorHandler.classify(e).userMessage,
                   style:
@@ -527,7 +531,7 @@ class _UserCard extends ConsumerWidget {
               ),
             ),
           ] else
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
         ],
       ),
       ),

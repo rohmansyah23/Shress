@@ -5,6 +5,10 @@ import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/user_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class UserFormScreen extends ConsumerStatefulWidget {
   final UserModel? user; // null = create, non-null = edit
@@ -139,15 +143,15 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(AppTheme.s20),
+          padding: const EdgeInsets.all(AppSpacing.s20),
           children: [
             Container(
-              padding: const EdgeInsets.all(AppTheme.s20),
+              padding: const EdgeInsets.all(AppSpacing.s20),
               decoration: BoxDecoration(
                 color: isEdit
                     ? AppTheme.infoColor.withValues(alpha: 0.05)
                     : AppTheme.profitColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                 border: Border.all(
                   color: isEdit
                       ? AppTheme.infoColor.withValues(alpha: 0.15)
@@ -159,11 +163,11 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                 children: [
                   Icon(
                     isEdit ? Icons.edit_rounded : Icons.person_add_rounded,
-                    size: 32,
+                    size: AppIconSize.s32,
                     color:
                         isEdit ? AppTheme.infoColor : AppTheme.profitColor,
                   ),
-                  const SizedBox(width: AppTheme.s12),
+                  const SizedBox(width: AppSpacing.s12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -176,23 +180,23 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                               : AppTheme.profitColor,
                         ),
                       ),
-                      const SizedBox(height: AppTheme.s4),
+                      const SizedBox(height: AppSpacing.s4),
                       Text(
                         isEdit
                             ? 'Perbarui data user ${widget.user!.username}'
                             : 'Buat akun user baru',
-                        style: AppTheme.caption.copyWith(fontSize: 13),
+                        style: AppTheme.caption,
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppTheme.s24),
+            const SizedBox(height: AppSpacing.s24),
 
             Text('Nama Tampilan (Display Name)',
                 style: AppTheme.subtitle.copyWith(fontSize: 14)),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             TextFormField(
               controller: _displayNameCtrl,
               decoration: const InputDecoration(
@@ -202,11 +206,11 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Nama tampilan harus diisi' : null,
             ),
-            const SizedBox(height: AppTheme.s20),
+            const SizedBox(height: AppSpacing.s20),
 
             Text('Nama Pengguna (Username)',
                 style: AppTheme.subtitle.copyWith(fontSize: 14)),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             TextFormField(
               controller: _usernameCtrl,
               decoration: const InputDecoration(
@@ -216,12 +220,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Username harus diisi' : null,
             ),
-            const SizedBox(height: AppTheme.s20),
+            const SizedBox(height: AppSpacing.s20),
 
             if (!isEdit) ...[
               Text('Email',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
@@ -232,13 +236,13 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                 validator: (v) =>
                     v?.trim().isEmpty == true ? 'Email harus diisi' : null,
               ),
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
             ],
 
             if (!isEdit) ...[
               Text('Password',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _pwdCtrl,
                 obscureText: true,
@@ -256,13 +260,13 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
             ],
 
             if (isEdit) ...[
               Text('Email Baru (opsional)',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
@@ -271,11 +275,11 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   hintText: 'Kosongkan jika tidak diubah',
                 ),
               ),
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
 
               Text('Password Baru (opsional)',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _pwdCtrl,
                 obscureText: true,
@@ -284,11 +288,11 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   hintText: 'Kosongkan jika tidak diubah',
                 ),
               ),
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
 
               Text('Konfirmasi Password Baru',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _confirmPwdCtrl,
                 obscureText: true,
@@ -304,12 +308,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
             ],
 
             Text('Role',
                 style: AppTheme.subtitle.copyWith(fontSize: 14)),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             DropdownButtonFormField<String>(
               initialValue: _selectedRole,
               decoration: const InputDecoration(
@@ -326,7 +330,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   ? null
                   : (v) => setState(() => _selectedRole = v ?? _selectedRole),
             ),
-            const SizedBox(height: AppTheme.s32),
+            const SizedBox(height: AppSpacing.s32),
 
             SizedBox(
               width: double.infinity,
@@ -334,11 +338,11 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               child: FilledButton.icon(
                 onPressed: _isSaving ? null : _handleSave,
                 icon: _isSaving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                            strokeWidth: 2, color: AppTheme.onPrimaryColorTheme(context)),
                       )
                     : Icon(isEdit ? Icons.save_rounded : Icons.person_add_rounded),
                 label: Text(_isSaving

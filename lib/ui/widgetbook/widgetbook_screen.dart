@@ -6,6 +6,10 @@ import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/trend_chart.dart';
 import '../../providers/theme_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // WIDGETBOOK — Design System Component Documentation
@@ -53,10 +57,10 @@ class _WidgetBookScreenState extends ConsumerState<WidgetBookScreen> {
           // Search
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              AppTheme.s16,
-              AppTheme.s8,
-              AppTheme.s16,
-              AppTheme.s12,
+              AppSpacing.s16,
+              AppSpacing.s8,
+              AppSpacing.s16,
+              AppSpacing.s12,
             ),
             child: TextField(
               controller: _searchCtrl,
@@ -80,7 +84,7 @@ class _WidgetBookScreenState extends ConsumerState<WidgetBookScreen> {
           // Content
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.only(bottom: AppTheme.s32),
+              padding: const EdgeInsets.only(bottom: AppSpacing.s32),
               children: [
                 if (_matches('colors')) const _ColorsSection(),
                 if (_matches('typography'))
@@ -139,16 +143,16 @@ class _ColorsSectionState extends State<_ColorsSection> {
           'accent / darkAccent'),
       ('Background', isDark ? AppTheme.darkBackground : AppTheme.background,
           'background / darkBackground'),
-      ('Secondary\nBg', isDark ? AppTheme.darkSecondaryBackground : AppTheme.secondaryBackground,
-          'secondaryBg / darkSecondaryBg'),
+      ('Secondary\nBg', isDark ? AppTheme.darkSecondaryBackground : AppTheme.surfaceContainer,
+          'surfaceContainer / darkSurface'),
       ('Card', isDark ? AppTheme.darkCard : AppTheme.card,
           'card / darkCard'),
-      ('Elevated Card', isDark ? AppTheme.darkElevatedCard : AppTheme.card,
-          'card / darkElevatedCard'),
-      ('Primary Text', isDark ? AppTheme.darkPrimaryText : AppTheme.primaryText,
-          'primaryText / darkPrimaryText'),
-      ('Secondary\nText', isDark ? AppTheme.darkSecondaryText : AppTheme.secondaryText,
-          'secondaryText / darkSecondaryText'),
+      ('Elevated Card', isDark ? AppTheme.darkCardElevated : AppTheme.card,
+          'card / darkCardElevated'),
+      ('Primary Text', isDark ? AppTheme.darkTextPrimary : AppTheme.textPrimary,
+          'textPrimary / darkTextPrimary'),
+      ('Secondary\nText', isDark ? AppTheme.darkTextSecondary : AppTheme.textSecondary,
+          'textSecondary / darkTextSecondary'),
       ('Divider', isDark ? AppTheme.darkDivider : AppTheme.divider,
           'divider / darkDivider'),
     ];
@@ -168,7 +172,7 @@ class _ColorsSectionState extends State<_ColorsSection> {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -176,19 +180,19 @@ class _ColorsSectionState extends State<_ColorsSection> {
             title: 'Colors',
             subtitle: 'PocketFund color palette — light & dark mode',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
 
           // Theme colors
           Text('Theme Colors', style: AppTheme.subtitle),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           _ColorPalette(colors: themeColors),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           // Semantic colors
           Text('Semantic Colors', style: AppTheme.subtitle),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           _ColorPalette(colors: semanticColors),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
 
           // Color value reference
           const _CodeHint(
@@ -207,8 +211,8 @@ class _ColorPalette extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: AppTheme.s8,
-      runSpacing: AppTheme.s12,
+      spacing: AppSpacing.s8,
+      runSpacing: AppSpacing.s12,
       children: colors.map((c) {
         final (label, color, code) = c;
         return Tooltip(
@@ -224,23 +228,21 @@ class _ColorPalette extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius:
-                        BorderRadius.circular(AppTheme.radiusSmall),
+                        BorderRadius.circular(AppRadius.radiusSmall),
                     border: Border.all(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
+                      color: AppTheme.onSurfaceColorTheme(context)
                           .withValues(alpha: 0.1),
                     ),
                   ),
                 ),
-                const SizedBox(height: AppTheme.s4),
+                const SizedBox(height: AppSpacing.s4),
                 Text(
                   label,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: AppTheme.onSurfaceColorTheme(context),
                   ),
                 ),
               ],
@@ -277,7 +279,7 @@ class _TypographySection extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -285,31 +287,29 @@ class _TypographySection extends StatelessWidget {
             title: 'Typography',
             subtitle: 'Inter font — all text styles in the design system',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           ...styles.map((s) {
             final (name, style, code) = s;
             return Padding(
-              padding: const EdgeInsets.only(bottom: AppTheme.s12),
+              padding: const EdgeInsets.only(bottom: AppSpacing.s12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
                       _CodeBadge(code),
-                      const SizedBox(width: AppTheme.s8),
+                      const SizedBox(width: AppSpacing.s8),
                       Text(
                         '${style.fontSize?.toInt()}pt / '
                         '${style.fontWeight?.value}w',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
+                          color: AppTheme.onSurfaceVariantColorTheme(context),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppTheme.s4),
+                  const SizedBox(height: AppSpacing.s4),
                   Text('Sheress Finansial — Laba Rp 1.234.567.890',
                       style: style),
                 ],
@@ -332,22 +332,22 @@ class _SpacingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spacings = [
-      ('s2', AppTheme.s2),
-      ('s4', AppTheme.s4),
-      ('s8', AppTheme.s8),
-      ('s12', AppTheme.s12),
-      ('s16', AppTheme.s16),
-      ('s20', AppTheme.s20),
-      ('s24', AppTheme.s24),
-      ('s32', AppTheme.s32),
-      ('s40', AppTheme.s40),
-      ('s48', AppTheme.s48),
-      ('s56', AppTheme.s56),
-      ('s64', AppTheme.s64),
+      ('s2', AppSpacing.s2),
+      ('s4', AppSpacing.s4),
+      ('s8', AppSpacing.s8),
+      ('s12', AppSpacing.s12),
+      ('s16', AppSpacing.s16),
+      ('s20', AppSpacing.s20),
+      ('s24', AppSpacing.s24),
+      ('s32', AppSpacing.s32),
+      ('s40', AppSpacing.s40),
+      ('s48', AppSpacing.s48),
+      ('s56', AppSpacing.s56),
+      ('s64', AppSpacing.s64),
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -355,28 +355,26 @@ class _SpacingSection extends StatelessWidget {
             title: 'Spacing',
             subtitle: '8-point grid system — use AppTheme.s{n} constants',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           ...spacings.map((s) {
             final (name, value) = s;
             return Padding(
-              padding: const EdgeInsets.only(bottom: AppTheme.s8),
+              padding: const EdgeInsets.only(bottom: AppSpacing.s8),
               child: Row(
                 children: [
                   SizedBox(
                     width: 56,
                     child: _CodeBadge(name),
                   ),
-                  const SizedBox(width: AppTheme.s12),
+                  const SizedBox(width: AppSpacing.s12),
                   Expanded(
                     child: Container(
                       height: 20,
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
+                        color: AppTheme.primaryColorTheme(context)
                             .withValues(alpha: 0.15),
                         borderRadius:
-                            BorderRadius.circular(AppTheme.radiusSmall),
+                            BorderRadius.circular(AppRadius.radiusSmall),
                       ),
                       child: Row(
                         children: [
@@ -384,33 +382,31 @@ class _SpacingSection extends StatelessWidget {
                             width: value.clamp(0, 300),
                             height: 20,
                             decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primary
+                              color: AppTheme.primaryColorTheme(context)
                                   .withValues(alpha: 0.4),
                               borderRadius:
-                                  BorderRadius.circular(AppTheme.radiusSmall),
+                                  BorderRadius.circular(AppRadius.radiusSmall),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppTheme.s12),
+                  const SizedBox(width: AppSpacing.s12),
                   Text(
                     '${value.toInt()}px',
                     style: TextStyle(
                       fontSize: 12,
                       fontFamily: 'monospace',
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
                     ),
                   ),
                 ],
               ),
             );
           }),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           const _CodeHint('Prefer 8-point multiples. Avoid s6/s14.'),
         ],
       ),
@@ -428,7 +424,7 @@ class _ButtonsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -437,31 +433,31 @@ class _ButtonsSection extends StatelessWidget {
             subtitle:
                 'System buttons + PfButton custom component',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
 
           // PfButton variants
           Text('PfButton — Custom', style: AppTheme.subtitle),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           const _CodeBadge('PfButton'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           PfButton(
             label: 'Primary',
             onPressed: () {},
             variant: PfButtonVariant.primary,
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           PfButton(
             label: 'With Icon',
             icon: Icons.add_rounded,
             onPressed: () {},
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           PfButton(
             label: 'Loading State',
             isLoading: true,
             onPressed: () {},
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Row(
             children: [
               PfButton(
@@ -469,7 +465,7 @@ class _ButtonsSection extends StatelessWidget {
                 onPressed: () {},
                 isExpanded: false,
               ),
-              const SizedBox(width: AppTheme.s12),
+              const SizedBox(width: AppSpacing.s12),
               PfButton(
                 label: 'Ghost',
                 onPressed: () {},
@@ -478,33 +474,33 @@ class _ButtonsSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           // System buttons
           Text('System Buttons', style: AppTheme.subtitle),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           FilledButton.icon(
             onPressed: () {},
-            icon: const Icon(Icons.add_rounded, size: 20),
+            icon: const Icon(Icons.add_rounded, size: AppIconSize.s20),
             label: const Text('FilledButton'),
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           OutlinedButton.icon(
             onPressed: () {},
-            icon: const Icon(Icons.edit_outlined, size: 20),
+            icon: const Icon(Icons.edit_outlined, size: AppIconSize.s20),
             label: const Text('OutlinedButton'),
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           TextButton.icon(
             onPressed: () {},
-            icon: const Icon(Icons.warning_amber_rounded, size: 20),
+            icon: const Icon(Icons.warning_amber_rounded, size: AppIconSize.s20),
             label: const Text('TextButton'),
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           // Icon buttons
           Text('Icon Buttons', style: AppTheme.subtitle),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Row(
             children: [
               IconButton(
@@ -519,9 +515,7 @@ class _ButtonsSection extends StatelessWidget {
                 onPressed: () {},
                 icon: const Icon(Icons.edit_outlined),
                 style: IconButton.styleFrom(
-                  backgroundColor: Theme.of(context)
-                      .colorScheme
-                      .primary
+                  backgroundColor: AppTheme.primaryColorTheme(context)
                       .withValues(alpha: 0.1),
                 ),
               ),
@@ -530,7 +524,7 @@ class _ButtonsSection extends StatelessWidget {
                 onPressed: () {},
                 child: const Icon(Icons.add_rounded),
               ),
-              const SizedBox(width: AppTheme.s8),
+              const SizedBox(width: AppSpacing.s8),
               FloatingActionButton(
                 onPressed: () {},
                 child: const Icon(Icons.add_rounded),
@@ -553,7 +547,7 @@ class _CardsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -562,24 +556,24 @@ class _CardsSection extends StatelessWidget {
             subtitle:
                 'PfCard, SummaryCard, NetProfitCard, PfBalanceCard',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
 
           // PfCard
           Text('PfCard', style: AppTheme.subtitle),
           const _CodeBadge('PfCard'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           PfCard(
-            padding: const EdgeInsets.all(AppTheme.s16),
+            padding: const EdgeInsets.all(AppSpacing.s16),
             child: const Text(
               'PfCard with custom padding. Tappable cards wrap content in InkWell.',
             ),
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           // SummaryCard
           Text('SummaryCard', style: AppTheme.subtitle),
           const _CodeBadge('SummaryCard'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Row(
             children: [
               Expanded(
@@ -590,7 +584,7 @@ class _CardsSection extends StatelessWidget {
                   color: AppTheme.profitColorTheme(context),
                 ),
               ),
-              const SizedBox(width: AppTheme.s8),
+              const SizedBox(width: AppSpacing.s8),
               Expanded(
                 child: SummaryCard(
                   title: 'Pengeluaran',
@@ -601,27 +595,27 @@ class _CardsSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           // NetProfitCard
           Text('NetProfitCard', style: AppTheme.subtitle),
           const _CodeBadge('NetProfitCard'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           const NetProfitCard(
             netProfit: 25_000_000,
             style: NetProfitCardStyle.row,
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           const NetProfitCard(
             netProfit: -5_000_000,
             style: NetProfitCardStyle.accentBar,
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           // PfBalanceCard
           Text('PfBalanceCard', style: AppTheme.subtitle),
           const _CodeBadge('PfBalanceCard'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Row(
             children: [
               Expanded(
@@ -633,7 +627,7 @@ class _CardsSection extends StatelessWidget {
                   activeCount: 5,
                 ),
               ),
-              const SizedBox(width: AppTheme.s8),
+              const SizedBox(width: AppSpacing.s8),
               Expanded(
                 child: PfBalanceCard(
                   title: 'Titipan',
@@ -676,7 +670,7 @@ class _InputsSectionState extends State<_InputsSection> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -684,7 +678,7 @@ class _InputsSectionState extends State<_InputsSection> {
             title: 'Inputs',
             subtitle: 'TextField with various states',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
 
           TextField(
             controller: _enabledCtrl,
@@ -693,7 +687,7 @@ class _InputsSectionState extends State<_InputsSection> {
               prefixIcon: Icon(Icons.person_outlined),
             ),
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           TextField(
             decoration: const InputDecoration(
               labelText: 'Focused (tap here)',
@@ -701,7 +695,7 @@ class _InputsSectionState extends State<_InputsSection> {
               hintText: 'Type something...',
             ),
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           TextField(
             controller: _disabledCtrl,
             enabled: false,
@@ -710,7 +704,7 @@ class _InputsSectionState extends State<_InputsSection> {
               prefixIcon: Icon(Icons.lock_outlined),
             ),
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           TextField(
             decoration: InputDecoration(
               labelText: 'With Error',
@@ -768,7 +762,7 @@ class _NavigationSectionState extends State<_NavigationSection> {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -777,16 +771,14 @@ class _NavigationSectionState extends State<_NavigationSection> {
             subtitle:
                 'PfBottomNav — shared tab bar with gradient add button',
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           const _CodeBadge('PfBottomNav'),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
               border: Border.all(
-                color: Theme.of(context)
-                    .colorScheme
-                    .outlineVariant,
+                color: AppTheme.outlineVariantColorTheme(context),
               ),
             ),
             clipBehavior: Clip.antiAlias,
@@ -797,7 +789,7 @@ class _NavigationSectionState extends State<_NavigationSection> {
               items: items,
             ),
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           const _CodeHint(
             'Nav items + add button at center. Animated selection. Gradient + shadow on add.',
           ),
@@ -817,7 +809,7 @@ class _BadgesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -826,40 +818,40 @@ class _BadgesSection extends StatelessWidget {
             subtitle:
                 'AppBadge — role badges & profit/loss labels',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Text('Role Badges', style: AppTheme.subtitle),
           const _CodeBadge('AppBadge.role()'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Wrap(
-            spacing: AppTheme.s8,
-            runSpacing: AppTheme.s8,
+            spacing: AppSpacing.s8,
+            runSpacing: AppSpacing.s8,
             children: [
               AppBadge.role('owner'),
               AppBadge.role('manager'),
               AppBadge.role('staff'),
             ],
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           Text('Profit/Loss Badges', style: AppTheme.subtitle),
           const _CodeBadge('AppBadge.profitLoss()'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Wrap(
-            spacing: AppTheme.s8,
-            runSpacing: AppTheme.s8,
+            spacing: AppSpacing.s8,
+            runSpacing: AppSpacing.s8,
             children: [
               AppBadge.profitLoss(1_000_000),
               AppBadge.profitLoss(-500_000),
             ],
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           Text('Custom Badges', style: AppTheme.subtitle),
           const _CodeBadge('AppBadge(label:, color:)'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Wrap(
-            spacing: AppTheme.s8,
-            runSpacing: AppTheme.s8,
+            spacing: AppSpacing.s8,
+            runSpacing: AppSpacing.s8,
             children: [
               const AppBadge(
                 label: 'AKTIF',
@@ -891,7 +883,7 @@ class _SkeletonSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -900,24 +892,24 @@ class _SkeletonSection extends StatelessWidget {
             subtitle:
                 'PfSkeleton & PfSkeletonCard — shimmer loading',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Text('PfSkeleton', style: AppTheme.subtitle),
           const _CodeBadge('PfSkeleton'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Column(
             children: [
               const PfSkeleton(height: 14),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               const PfSkeleton(width: 0.6, height: 12),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               const PfSkeleton(width: 0.4, height: 12),
             ],
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           Text('PfSkeletonCard', style: AppTheme.subtitle),
           const _CodeBadge('PfSkeletonCard'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           const PfSkeletonCard(lines: 4),
         ],
       ),
@@ -935,7 +927,7 @@ class _EmptyStateSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -944,15 +936,15 @@ class _EmptyStateSection extends StatelessWidget {
             subtitle:
                 'PfEmptyState — icon + message + optional action',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           const _CodeBadge('PfEmptyState'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Container(
             height: 260,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
               border: Border.all(
-                color: Theme.of(context).colorScheme.outline,
+                color: AppTheme.outlineColorTheme(context),
               ),
             ),
             child: const PfEmptyState(
@@ -979,7 +971,7 @@ class _HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -988,14 +980,14 @@ class _HeaderSection extends StatelessWidget {
             subtitle:
                 'PfSectionHeader — title + optional subtitle & trailing',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           const _CodeBadge('PfSectionHeader'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           const PfSectionHeader(
             title: 'Ringkasan Keuangan',
             subtitle: 'Periode Juli 2026',
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           const PfSectionHeader(
             title: 'Transaksi Terbaru',
             trailing: Text(
@@ -1022,7 +1014,7 @@ class _TransactionCardSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1031,9 +1023,9 @@ class _TransactionCardSection extends StatelessWidget {
             subtitle:
                 'TransactionCard — list item with icon, amount, actions',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           const _CodeBadge('TransactionCard'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           TransactionCard(
             title: 'Penjualan',
             subtitle: 'Tunai • Toko Utama',
@@ -1044,7 +1036,7 @@ class _TransactionCardSection extends StatelessWidget {
             onEdit: () {},
             onDelete: () {},
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           TransactionCard(
             title: 'Belanja Stok',
             subtitle: 'Transfer • Supplier A',
@@ -1069,7 +1061,7 @@ class _QuickActionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1078,9 +1070,9 @@ class _QuickActionsSection extends StatelessWidget {
             subtitle:
                 'QuickActionButton — grid-friendly action tiles',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           const _CodeBadge('QuickActionButton'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Row(
             children: [
               Expanded(
@@ -1091,7 +1083,7 @@ class _QuickActionsSection extends StatelessWidget {
                   onTap: () {},
                 ),
               ),
-              const SizedBox(width: AppTheme.s8),
+              const SizedBox(width: AppSpacing.s8),
               Expanded(
                 child: QuickActionButton(
                   icon: Icons.receipt_long_outlined,
@@ -1102,7 +1094,7 @@ class _QuickActionsSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Row(
             children: [
               Expanded(
@@ -1113,7 +1105,7 @@ class _QuickActionsSection extends StatelessWidget {
                   onTap: () {},
                 ),
               ),
-              const SizedBox(width: AppTheme.s8),
+              const SizedBox(width: AppSpacing.s8),
               Expanded(
                 child: QuickActionButton(
                   icon: Icons.bar_chart_rounded,
@@ -1140,7 +1132,7 @@ class _StatRowSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1149,12 +1141,12 @@ class _StatRowSection extends StatelessWidget {
             subtitle:
                 'PfStatRow — label-value pairs for detail screens',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           const _CodeBadge('PfStatRow'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(AppTheme.s16),
+              padding: const EdgeInsets.all(AppSpacing.s16),
               child: Column(
                 children: [
                   const PfStatRow(label: 'Tanggal', value: '12 Juli 2026'),
@@ -1190,7 +1182,7 @@ class _ErrorSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1199,25 +1191,25 @@ class _ErrorSection extends StatelessWidget {
             subtitle:
                 'ErrorRetryWidget, OfflineBanner',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
 
           // OfflineBanner
           Text('OfflineBanner', style: AppTheme.subtitle),
           const _CodeBadge('OfflineBanner'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           const OfflineBanner(isOffline: true),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           // ErrorRetryWidget
           Text('ErrorRetryWidget', style: AppTheme.subtitle),
           const _CodeBadge('ErrorRetryWidget'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Container(
             height: 240,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
               border: Border.all(
-                color: Theme.of(context).colorScheme.outline,
+                color: AppTheme.outlineColorTheme(context),
               ),
             ),
             child: const ErrorRetryWidget(
@@ -1241,7 +1233,7 @@ class _SnackbarSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1250,12 +1242,12 @@ class _SnackbarSection extends StatelessWidget {
             subtitle:
                 'ErrorSnackbar — themed success / error / warning / info',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           const _CodeBadge('ErrorSnackbar'),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Wrap(
-            spacing: AppTheme.s8,
-            runSpacing: AppTheme.s8,
+            spacing: AppSpacing.s8,
+            runSpacing: AppSpacing.s8,
             children: [
               _SnackbarButton(
                 label: 'Success',
@@ -1312,7 +1304,7 @@ class _SnackbarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ActionChip(
       label: Text(label),
-      avatar: Icon(Icons.play_arrow_rounded, size: 16, color: color),
+      avatar: Icon(Icons.play_arrow_rounded, size: AppIconSize.s16, color: color),
       onPressed: onTap,
       side: BorderSide(color: color.withValues(alpha: 0.3)),
     );
@@ -1337,7 +1329,7 @@ class _ChartSection extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1346,9 +1338,9 @@ class _ChartSection extends StatelessWidget {
             subtitle:
                 'TrendChart — line chart with green/red dots',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           const _CodeBadge('TrendChart'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           SizedBox(
             height: 240,
             child: TrendChart(
@@ -1381,7 +1373,7 @@ class _AnimationSectionState extends State<_AnimationSection> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1390,12 +1382,12 @@ class _AnimationSectionState extends State<_AnimationSection> {
             subtitle:
                 'FadeInEntrance, PfSlidePageView',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
 
           // FadeInEntrance
           Text('FadeInEntrance', style: AppTheme.subtitle),
           const _CodeBadge('FadeInEntrance'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           FilledButton(
             onPressed: () {
               setState(() {
@@ -1405,53 +1397,51 @@ class _AnimationSectionState extends State<_AnimationSection> {
             },
             child: const Text('Refresh Demo'),
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           if (_showFadeCard)
             FadeInEntrance(
               key: ValueKey('fade_$_refreshKey'),
               child: PfCard(
-                padding: const EdgeInsets.all(AppTheme.s16),
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 child: Row(
                   children: [
                     Container(
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
+                        color: AppTheme.primaryColorTheme(context)
                             .withValues(alpha: 0.1),
                         borderRadius:
-                            BorderRadius.circular(AppTheme.radiusSmall),
+                            BorderRadius.circular(AppRadius.radiusSmall),
                       ),
                       child: Icon(
                         Icons.auto_awesome_rounded,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: AppTheme.primaryColorTheme(context),
                       ),
                     ),
-                    const SizedBox(width: AppTheme.s12),
-                    const Expanded(
+                    const SizedBox(width: AppSpacing.s12),
+                    Expanded(
                       child: Text(
                         'Animasi fade + slide up 400ms',
-                        style: TextStyle(fontSize: 13),
+                        style: AppTheme.caption,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           // PfSlidePageView
           Text('PfSlidePageView', style: AppTheme.subtitle),
           const _CodeBadge('PfSlidePageView'),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Container(
             height: 160,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
               border: Border.all(
-                color: Theme.of(context).colorScheme.outline,
+                color: AppTheme.outlineColorTheme(context),
               ),
             ),
             clipBehavior: Clip.antiAlias,
@@ -1463,7 +1453,7 @@ class _AnimationSectionState extends State<_AnimationSection> {
                     child: Center(
                       key: ValueKey('page_$_demoIndex'),
                       child: Padding(
-                        padding: const EdgeInsets.all(AppTheme.s16),
+                        padding: const EdgeInsets.all(AppSpacing.s16),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -1473,10 +1463,10 @@ class _AnimationSectionState extends State<_AnimationSection> {
                                 Icons.history_rounded,
                                 Icons.assessment_rounded,
                               ][_demoIndex],
-                              size: 40,
-                              color: Theme.of(context).colorScheme.primary,
+                              size: AppIconSize.s40,
+                              color: AppTheme.primaryColorTheme(context),
                             ),
-                            const SizedBox(height: AppTheme.s8),
+                            const SizedBox(height: AppSpacing.s8),
                             Text(
                               [
                                 'Halaman Dashboard',
@@ -1531,7 +1521,7 @@ class _ShadowSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1540,7 +1530,7 @@ class _ShadowSection extends StatelessWidget {
             subtitle:
                 'AppTheme.softShadow & AppTheme.mediumShadow',
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Row(
             children: [
               Expanded(
@@ -1549,9 +1539,9 @@ class _ShadowSection extends StatelessWidget {
                     Container(
                       height: 80,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: AppTheme.surfaceColorTheme(context),
                         borderRadius:
-                            BorderRadius.circular(AppTheme.radiusSmall),
+                            BorderRadius.circular(AppRadius.radiusSmall),
                         boxShadow: AppTheme.softShadow,
                       ),
                       child: const Center(
@@ -1561,13 +1551,13 @@ class _ShadowSection extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppTheme.s8),
+                    const SizedBox(height: AppSpacing.s8),
                     Container(
                       height: 80,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: AppTheme.surfaceColorTheme(context),
                         borderRadius:
-                            BorderRadius.circular(AppTheme.radiusSmall),
+                            BorderRadius.circular(AppRadius.radiusSmall),
                         boxShadow: AppTheme.mediumShadow,
                       ),
                       child: const Center(
@@ -1580,18 +1570,16 @@ class _ShadowSection extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: AppTheme.s12),
+              const SizedBox(width: AppSpacing.s12),
               Expanded(
                 child: Container(
                   height: 176,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    color: AppTheme.surfaceColorTheme(context),
+                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
+                        color: AppTheme.primaryColorTheme(context)
                             .withValues(alpha: 0.15),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
@@ -1634,7 +1622,7 @@ class _WidgetBookHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: AppTheme.heading3),
-        const SizedBox(height: 2),
+        const SizedBox(height: AppSpacing.s2),
         Text(subtitle,
             style: AppTheme.caption.copyWith(fontSize: 12)),
       ],
@@ -1649,12 +1637,12 @@ class _CodeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: 3),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppTheme.s4),
+        color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppSpacing.s4),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+          color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.15),
         ),
       ),
       child: Text(
@@ -1663,7 +1651,7 @@ class _CodeBadge extends StatelessWidget {
           fontSize: 11,
           fontFamily: 'monospace',
           fontWeight: FontWeight.w500,
-          color: Theme.of(context).colorScheme.primary,
+          color: AppTheme.primaryColorTheme(context),
         ),
       ),
     );
@@ -1678,28 +1666,26 @@ class _CodeHint extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppTheme.s12),
+      padding: const EdgeInsets.all(AppSpacing.s12),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest
+        color: AppTheme.surfaceContainerHighestColorTheme(context)
             .withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
       ),
       child: Row(
         children: [
           Icon(
             Icons.info_outline_rounded,
-            size: 16,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            size: AppIconSize.s16,
+            color: AppTheme.onSurfaceVariantColorTheme(context),
           ),
-          const SizedBox(width: AppTheme.s8),
+          const SizedBox(width: AppSpacing.s8),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
                 fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: AppTheme.onSurfaceVariantColorTheme(context),
               ),
             ),
           ),

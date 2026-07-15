@@ -9,6 +9,10 @@ import '../../data/local/models/category_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/transaction_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class EditTransactionPage extends StatefulWidget {
   final TransactionModel transaction;
@@ -197,19 +201,19 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppTheme.s20),
+          padding: const EdgeInsets.all(AppSpacing.s20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(AppTheme.s16),
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 decoration: BoxDecoration(
                   color: (isIncome
                           ? AppTheme.profitColorTheme(context)
                           : AppTheme.lossColorTheme(context))
                       .withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                   border: Border.all(
                     color: (isIncome
                             ? AppTheme.profitColorTheme(context)
@@ -227,9 +231,9 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                       color: isIncome
                           ? AppTheme.profitColorTheme(context)
                           : AppTheme.lossColorTheme(context),
-                      size: 28,
+                      size: AppIconSize.s28,
                     ),
-                    const SizedBox(width: AppTheme.s12),
+                    const SizedBox(width: AppSpacing.s12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -244,21 +248,21 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                                 : AppTheme.lossColorTheme(context),
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: AppSpacing.s2),
                         Text(
                           widget.business.name,
-                          style: AppTheme.caption.copyWith(fontSize: 13),
+                          style: AppTheme.caption,
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: AppTheme.s24),
+              const SizedBox(height: AppSpacing.s24),
 
               Text('Kategori',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               DropdownButtonFormField<CategoryModel>(
                 initialValue: _selectedCategory,
                 decoration: const InputDecoration(
@@ -276,11 +280,11 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                     value == null ? 'Pilih kategori' : null,
               ),
 
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
 
               Text('Jumlah (Rp)',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
@@ -304,10 +308,10 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
               ),
 
               if (isIncome) ...[
-                const SizedBox(height: AppTheme.s20),
+                const SizedBox(height: AppSpacing.s20),
                 Text('HPP (Harga Pokok Penjualan)',
                     style: AppTheme.subtitle.copyWith(fontSize: 14)),
-                const SizedBox(height: AppTheme.s8),
+                const SizedBox(height: AppSpacing.s8),
                 TextFormField(
                   controller: _cogsController,
                   keyboardType: TextInputType.number,
@@ -320,10 +324,10 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 ),
               ],
 
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
               Text('Deskripsi (opsional)',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _descController,
                 maxLines: 3,

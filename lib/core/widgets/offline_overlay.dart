@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../network/connectivity_service.dart';
 import '../theme/app_theme.dart';
+import '../../core/theme/app_spacing.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 /// Duration the app must be offline before the full-screen overlay appears.
 const _offlineOverlayDelay = Duration(seconds: 5);
@@ -119,7 +122,7 @@ class _OfflineOverlayState extends ConsumerState<OfflineOverlay>
                 children: [
                   // Pulsing wifi-off icon
                   _AnimatedWifiOffIcon(),
-                  const SizedBox(height: AppTheme.s24),
+                  const SizedBox(height: AppSpacing.s24),
                   Text(
                     'Tidak Ada Koneksi Internet',
                     style: AppTheme.heading2.copyWith(
@@ -127,9 +130,9 @@ class _OfflineOverlayState extends ConsumerState<OfflineOverlay>
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: AppTheme.s12),
+                  const SizedBox(height: AppSpacing.s12),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 48),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s48),
                     child: Text(
                       'Aplikasi membutuhkan koneksi internet untuk berfungsi.\n'
                       'Periksa koneksi Wi-Fi atau data seluler Anda.',
@@ -140,7 +143,7 @@ class _OfflineOverlayState extends ConsumerState<OfflineOverlay>
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppTheme.s8),
+                  const SizedBox(height: AppSpacing.s8),
                   // Small indicator that we're watching
                   Text(
                     ref.watch(isOnlineProvider)
@@ -150,7 +153,7 @@ class _OfflineOverlayState extends ConsumerState<OfflineOverlay>
                       color: Colors.white.withValues(alpha: 0.4),
                     ),
                   ),
-                  const SizedBox(height: AppTheme.s40),
+                  const SizedBox(height: AppSpacing.s40),
                   _RetryButton(onRetry: _handleRetry),
                 ],
               ),
@@ -208,7 +211,7 @@ class _AnimatedWifiOffIconState extends State<_AnimatedWifiOffIcon>
         ),
         child: const Icon(
           Icons.wifi_off_rounded,
-          size: 52,
+          size: AppIconSize.s52,
           color: AppTheme.warningColor,
         ),
       ),
@@ -225,13 +228,13 @@ class _RetryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FilledButton.icon(
-      icon: const Icon(Icons.refresh_rounded, size: 20),
+      icon: const Icon(Icons.refresh_rounded, size: AppIconSize.s20),
       label: const Text('Coba Lagi'),
       onPressed: onRetry,
       style: FilledButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
-        padding: const EdgeInsets.symmetric(horizontal: AppTheme.s32, vertical: AppTheme.s16),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s32, vertical: AppSpacing.s16),
       ),
     );
   }

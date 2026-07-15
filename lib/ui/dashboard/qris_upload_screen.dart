@@ -9,6 +9,10 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class QrisUploadScreen extends StatefulWidget {
   final BusinessModel business;
@@ -169,19 +173,19 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
 
       ),
       body: ListView(
-        padding: const EdgeInsets.all(AppTheme.s20),
+        padding: const EdgeInsets.all(AppSpacing.s20),
         children: [
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(AppTheme.s20),
+              padding: const EdgeInsets.all(AppSpacing.s20),
               child: Column(
                 children: [
                   Icon(Icons.qr_code_scanner_rounded,
-                      size: 48, color: AppTheme.primaryColor),
-                  const SizedBox(height: AppTheme.s12),
+                      size: AppIconSize.s48, color: AppTheme.primaryColor),
+                  const SizedBox(height: AppSpacing.s12),
                   Text('Upload QRIS',
                       style: AppTheme.heading3),
-                  const SizedBox(height: AppTheme.s8),
+                  const SizedBox(height: AppSpacing.s8),
                   Text(
                     'QRIS ini khusus untuk bisnis "${widget.business.name}".\n'
                     'Bisa upload dari galeri atau masukkan URL manual.',
@@ -192,7 +196,7 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           SegmentedButton<bool>(
             segments: const [
@@ -205,7 +209,7 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
             onSelectionChanged: (v) =>
                 setState(() => _useUrl = v.first),
           ),
-          const SizedBox(height: AppTheme.s20),
+          const SizedBox(height: AppSpacing.s20),
 
           if (_useUrl)
             TextField(
@@ -220,19 +224,19 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
           else ...[
             InkWell(
               onTap: _pickImage,
-              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
               child: Container(
                 width: double.infinity,
                 height: 260,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  color: AppTheme.surfaceContainerColorTheme(context),
+                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                   border: Border.all(
-                      color: Theme.of(context).colorScheme.outlineVariant, width: 1),
+                      color: AppTheme.outlineVariantColorTheme(context), width: 1),
                 ),
                 child: _previewUrl != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                         child: Image.memory(
                           _selectedImageBytes!,
                           fit: BoxFit.contain,
@@ -245,32 +249,32 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
                         children: [
                           Icon(
                               Icons.add_photo_alternate_outlined,
-                              size: 64,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
-                          const SizedBox(height: AppTheme.s12),
+                              size: AppIconSize.s64,
+                              color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.5)),
+                          const SizedBox(height: AppSpacing.s12),
                           Text('Ketuk untuk pilih gambar',
                               style: AppTheme.caption
                                   .copyWith(
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                      color: AppTheme.onSurfaceVariantColorTheme(context))),
                         ],
                       ),
               ),
             ),
           ],
 
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppSpacing.s24),
           SizedBox(
             width: double.infinity,
             height: 52,
             child: FilledButton.icon(
               onPressed: _isUploading ? null : _uploadQris,
               icon: _isUploading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white),
+                          color: AppTheme.onPrimaryColorTheme(context)),
                     )
                   : const Icon(Icons.cloud_upload_rounded),
               label: Text(_isUploading

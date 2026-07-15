@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../utils/format_helpers.dart';
+import '../../core/theme/app_spacing.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 /// Data point for the trend chart.
 class TrendDataPoint {
@@ -42,20 +45,20 @@ class TrendChart extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(AppTheme.s8, AppTheme.s16, AppTheme.s16, AppTheme.s12),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.s8, AppSpacing.s16, AppSpacing.s16, AppSpacing.s12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.trending_up_rounded,
-                    size: 18, color: AppTheme.infoColor),
-                const SizedBox(width: AppTheme.s8),
+                    size: AppIconSize.s18, color: AppTheme.infoColor),
+                const SizedBox(width: AppSpacing.s8),
                 Text(title,
                     style: AppTheme.labelSmall.copyWith(fontSize: 12)),
               ],
             ),
-            const SizedBox(height: AppTheme.s20),
+            const SizedBox(height: AppSpacing.s20),
             SizedBox(
               height: 160,
               child: LineChart(
@@ -67,7 +70,7 @@ class TrendChart extends StatelessWidget {
                     show: true,
                     drawVerticalLine: false,
                     getDrawingHorizontalLine: (value) => FlLine(
-                      color: Theme.of(context).colorScheme.outlineVariant,
+                      color: AppTheme.outlineVariantColorTheme(context),
                       strokeWidth: 1,
                     ),
                   ),
@@ -106,7 +109,7 @@ class TrendChart extends StatelessWidget {
                               label,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: AppTheme.onSurfaceVariantColorTheme(context),
                               ),
                             ),
                           );
@@ -125,7 +128,7 @@ class TrendChart extends StatelessWidget {
                               _compactAmount(value),
                               style: TextStyle(
                                 fontSize: 9,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                                color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.8),
                               ),
                             ),
                           );
@@ -135,7 +138,7 @@ class TrendChart extends StatelessWidget {
                   ),
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (_) => Theme.of(context).colorScheme.surfaceContainerHighest,
+                      getTooltipColor: (_) => AppTheme.surfaceContainerHighestColorTheme(context),
                       getTooltipItems: (touchedSpots) =>
                           touchedSpots.map((spot) {
                         final idx = spot.x.toInt();
@@ -181,11 +184,11 @@ class TrendChart extends StatelessWidget {
                           final isProfit = data[index].netProfit >= 0;
                           return FlDotCirclePainter(
                             radius: 3.5,
-                            color: Theme.of(context).colorScheme.surface,
+                            color: AppTheme.surfaceColorTheme(context),
                             strokeWidth: 2.5,
                             strokeColor: isProfit
-                                ? AppTheme.profitColor
-                                : AppTheme.lossColor,
+                                ? AppTheme.profitChartColor(context)
+                                : AppTheme.lossChartColor(context),
                           );
                         },
                       ),

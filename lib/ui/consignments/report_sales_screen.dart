@@ -9,6 +9,10 @@ import '../../data/local/models/consignment_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/debt_consignment_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class ReportSalesScreen extends ConsumerStatefulWidget {
   final ConsignmentModel consignment;
@@ -125,26 +129,26 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
         title: const Text('Laporkan Penjualan'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         children: [
           _buildConsignorInfo(),
-          const SizedBox(height: AppTheme.s16),
+          const SizedBox(height: AppSpacing.s16),
           ...List.generate(
               widget.items.length, (index) => _buildItemCard(index)),
-          const SizedBox(height: AppTheme.s16),
+          const SizedBox(height: AppSpacing.s16),
           _buildSummaryCard(),
-          const SizedBox(height: AppTheme.s32),
+          const SizedBox(height: AppSpacing.s32),
           SizedBox(
             width: double.infinity,
             height: 52,
             child: FilledButton.icon(
               onPressed: _isSaving ? null : _handleSave,
               icon: _isSaving
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2, color: AppTheme.onPrimaryColorTheme(context)),
                     )
                   : const Icon(Icons.save_outlined),
               label:
@@ -158,18 +162,18 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
 
   Widget _buildConsignorInfo() {
     return Container(
-      padding: const EdgeInsets.all(AppTheme.s16),
+      padding: const EdgeInsets.all(AppSpacing.s16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
         border: Border.all(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
+            color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Icon(Icons.person_outline_rounded,
-              color: Theme.of(context).colorScheme.primary, size: 20),
-          const SizedBox(width: AppTheme.s12),
+              color: AppTheme.primaryColorTheme(context), size: AppIconSize.s20),
+          const SizedBox(width: AppSpacing.s12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +186,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                     color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
-                const SizedBox(height: AppTheme.s4),
+                const SizedBox(height: AppSpacing.s4),
                 Text(
                   '${widget.items.length} item dititipkan',
                   style: AppTheme.caption.copyWith(
@@ -208,9 +212,9 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
     final hasError = qtySold > item.quantity;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: AppTheme.s12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.s12),
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -228,7 +232,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             Row(
               children: [
                 Expanded(
@@ -236,7 +240,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Terjual', style: AppTheme.labelSmall),
-                      const SizedBox(height: AppTheme.s4),
+                      const SizedBox(height: AppSpacing.s4),
                       TextFormField(
                         controller: _qtyControllers[index],
                         keyboardType: TextInputType.number,
@@ -268,20 +272,20 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(width: AppTheme.s16),
+                const SizedBox(width: AppSpacing.s16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Dikembalikan', style: AppTheme.labelSmall),
-                      const SizedBox(height: AppTheme.s4),
+                      const SizedBox(height: AppSpacing.s4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: AppTheme.s12, vertical: AppTheme.s12),
+                            horizontal: AppSpacing.s12, vertical: AppSpacing.s12),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest
+                          color: AppTheme.surfaceContainerHighestColorTheme(context)
                               .withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                         ),
                         child: Text(
                           '$qtyReturned pcs',
@@ -298,9 +302,9 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             const Divider(height: 1),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             Row(
               children: [
                 Expanded(
@@ -340,20 +344,20 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
 
   Widget _buildSummaryCard() {
     return Card(
-      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+      color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.05),
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s20),
+        padding: const EdgeInsets.all(AppSpacing.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Ringkasan', style: AppTheme.labelSmall),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             _buildSummaryRow(
               'Total Pendapatan',
               FormatHelpers.rupiah(_totalFromSales),
               AppTheme.profitColorTheme(context),
             ),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             _buildSummaryRow(
               'Total ke Pihak Penitip',
               FormatHelpers.rupiah(_totalPayment),
@@ -363,7 +367,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
             _buildSummaryRow(
               'Komisi',
               FormatHelpers.rupiah(_commission),
-              Theme.of(context).colorScheme.primary,
+              AppTheme.primaryColorTheme(context),
             ),
           ],
         ),

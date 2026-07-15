@@ -74,7 +74,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
             DropdownButtonFormField<String>(
               initialValue: type,
               borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-              dropdownColor: Theme.of(context).colorScheme.surface,
+              dropdownColor: AppTheme.surfaceColorTheme(context),
               items: const [
                 DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
                 DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
@@ -134,7 +134,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
             DropdownButtonFormField<String>(
               initialValue: type,
               borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-              dropdownColor: Theme.of(context).colorScheme.surface,
+              dropdownColor: AppTheme.surfaceColorTheme(context),
               items: const [
                 DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
                 DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
@@ -188,8 +188,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-              foregroundColor: Theme.of(context).colorScheme.onError,
+              backgroundColor: AppTheme.lossColorTheme(context),
+              foregroundColor: AppTheme.onDangerColorTheme(context),
             ),
             onPressed: () async {
               try {
@@ -211,8 +211,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Kelola Kategori')),
       floatingActionButton: FloatingActionButton(
@@ -261,7 +259,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                             Icon(
                               Icons.category_rounded,
                               size: 64,
-                              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                              color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.4),
                             ),
                             const SizedBox(height: AppTheme.s16),
                             Text(
@@ -321,7 +319,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                                   PopupMenuButton<String>(
                                     icon: Icon(
                                       Icons.more_vert_rounded,
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      color: AppTheme.onSurfaceVariantColorTheme(context),
                                       size: 20,
                                     ),
                                     shape: RoundedRectangleBorder(
@@ -342,10 +340,10 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                                         value: 'edit',
                                         child: ListTile(
                                           leading: Icon(Icons.edit_outlined,
-                                              color: Theme.of(context).colorScheme.onSurface),
+                                              color: AppTheme.onSurfaceColorTheme(context)),
                                           title: Text('Edit Kategori',
                                               style: TextStyle(
-                                                  color: Theme.of(context).colorScheme.onSurface)),
+                                                  color: AppTheme.onSurfaceColorTheme(context))),
                                           dense: true,
                                           contentPadding: EdgeInsets.zero,
                                         ),

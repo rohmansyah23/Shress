@@ -503,8 +503,9 @@ class SupabaseService {
       if (cogs != null) updates['cogs'] = cogs;
       if (paymentMethod != null) updates['payment_method'] = paymentMethod;
       if (description != null) updates['description'] = description;
-      if (transactionDate != null)
+      if (transactionDate != null) {
         updates['transaction_date'] = transactionDate;
+      }
 
       if (updates.isNotEmpty) {
         await _supabase

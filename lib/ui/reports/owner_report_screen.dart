@@ -13,6 +13,8 @@ import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
 
 enum OwnerPeriodFilter {
   today('Hari Ini'),
@@ -269,13 +271,13 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
             )
           : SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(AppTheme.s16),
+              padding: const EdgeInsets.all(AppSpacing.s16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Business filter (selalu tampak, tidak hanya di AppBar)
                   _buildBusinessFilter(),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppSpacing.s6),
 
                   // Period filter chips
                   SingleChildScrollView(
@@ -284,7 +286,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                       children: [
                         for (final period in OwnerPeriodFilter.values)
                           Padding(
-                            padding: const EdgeInsets.only(right: AppTheme.s8),
+                            padding: const EdgeInsets.only(right: AppSpacing.s8),
                             child: _buildFilterChip(
                               label: period.label,
                               isSelected: _selectedPeriod == period,
@@ -302,7 +304,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: AppTheme.s16),
+                  const SizedBox(height: AppSpacing.s16),
 
                   if (_isLoading)
                     const Center(child: CircularProgressIndicator())
@@ -311,12 +313,12 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                   else ...[
                     NetProfitCard(
                       netProfit: netProfit,
-                      style: NetProfitCardStyle.accentBar,
+                      style: NetProfitCardStyle.row,
                       title: _filterAllBusinesses
                           ? 'Total Laba / Rugi Bersih'
                           : 'Laba / Rugi Bersih',
                     ),
-                    const SizedBox(height: AppTheme.s12),
+                    const SizedBox(height: AppSpacing.s12),
 
                     // Detail cards
                     Row(
@@ -329,7 +331,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                             color: AppTheme.profitColorTheme(context),
                           ),
                         ),
-                        const SizedBox(width: AppTheme.s12),
+                        const SizedBox(width: AppSpacing.s12),
                         Expanded(
                           child: SummaryCard(
                             title: 'HPP',
@@ -340,7 +342,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppTheme.s12),
+                    const SizedBox(height: AppSpacing.s12),
                     Row(
                       children: [
                         Expanded(
@@ -351,7 +353,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                             color: AppTheme.infoColorTheme(context),
                           ),
                         ),
-                        const SizedBox(width: AppTheme.s12),
+                        const SizedBox(width: AppSpacing.s12),
                         Expanded(
                           child: SummaryCard(
                             title: 'Pengeluaran',
@@ -385,9 +387,9 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
               _loadSummary();
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.s8),
           ..._businesses.map((b) => Padding(
-                padding: const EdgeInsets.only(right: AppTheme.s8),
+                padding: const EdgeInsets.only(right: AppSpacing.s8),
                 child: _buildFilterChip(
                   label: b.name.length > 15 ? '${b.name.substring(0, 15)}...' : b.name,
                   isSelected: _selectedBusinessId == b.businessId,
@@ -410,24 +412,23 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16, vertical: AppTheme.s8),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isLight ? colorScheme.primary : AppTheme.accent)
+              ? (isLight ? AppTheme.primaryColorTheme(context) : AppTheme.accent)
               : (isLight
-                    ? colorScheme.surfaceContainer
+                    ? AppTheme.surfaceContainerColorTheme(context)
                     : AppTheme.darkBackground),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.s20),
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : (isLight ? colorScheme.outlineVariant : AppTheme.accent),
+                : AppTheme.outlineVariantColorTheme(context),
             width: 1,
           ),
         ),
@@ -438,7 +439,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected
                 ? AppTheme.card
-                : (isLight ? colorScheme.onSurfaceVariant : AppTheme.accent),
+                : AppTheme.onSurfaceVariantColorTheme(context),
           ),
         ),
       ),

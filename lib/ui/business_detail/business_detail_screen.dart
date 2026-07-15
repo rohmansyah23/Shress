@@ -6,6 +6,8 @@ import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../ui/dashboard/qris_upload_screen.dart';
 import '../transaction/transaction_history_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
 
 class BusinessDetailScreen extends StatelessWidget {
   final BusinessModel business;
@@ -17,26 +19,26 @@ class BusinessDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(business.name)),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Informasi Bisnis', style: AppTheme.heading3),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(AppTheme.s16),
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(business.name, style: AppTheme.heading2),
-                    const SizedBox(height: AppTheme.s8),
+                    const SizedBox(height: AppSpacing.s8),
                     if (business.description != null &&
                         business.description!.isNotEmpty)
                       Text(business.description!, style: AppTheme.bodyText),
-                    const SizedBox(height: AppTheme.s8),
+                    const SizedBox(height: AppSpacing.s8),
                     Text('ID: ${business.businessId}', style: AppTheme.caption),
-                    const SizedBox(height: AppTheme.s12),
+                    const SizedBox(height: AppSpacing.s12),
                     Row(
                       children: [
                         ElevatedButton.icon(
@@ -46,7 +48,7 @@ class BusinessDetailScreen extends StatelessWidget {
                             _showEditDialog(context);
                           },
                         ),
-                        const SizedBox(width: AppTheme.s12),
+                        const SizedBox(width: AppSpacing.s12),
                         OutlinedButton.icon(
                           icon: const Icon(Icons.qr_code_2_rounded),
                           label: const Text('Upload QRIS'),
@@ -59,12 +61,12 @@ class BusinessDetailScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: AppTheme.s24),
+            const SizedBox(height: AppSpacing.s24),
             Text('Riwayat Transaksi', style: AppTheme.heading3),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(AppTheme.s16),
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -72,7 +74,7 @@ class BusinessDetailScreen extends StatelessWidget {
                       'Lihat semua transaksi bisnis ini',
                       style: AppTheme.bodyText,
                     ),
-                    const SizedBox(height: AppTheme.s12),
+                    const SizedBox(height: AppSpacing.s12),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -106,7 +108,7 @@ class BusinessDetailScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: const Text('Edit Bisnis'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -116,7 +118,7 @@ class BusinessDetailScreen extends StatelessWidget {
               controller: nameCtrl,
               decoration: const InputDecoration(labelText: 'Nama Bisnis'),
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             TextField(
               controller: descCtrl,
               maxLines: 3,

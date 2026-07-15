@@ -150,8 +150,6 @@ class PfEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppTheme.s32),
@@ -162,13 +160,13 @@ class PfEmptyState extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.08),
+                color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
               ),
               child: Icon(
                 icon,
                 size: 36,
-                color: colorScheme.primary.withValues(alpha: 0.5),
+                color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: AppTheme.s20),
@@ -415,7 +413,6 @@ class QuickActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Card(
       child: InkWell(
         onTap: onTap,
@@ -443,7 +440,7 @@ class QuickActionButton extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       height: 1.2,
-                      color: colorScheme.onSurface,
+                      color: AppTheme.onSurfaceColorTheme(context),
                     ),
                   ),
                 ),
@@ -634,9 +631,7 @@ class _PfSkeletonState extends State<PfSkeleton>
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          color: Theme.of(
-            context,
-          ).colorScheme.onSurface.withValues(alpha: _animation.value * 0.15),
+          color: AppTheme.onSurfaceColorTheme(context).withValues(alpha: _animation.value * 0.15),
           borderRadius: BorderRadius.circular(widget.radius),
         ),
       ),

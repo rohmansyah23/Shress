@@ -13,6 +13,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/debt_consignment_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../providers/debtor_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class AddDebtScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
@@ -180,8 +184,8 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
             return Container(
               height: MediaQuery.of(context).size.height * 0.7,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXL)),
+                color: AppTheme.backgroundColorTheme(context),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.radiusXL)),
               ),
               child: Column(
                 children: [
@@ -190,12 +194,12 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(2),
+                      color: AppTheme.outlineVariantColorTheme(context),
+                      borderRadius: BorderRadius.circular(AppRadius.s2),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.s20, AppSpacing.s16, AppSpacing.s20, AppSpacing.s8),
                     child: Row(
                       children: [
                         Text('Pilih Penghutang', style: AppTheme.heading3),
@@ -208,12 +212,12 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s20, vertical: AppSpacing.s8),
                     child: TextField(
                       decoration: const InputDecoration(
                         hintText: 'Cari nama penghutang...',
                         prefixIcon: Icon(Icons.search_rounded),
-                        contentPadding: EdgeInsets.symmetric(vertical: AppTheme.s12, horizontal: AppTheme.s16),
+                        contentPadding: EdgeInsets.symmetric(vertical: AppSpacing.s12, horizontal: AppSpacing.s16),
                       ),
                       onChanged: (val) {
                         setSheetState(() {
@@ -231,12 +235,12 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                             ),
                           )
                         : ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                            padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s8, AppSpacing.s16, AppSpacing.s16),
                             itemCount: filteredDebtors.length,
                             itemBuilder: (context, index) {
                               final debtor = filteredDebtors[index];
                               return Card(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                margin: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
                                 child: ListTile(
                                   leading: CircleAvatar(
                                     backgroundColor: AppTheme.warningColorTheme(context).withValues(alpha: 0.12),
@@ -357,28 +361,28 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
       ),
       body: Form(
         key: _formKey,
-        child: SingleChildScrollView(                      padding: EdgeInsets.fromLTRB(AppTheme.s20, AppTheme.s16, AppTheme.s20, bottomInset + AppTheme.s20),
+        child: SingleChildScrollView(                      padding: EdgeInsets.fromLTRB(AppSpacing.s20, AppSpacing.s16, AppSpacing.s20, bottomInset + AppSpacing.s20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (_hasSelectedDebtor) ...[
                 Text('Data Penghutang', style: AppTheme.heading3),
-                const SizedBox(height: AppTheme.s16),
+                const SizedBox(height: AppSpacing.s16),
                 Container(
-                  padding: const EdgeInsets.all(AppTheme.s12),
+                  padding: const EdgeInsets.all(AppSpacing.s12),
                   decoration: BoxDecoration(
                     color: AppTheme.infoColorTheme(context)
                         .withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.person_rounded,
-                        size: 20,
+                        size: AppIconSize.s20,
                         color: AppTheme.infoColorTheme(context),
                       ),
-                      const SizedBox(width: AppTheme.s12),
+                      const SizedBox(width: AppSpacing.s12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -399,7 +403,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                       if (widget.existingDebtor == null)
                         IconButton(
                           icon: Icon(Icons.close_rounded,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              color: AppTheme.onSurfaceVariantColorTheme(context)),
                           onPressed: () {
                             setState(() {
                               _selectedDebtor = null;
@@ -409,41 +413,41 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppTheme.s24),
+                const SizedBox(height: AppSpacing.s24),
               ],
               if (!_hasSelectedDebtor) ...[
                 Text('Data Penghutang', style: AppTheme.heading3),
-                const SizedBox(height: AppTheme.s16),
+                const SizedBox(height: AppSpacing.s16),
                 OutlinedButton.icon(
                   icon: const Icon(Icons.people_alt_outlined),
                   label: const Text('Pilih dari Penghutang Terdaftar'),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                     ),
                   ),
                   onPressed: _showDebtorSelectionSheet,
                 ),
-                const SizedBox(height: AppTheme.s16),
+                const SizedBox(height: AppSpacing.s16),
                 Row(
                   children: [
                     const Expanded(child: Divider()),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
                       child: Text(
                         'ATAU BUAT BARU',
                         style: AppTheme.labelSmall.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: AppTheme.onSurfaceVariantColorTheme(context),
                         ),
                       ),
                     ),
                     const Expanded(child: Divider()),
                   ],
                 ),
-                const SizedBox(height: AppTheme.s16),
+                const SizedBox(height: AppSpacing.s16),
                 _FormLabel('Nama Penghutang *'),
-                const SizedBox(height: AppTheme.s8),
+                const SizedBox(height: AppSpacing.s8),
                 TextFormField(
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
@@ -459,9 +463,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: AppTheme.s20),
+                const SizedBox(height: AppSpacing.s20),
                 _FormLabel('Nomor Telepon (opsional)'),
-                const SizedBox(height: AppTheme.s8),
+                const SizedBox(height: AppSpacing.s8),
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
@@ -470,9 +474,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     hintText: '08xxxxxxxxxx',
                   ),
                 ),
-                const SizedBox(height: AppTheme.s20),
+                const SizedBox(height: AppSpacing.s20),
                 _FormLabel('Catatan (opsional)'),
-                const SizedBox(height: AppTheme.s8),
+                const SizedBox(height: AppSpacing.s8),
                 TextFormField(
                   controller: _notesController,
                   maxLines: 2,
@@ -480,14 +484,14 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     hintText: 'Catatan tentang penghutang...',
                   ),
                 ),
-                const SizedBox(height: AppTheme.s24),
+                const SizedBox(height: AppSpacing.s24),
                 const Divider(),
-                const SizedBox(height: AppTheme.s16),
+                const SizedBox(height: AppSpacing.s16),
               ],
               Text('Detail Hutang', style: AppTheme.heading3),
-              const SizedBox(height: AppTheme.s16),
+              const SizedBox(height: AppSpacing.s16),
               _FormLabel('Jumlah Hutang (Rp) *'),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
@@ -511,9 +515,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
               _FormLabel('Deskripsi (opsional)'),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 2,
@@ -521,9 +525,9 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   hintText: 'Deskripsi hutang...',
                 ),
               ),
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
               _FormLabel('Tanggal Hutang'),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _debtDateController,
                 readOnly: true,
@@ -533,7 +537,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   suffixIcon: Icon(Icons.arrow_drop_down),
                 ),
               ),
-              const SizedBox(height: AppTheme.s20),
+              const SizedBox(height: AppSpacing.s20),
               Row(
                 children: [
                   Expanded(
@@ -543,7 +547,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     TextButton(
                       onPressed: _clearDueDate,
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -551,7 +555,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _dueDateController,
                 readOnly: true,
@@ -562,7 +566,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   hintText: 'Pilih jatuh tempo (opsional)',
                 ),
               ),
-              const SizedBox(height: AppTheme.s32),
+              const SizedBox(height: AppSpacing.s32),
               SizedBox(
                 width: double.infinity,
                 height: 52,

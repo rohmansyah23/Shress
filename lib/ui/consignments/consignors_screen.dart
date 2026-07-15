@@ -13,6 +13,10 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/debt_consignment_provider.dart';
 import 'add_consignment_screen.dart';
 import 'consignor_detail_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class ConsignorsScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
@@ -189,12 +193,12 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
           : RefreshIndicator(
               onRefresh: _loadData,
               child: ListView(
-                padding: const EdgeInsets.all(AppTheme.s16),
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 children: [
                   FadeInEntrance(
                     child: _buildSummaryCard(),
                   ),
-                  const SizedBox(height: AppTheme.s16),
+                  const SizedBox(height: AppSpacing.s16),
                   if (_consignors.isEmpty)
                     _buildEmptyState()
                   else
@@ -217,7 +221,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s20),
+        padding: const EdgeInsets.all(AppSpacing.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -227,17 +231,17 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                   ),
                   child: Icon(Icons.inventory_2_outlined,
-                      size: 20, color: Theme.of(context).colorScheme.primary),
+                      size: AppIconSize.s20, color: AppTheme.primaryColorTheme(context)),
                 ),
-                const SizedBox(width: AppTheme.s12),
+                const SizedBox(width: AppSpacing.s12),
                 Text('Ringkasan Titipan', style: AppTheme.heading3),
               ],
             ),
-            const SizedBox(height: AppTheme.s20),
+            const SizedBox(height: AppSpacing.s20),
             Row(
               children: [
                 Expanded(
@@ -247,7 +251,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                     AppTheme.warningColorTheme(context),
                   ),
                 ),
-                const SizedBox(width: AppTheme.s12),
+                const SizedBox(width: AppSpacing.s12),
                 Expanded(
                   child: _summaryItem(
                     'Sudah Dibayar',
@@ -257,7 +261,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             _summaryItem(
               'Jumlah Pihak Penitip',
               '$consignorCount pihak penitip',
@@ -274,7 +278,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTheme.labelSmall),
-        const SizedBox(height: AppTheme.s4),
+        const SizedBox(height: AppSpacing.s4),
         Text(
           value,
           style: AppTheme.amountMedium.copyWith(color: color),
@@ -286,17 +290,17 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppTheme.s64),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.s64),
         child: Column(
           children: [
             Icon(Icons.people_outline_rounded,
-                size: 64, color: Theme.of(context).textTheme.bodySmall?.color),
-            const SizedBox(height: AppTheme.s16),
+                size: AppIconSize.s64, color: Theme.of(context).textTheme.bodySmall?.color),
+            const SizedBox(height: AppSpacing.s16),
             Text(
               'Belum ada pihak penitip',
               style: AppTheme.caption.copyWith(fontSize: 14),
             ),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             Text(
               'Tekan tombol + untuk menambah pihak penitip baru',
               style: AppTheme.caption.copyWith(
@@ -315,30 +319,30 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
     final statusLabel = _getConsignorStatusLabel(consignor.id);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: AppTheme.s12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.s12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
         onTap: () => _openConsignorDetail(consignor),
         child: Padding(
-          padding: const EdgeInsets.all(AppTheme.s16),
+          padding: const EdgeInsets.all(AppSpacing.s16),
           child: Row(
             children: [
               CircleAvatar(
                 radius: 24,
                 backgroundColor:
-                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                    AppTheme.primaryColorTheme(context).withValues(alpha: 0.12),
                 child: Text(
                   consignor.name.length >= 2
                       ? consignor.name.substring(0, 2).toUpperCase()
                       : consignor.name.toUpperCase(),
                   style: AppTheme.subtitle.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: AppTheme.primaryColorTheme(context),
                   ),
                 ),
               ),
-              const SizedBox(width: AppTheme.s12),
+              const SizedBox(width: AppSpacing.s12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,7 +368,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                           : AppTheme.warningColorTheme(context),
                     ),
                   ),
-                  const SizedBox(height: AppTheme.s4),
+                  const SizedBox(height: AppSpacing.s4),
                   Text(
                     statusLabel,
                     style: AppTheme.caption.copyWith(
@@ -377,12 +381,12 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(width: AppTheme.s4),
+              const SizedBox(width: AppSpacing.s4),
               PopupMenuButton<String>(
                 icon: Icon(
                   Icons.more_vert_rounded,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: AppIconSize.s20,
+                  color: AppTheme.onSurfaceVariantColorTheme(context),
                 ),
                 onSelected: (value) {
                   if (value == 'edit') _editConsignor(consignor);
@@ -393,8 +397,8 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: AppTheme.s8),
+                        Icon(Icons.edit_outlined, size: AppIconSize.s18),
+                        SizedBox(width: AppSpacing.s8),
                         Text('Edit'),
                       ],
                     ),
@@ -406,10 +410,10 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                       children: [
                         Icon(
                           Icons.delete_outline_rounded,
-                          size: 18,
+                          size: AppIconSize.s18,
                           color: AppTheme.lossColorTheme(context),
                         ),
-                        const SizedBox(width: AppTheme.s8),
+                        const SizedBox(width: AppSpacing.s8),
                         Text(
                           'Hapus',
                           style: TextStyle(color: AppTheme.lossColorTheme(context)),
@@ -435,7 +439,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+            borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: const Text('Edit Pihak Penitip'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -444,13 +448,13 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
               controller: nameCtrl,
               decoration: const InputDecoration(labelText: 'Nama'),
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             TextField(
               controller: phoneCtrl,
               decoration: const InputDecoration(labelText: 'Telepon'),
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             TextField(
               controller: notesCtrl,
               decoration: const InputDecoration(labelText: 'Catatan'),
@@ -504,7 +508,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+            borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: const Text('Hapus Pihak Penitip'),
         content: Text(
           'Yakin ingin menghapus "${consignor.name}"? Semua data titipan terkait juga akan dihapus.',
@@ -518,7 +522,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: Theme.of(context).colorScheme.onError,
+              foregroundColor: AppTheme.onDangerColorTheme(context),
             ),
             child: const Text('Hapus'),
           ),

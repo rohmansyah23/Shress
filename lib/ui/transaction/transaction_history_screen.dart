@@ -13,6 +13,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/transaction_list_provider.dart';
 import '../../providers/transaction_provider.dart';
 import 'edit_transaction_page.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 enum DateFilter {
   today('Hari Ini'),
@@ -185,7 +189,7 @@ class _TransactionHistoryScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: const Text('Hapus Transaksi'),
         content: Text(
           'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDate(tx.transactionDate)}?',
@@ -199,7 +203,7 @@ class _TransactionHistoryScreenState
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: Theme.of(context).colorScheme.onError,
+              foregroundColor: AppTheme.onDangerColorTheme(context),
             ),
             child: const Text('Hapus'),
           ),
@@ -267,7 +271,7 @@ class _TransactionHistoryScreenState
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.s12, AppSpacing.s12, AppSpacing.s12, 0),
               child: Row(
                 children: [
                   // ignore: deprecated_member_use
@@ -275,26 +279,26 @@ class _TransactionHistoryScreenState
                     child: DropdownButtonFormField<DateFilter>(
                       initialValue: _selectedFilter,
                       isDense: true,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                         ),
                         isDense: true,
                         filled: true,
                       ),
                       style: AppTheme.labelSmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: AppTheme.onSurfaceColorTheme(context),
                       ),
-                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      dropdownColor: AppTheme.surfaceColorTheme(context),
                       items: DateFilter.values.map((f) =>
                         DropdownMenuItem(
                           value: f,
                           child: Text(
                             f.label,
                             style: AppTheme.labelSmall.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: AppTheme.onSurfaceColorTheme(context),
                             ),
                           ),
                         ),
@@ -310,31 +314,31 @@ class _TransactionHistoryScreenState
                       },
                     ),
                   ),
-                  const SizedBox(width: AppTheme.s8),
+                  const SizedBox(width: AppSpacing.s8),
                   Expanded(
                     child: DropdownButtonFormField<TypeFilter>(
                       initialValue: _selectedType,
                       isDense: true,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                         ),
                         isDense: true,
                         filled: true,
                       ),
                       style: AppTheme.labelSmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: AppTheme.onSurfaceColorTheme(context),
                       ),
-                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      dropdownColor: AppTheme.surfaceColorTheme(context),
                       items: TypeFilter.values.map((f) =>
                         DropdownMenuItem(
                           value: f,
                           child: Text(
                             f.label,
                             style: AppTheme.labelSmall.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: AppTheme.onSurfaceColorTheme(context),
                             ),
                           ),
                         ),
@@ -352,15 +356,15 @@ class _TransactionHistoryScreenState
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.s12, AppSpacing.s8, AppSpacing.s12, AppSpacing.s4),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Cari transaksi...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.search_rounded, size: AppIconSize.s20),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          icon: const Icon(Icons.clear_rounded, size: AppIconSize.s18),
                           onPressed: () {
                             _searchController.clear();
                             setState(() => _searchQuery = '');
@@ -370,19 +374,19 @@ class _TransactionHistoryScreenState
                       : null,
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
+                      horizontal: AppSpacing.s12, vertical: AppSpacing.s10),
                 ),
                 style: AppTheme.caption.copyWith(fontSize: 14),
                 onChanged: _onSearchChanged,
               ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: AppTheme.s4)),
+          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.s4)),
           if (listState.isLoading && listState.items.isEmpty)
             const SliverToBoxAdapter(
               child: Center(
                 child: Padding(
-                  padding: EdgeInsets.all(40),
+                  padding: EdgeInsets.all(AppSpacing.s40),
                   child: CircularProgressIndicator(),
                 ),
               ),
@@ -396,16 +400,16 @@ class _TransactionHistoryScreenState
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.receipt_long_rounded,
-                          size: 64,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
-                      const SizedBox(height: AppTheme.s12),
+                          size: AppIconSize.s64,
+                          color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.4)),
+                      const SizedBox(height: AppSpacing.s12),
                       Text('Tidak ada transaksi',
                           style: AppTheme.title.copyWith(
                             fontSize: 18,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: AppTheme.onSurfaceVariantColorTheme(context),
                           )),
                       if (listState.error != null) ...[
-                        const SizedBox(height: AppTheme.s8),
+                        const SizedBox(height: AppSpacing.s8),
                         Text(listState.error!, style: TextStyle(color: AppTheme.lossColorTheme(context), fontSize: 12)),
                       ],
                     ],
@@ -419,7 +423,7 @@ class _TransactionHistoryScreenState
                 (context, index) {
                   if (index >= listState.items.length) {
                     return const Padding(
-                      padding: EdgeInsets.all(AppTheme.s16),
+                      padding: EdgeInsets.all(AppSpacing.s16),
                       child: Center(child: CircularProgressIndicator()),
                     );
                   }
@@ -428,17 +432,17 @@ class _TransactionHistoryScreenState
                   final isIncome = tx.type == AppConstants.typeIncome;
                   return Padding(
                     padding: EdgeInsets.only(
-                      left: 12,
-                      right: 12,
-                      bottom: 8,
+                      left: AppSpacing.s12,
+                      right: AppSpacing.s12,
+                      bottom: AppSpacing.s8,
                       top: index == 0 ? 4 : 0,
                     ),
                     child: Card(
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                         onTap: () => _showTransactionDetail(tx),
                         child: Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(AppSpacing.s12),
                           child: Row(
                             children: [
                               Container(
@@ -446,14 +450,14 @@ class _TransactionHistoryScreenState
                                 decoration: BoxDecoration(
                                   color: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context))
                                       .withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                                 ),
                                 child: Icon(
                                   isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded,
                                   color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
                                 ),
                               ),
-                              const SizedBox(width: AppTheme.s12),
+                              const SizedBox(width: AppSpacing.s12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,7 +466,7 @@ class _TransactionHistoryScreenState
                                       FormatHelpers.displayDate(tx.transactionDate),
                                       style: AppTheme.caption.copyWith(fontSize: 11),
                                     ),
-                                    const SizedBox(height: AppTheme.s4),
+                                    const SizedBox(height: AppSpacing.s4),
                                     Text(
                                       FormatHelpers.rupiah(tx.amount),
                                       style: TextStyle(
@@ -485,11 +489,11 @@ class _TransactionHistoryScreenState
                                 PopupMenuButton<String>(
                                   icon: Icon(
                                     Icons.more_vert_rounded,
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                    size: 20,
+                                    color: AppTheme.onSurfaceVariantColorTheme(context),
+                                    size: AppIconSize.s20,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                                   ),
                                   onSelected: (value) {
                                     switch (value) {
@@ -506,10 +510,10 @@ class _TransactionHistoryScreenState
                                       value: 'edit',
                                       child: ListTile(
                                         leading: Icon(Icons.edit_outlined,
-                                            color: Theme.of(context).colorScheme.onSurface),
+                                            color: AppTheme.onSurfaceColorTheme(context)),
                                         title: Text('Edit',
                                             style: TextStyle(
-                                                color: Theme.of(context).colorScheme.onSurface)),
+                                                color: AppTheme.onSurfaceColorTheme(context))),
                                         dense: true,
                                         contentPadding: EdgeInsets.zero,
                                       ),
@@ -563,7 +567,7 @@ class _TransactionHistoryScreenState
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: Row(
           children: [
             Icon(
@@ -572,7 +576,7 @@ class _TransactionHistoryScreenState
                   : Icons.trending_down_rounded,
               color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
             ),
-            const SizedBox(width: AppTheme.s8),
+            const SizedBox(width: AppSpacing.s8),
             Text(isIncome ? 'Uang Masuk' : 'Uang Keluar'),
           ],
         ),
@@ -603,7 +607,7 @@ class _TransactionHistoryScreenState
 
   Widget _detailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

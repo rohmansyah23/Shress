@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../utils/format_helpers.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class FinanceBarDataPoint {
   final String period;
@@ -46,20 +50,20 @@ class FinanceBarChart extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(AppTheme.s4, AppTheme.s12, AppTheme.s4, AppTheme.s8),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.s4, AppSpacing.s12, AppSpacing.s4, AppSpacing.s8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.bar_chart_rounded,
-                    size: 20, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: AppTheme.s8),
+                    size: AppIconSize.s20, color: AppTheme.primaryColorTheme(context)),
+                const SizedBox(width: AppSpacing.s8),
                 Text(title,
                     style: AppTheme.labelSmall.copyWith(fontSize: 12)),
               ],
             ),
-            const SizedBox(height: AppTheme.s20),
+            const SizedBox(height: AppSpacing.s20),
             SizedBox(
               height: 220,
               child: LayoutBuilder(
@@ -81,12 +85,12 @@ class FinanceBarChart extends StatelessWidget {
                             getDrawingHorizontalLine: (value) {
                               if (value == 0) {
                                 return FlLine(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                                  color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.5),
                                   strokeWidth: 1.5,
                                 );
                               }
                               return FlLine(
-                                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.4),
+                                color: AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.4),
                                 strokeWidth: 0.8,
                               );
                             },
@@ -126,7 +130,7 @@ class FinanceBarChart extends StatelessWidget {
                                       label,
                                       style: TextStyle(
                                         fontSize: 9,
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                         color: AppTheme.onSurfaceVariantColorTheme(context),
                                       ),
                                     ),
                                   );
@@ -145,10 +149,8 @@ class FinanceBarChart extends StatelessWidget {
                                       _compactAmount(value),
                                       style: TextStyle(
                                         fontSize: 9,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant
-                                            .withValues(alpha: 0.8),
+                                         color: AppTheme.onSurfaceVariantColorTheme(context)
+                                             .withValues(alpha: 0.8),
                                       ),
                                     ),
                                   );
@@ -158,7 +160,7 @@ class FinanceBarChart extends StatelessWidget {
                           ),
                           barTouchData: BarTouchData(
                             touchTooltipData: BarTouchTooltipData(
-                              getTooltipColor: (_) => Theme.of(context).colorScheme.surfaceContainerHighest,
+                              getTooltipColor: (_) => AppTheme.surfaceContainerHighestColorTheme(context),
                               fitInsideHorizontally: true,
                               fitInsideVertically: true,
                               getTooltipItem: (group, groupIndex, rod, rodIndex) {
@@ -178,9 +180,8 @@ class FinanceBarChart extends StatelessWidget {
                                 }
                                 final textColor = tooltipColorBuilder != null
                                     ? tooltipColorBuilder!(d.value)
-                                    : (d.value >= 0
-                                        ? AppTheme.profitColorTheme(context)
-                                        : AppTheme.lossColorTheme(context));
+                                    : (d.value >= 0                                ? AppTheme.profitChartColor(context)
+                                : AppTheme.lossChartColor(context));
                                 return BarTooltipItem(
                                   '$tooltipLabel\n${FormatHelpers.rupiah(d.value)}',
                                   TextStyle(
@@ -197,8 +198,8 @@ class FinanceBarChart extends StatelessWidget {
                             final isNegative = val < 0;
                             final color = barColor ??
                                 (isNegative
-                                    ? AppTheme.lossColorTheme(context)
-                                    : AppTheme.profitColorTheme(context));
+                                    ? AppTheme.lossChartColor(context)
+                                    : AppTheme.profitChartColor(context));
                             return BarChartGroupData(
                               x: i,
                               barRods: [
@@ -207,8 +208,8 @@ class FinanceBarChart extends StatelessWidget {
                                   color: color,
                                   width: 36,
                                   borderRadius: isNegative
-                                      ? const BorderRadius.vertical(bottom: Radius.circular(4))
-                                      : const BorderRadius.vertical(top: Radius.circular(4)),
+                                      ? const BorderRadius.vertical(bottom: Radius.circular(AppRadius.s4))
+                                      : const BorderRadius.vertical(top: Radius.circular(AppRadius.s4)),
                                 ),
                               ],
                             );

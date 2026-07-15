@@ -14,6 +14,10 @@ import '../../providers/transaction_list_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../providers/paginated_list_provider.dart';
 import '../transaction/edit_transaction_page.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 enum OwnerDateFilter {
   today('Hari Ini'),
@@ -264,7 +268,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
         ),
         title: const Text('Hapus Transaksi'),
         content: Text(
@@ -279,7 +283,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: Theme.of(context).colorScheme.onError,
+              foregroundColor: AppTheme.onDangerColorTheme(context),
             ),
             child: const Text('Hapus'),
           ),
@@ -326,23 +330,26 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: AppTheme.s8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s14,
+          vertical: AppSpacing.s8,
+        ),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isLight ? colorScheme.primary : AppTheme.accent)
+              ? (isLight ? AppTheme.primaryColorTheme(context) : AppTheme.accent)
               : (isLight
-                    ? colorScheme.surfaceContainer
-                    : AppTheme.darkBackground),              borderRadius: BorderRadius.circular(20),
+                    ? AppTheme.surfaceContainerColorTheme(context)
+                    : AppTheme.darkBackground),
+          borderRadius: BorderRadius.circular(AppRadius.s20),
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : (isLight ? colorScheme.outlineVariant : AppTheme.accent),
+                : AppTheme.outlineVariantColorTheme(context),
             width: 1,
           ),
         ),
@@ -353,7 +360,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected
                 ? AppTheme.card
-                : (isLight ? colorScheme.onSurfaceVariant : AppTheme.accent),
+                : AppTheme.onSurfaceVariantColorTheme(context),
           ),
         ),
       ),
@@ -383,7 +390,12 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
           children: [
             // Business filter chips
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppTheme.s12, AppTheme.s12, AppTheme.s12, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s12,
+                AppSpacing.s12,
+                AppSpacing.s12,
+                0,
+              ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -399,7 +411,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                         _applyFilter();
                       },
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.s8),
                     ..._businesses.map(
                       (b) => Padding(
                         padding: const EdgeInsets.only(right: 8),
@@ -424,24 +436,31 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
             ),
             // Date filter + Type filter dropdowns
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppTheme.s12, AppTheme.s8, AppTheme.s12, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s12,
+                AppSpacing.s8,
+                AppSpacing.s12,
+                0,
+              ),
               child: Row(
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<OwnerDateFilter>(
                       initialValue: _selectedFilter,
                       isDense: true,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      borderRadius: BorderRadius.circular(
+                        AppRadius.radiusSmall,
+                      ),
                       decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                          horizontal: AppSpacing.s12,
+                          vertical: AppSpacing.s8,
                         ),
                         isDense: true,
                       ),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: AppTheme.onSurfaceColorTheme(context),
                       ),
                       items: OwnerDateFilter.values
                           .map(
@@ -451,9 +470,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                 f.label,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
+                                  color: AppTheme.onSurfaceColorTheme(context),
                                 ),
                               ),
                             ),
@@ -470,22 +487,24 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: AppTheme.s8),
+                  const SizedBox(width: AppSpacing.s8),
                   Expanded(
                     child: DropdownButtonFormField<OwnerTypeFilter>(
                       initialValue: _selectedType,
                       isDense: true,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      borderRadius: BorderRadius.circular(
+                        AppRadius.radiusSmall,
+                      ),
                       decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                          horizontal: AppSpacing.s12,
+                          vertical: AppSpacing.s8,
                         ),
                         isDense: true,
                       ),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: AppTheme.onSurfaceColorTheme(context),
                       ),
                       items: OwnerTypeFilter.values
                           .map(
@@ -495,9 +514,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                 f.label,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
+                                  color: AppTheme.onSurfaceColorTheme(context),
                                 ),
                               ),
                             ),
@@ -515,15 +532,26 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
             ),
             // Search bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppTheme.s12, AppTheme.s8, AppTheme.s12, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s12,
+                AppSpacing.s8,
+                AppSpacing.s12,
+                0,
+              ),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Cari transaksi...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    size: AppIconSize.s20,
+                  ),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          icon: const Icon(
+                            Icons.clear_rounded,
+                            size: AppIconSize.s18,
+                          ),
                           onPressed: () {
                             _searchController.clear();
                             setState(() => _searchQuery = '');
@@ -531,16 +559,17 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                           },
                         )
                       : null,
-                  isDense: true,                    contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.s12,
-                    vertical: AppTheme.s12,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s12,
+                    vertical: AppSpacing.s12,
                   ),
                 ),
                 style: AppTheme.caption.copyWith(fontSize: 14),
                 onChanged: _onSearchChanged,
               ),
             ),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             // Transaction list
             Expanded(
               child: listState.isLoading && listState.items.isEmpty
@@ -552,25 +581,21 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                         children: [
                           Icon(
                             Icons.receipt_long_rounded,
-                            size: 64,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
+                            size: AppIconSize.s64,
+                            color: AppTheme.onSurfaceVariantColorTheme(context)
                                 .withValues(alpha: 0.4),
                           ),
-                          const SizedBox(height: AppTheme.s12),
+                          const SizedBox(height: AppSpacing.s12),
                           Text(
                             'Tidak ada transaksi',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
+                              color: AppTheme.onSurfaceVariantColorTheme(context),
                             ),
                           ),
                           if (listState.error != null) ...[
-                            const SizedBox(height: AppTheme.s8),
+                            const SizedBox(height: AppSpacing.s8),
                             Text(
                               listState.error!,
                               style: TextStyle(
@@ -586,16 +611,16 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                       onRefresh: () => _currentNotifier().refresh(),
                       child: ListView.separated(
                         controller: _scrollController,
-                        padding:                        const EdgeInsets.all(AppTheme.s12),
+                        padding: const EdgeInsets.all(AppSpacing.s12),
                         itemCount:
                             listState.items.length +
                             (listState.isLoading ? 1 : 0),
                         separatorBuilder: (_, _) =>
-                            const SizedBox(height: AppTheme.s8),
+                            const SizedBox(height: AppSpacing.s8),
                         itemBuilder: (context, index) {
                           if (index >= listState.items.length) {
                             return const Padding(
-                              padding: EdgeInsets.all(AppTheme.s16),
+                              padding: EdgeInsets.all(AppSpacing.s16),
                               child: Center(child: CircularProgressIndicator()),
                             );
                           }
@@ -606,10 +631,10 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                             child: InkWell(
                               onTap: () => _showTransactionDetail(tx),
                               borderRadius: BorderRadius.circular(
-                                AppTheme.radiusLarge,
+                                AppRadius.radiusLarge,
                               ),
                               child: Padding(
-                                padding:                        const EdgeInsets.all(AppTheme.s12),
+                                padding: const EdgeInsets.all(AppSpacing.s12),
                                 child: Row(
                                   children: [
                                     Container(
@@ -625,7 +650,9 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                                         context,
                                                       ))
                                                 .withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                        borderRadius: BorderRadius.circular(
+                                          AppRadius.radiusSmall,
+                                        ),
                                       ),
                                       child: Icon(
                                         isIncome
@@ -636,7 +663,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                             : AppTheme.lossColorTheme(context),
                                       ),
                                     ),
-                                    const SizedBox(width: AppTheme.s12),
+                                    const SizedBox(width: AppSpacing.s12),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -652,8 +679,9 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                               return Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                      horizontal: AppTheme.s12,
-                                                      vertical: AppTheme.s4,
+                                                      horizontal:
+                                                          AppSpacing.s12,
+                                                      vertical: AppSpacing.s4,
                                                     ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.transparent,
@@ -670,7 +698,11 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                                             alpha: 0.5,
                                                           ),
                                                     width: 1,
-                                                  ),                      borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        AppRadius.s6,
+                                                      ),
                                                 ),
                                                 child: Text(
                                                   _findBusinessName(
@@ -691,7 +723,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                               );
                                             },
                                           ),
-                                          const SizedBox(height: AppTheme.s4),
+                                          const SizedBox(height: AppSpacing.s4),
                                           Text(
                                             FormatHelpers.displayDate(
                                               tx.transactionDate,
@@ -700,7 +732,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                               fontSize: 11,
                                             ),
                                           ),
-                                          const SizedBox(height: AppTheme.s4),
+                                          const SizedBox(height: AppSpacing.s4),
                                           Text(
                                             FormatHelpers.rupiah(tx.amount),
                                             style: TextStyle(
@@ -730,14 +762,13 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                       PopupMenuButton<String>(
                                         icon: Icon(
                                           Icons.more_vert_rounded,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant,
-                                          size: 20,
+                                          color: AppTheme.onSurfaceVariantColorTheme(context),
+                                          size: AppIconSize.s20,
                                         ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(AppTheme.radiusSmall),
+                                          borderRadius: BorderRadius.circular(
+                                            AppRadius.radiusSmall,
+                                          ),
                                         ),
                                         onSelected: (value) {
                                           switch (value) {
@@ -754,18 +785,17 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                             value: 'edit',
                                             child: ListTile(
                                               leading: Icon(
-                                                  Icons.edit_outlined,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurface),
-                                              title: Text('Edit',
-                                                  style: TextStyle(
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .onSurface)),
+                                                Icons.edit_outlined,
+                                                color: AppTheme.onSurfaceColorTheme(context),
+                                              ),
+                                              title: Text(
+                                                'Edit',
+                                                style: TextStyle(
+                                                  color: AppTheme.onSurfaceColorTheme(context),
+                                                ),
+                                              ),
                                               dense: true,
-                                              contentPadding:
-                                                  EdgeInsets.zero,
+                                              contentPadding: EdgeInsets.zero,
                                             ),
                                           ),
                                           const PopupMenuDivider(),
@@ -773,17 +803,22 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                             value: 'delete',
                                             child: ListTile(
                                               leading: Icon(
-                                                  Icons.delete_outline_rounded,
-                                                  color: AppTheme.lossColorTheme(
-                                                      context)),
-                                              title: Text('Hapus',
-                                                  style: TextStyle(
-                                                      color: AppTheme
-                                                          .lossColorTheme(
-                                                              context))),
+                                                Icons.delete_outline_rounded,
+                                                color: AppTheme.lossColorTheme(
+                                                  context,
+                                                ),
+                                              ),
+                                              title: Text(
+                                                'Hapus',
+                                                style: TextStyle(
+                                                  color:
+                                                      AppTheme.lossColorTheme(
+                                                        context,
+                                                      ),
+                                                ),
+                                              ),
                                               dense: true,
-                                              contentPadding:
-                                                  EdgeInsets.zero,
+                                              contentPadding: EdgeInsets.zero,
                                             ),
                                           ),
                                         ],
@@ -847,7 +882,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
         ),
         title: Row(
           children: [
@@ -859,7 +894,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                   ? AppTheme.profitColorTheme(context)
                   : AppTheme.lossColorTheme(context),
             ),
-            const SizedBox(width: AppTheme.s8),
+            const SizedBox(width: AppSpacing.s8),
             Text(isIncome ? 'Uang Masuk' : 'Uang Keluar'),
           ],
         ),
@@ -892,7 +927,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
 
   Widget _detailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

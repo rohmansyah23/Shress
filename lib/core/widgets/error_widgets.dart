@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
 import '../theme/app_theme.dart';
 import '../utils/error_handler.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 /// Full-screen error state with icon, message, and retry button
 class ErrorRetryWidget extends StatelessWidget {
@@ -28,8 +32,8 @@ class ErrorRetryWidget extends StatelessWidget {
           ? Icons.wifi_off_rounded
           : Icons.error_outline_rounded,
       iconColor: error.isOffline
-          ? AppTheme.warningColor
-          : AppTheme.lossColor,
+          ? AppTheme.warning
+          : AppTheme.danger,
     );
   }
 
@@ -37,12 +41,12 @@ class ErrorRetryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s32),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: iconColor),
-            const SizedBox(height: AppTheme.s20),
+            Icon(icon, size: AppIconSize.s64, color: iconColor),
+            const SizedBox(height: AppSpacing.s20),
             Text(
               message,
               textAlign: TextAlign.center,
@@ -51,7 +55,7 @@ class ErrorRetryWidget extends StatelessWidget {
               ),
             ),
             if (technicalDetails != null && technicalDetails!.isNotEmpty) ...[
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               Text(
                 technicalDetails!,
                 style: AppTheme.labelSmall.copyWith(fontSize: 10),
@@ -60,16 +64,16 @@ class ErrorRetryWidget extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ],
-            const SizedBox(height: AppTheme.s24),
+            const SizedBox(height: AppSpacing.lg),
             if (onRetry != null)
               FilledButton.icon(
-                icon: const Icon(Icons.refresh_rounded, size: 18),
+                icon: const Icon(Icons.refresh_rounded, size: AppIconSize.s18),
                 label: const Text('Coba Lagi'),
                 onPressed: onRetry,
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.s24,
-                    vertical: AppTheme.s12,
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.s12,
                   ),
                 ),
               ),
@@ -97,7 +101,7 @@ class OfflineBanner extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s12, vertical: AppTheme.s8),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
       decoration: BoxDecoration(
         color: AppTheme.warning.withValues(alpha: 0.12),
         border: Border(
@@ -109,8 +113,8 @@ class OfflineBanner extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.wifi_off_rounded,
-              size: 16, color: AppTheme.warning),
-          const SizedBox(width: AppTheme.s8),
+              size: AppIconSize.s16, color: AppTheme.warning),
+          const SizedBox(width: AppSpacing.s8),
           Expanded(
             child: Text(
               'Tidak ada koneksi internet',
@@ -123,7 +127,7 @@ class OfflineBanner extends StatelessWidget {
             TextButton(
               onPressed: onRetry,
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: AppTheme.s8),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
@@ -151,15 +155,15 @@ class ErrorSnackbar {
       SnackBar(
         content: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 18),
-            const SizedBox(width: AppTheme.s8),
+            Icon(icon, color: Colors.white, size: AppIconSize.s18),
+            const SizedBox(width: AppSpacing.s8),
             Expanded(child: Text(message)),
           ],
         ),
         backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
         action: actionLabel != null
             ? SnackBarAction(

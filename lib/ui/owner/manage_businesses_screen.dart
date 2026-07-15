@@ -11,6 +11,10 @@ import '../../ui/dashboard/qris_upload_screen.dart';
 import '../../ui/dashboard/qris_display_screen.dart';
 import 'create_business_screen.dart';
 import '../business_detail/business_detail_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class ManageBusinessesScreen extends ConsumerStatefulWidget {
   const ManageBusinessesScreen({super.key});
@@ -38,7 +42,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: const Text('Edit Bisnis'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -51,7 +55,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                 hintText: 'Masukkan nama bisnis',
               ),
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             TextField(
               controller: descCtrl,
               decoration: const InputDecoration(
@@ -106,7 +110,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSmall)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusSmall)),
         title: const Text('Hapus Bisnis'),
         content: Text(
           'Apakah Anda yakin ingin menghapus bisnis "${business.name}"? Semua transaksi dan data terkait akan dihapus secara permanen.',
@@ -118,8 +122,8 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-              foregroundColor: Theme.of(context).colorScheme.onError,
+              backgroundColor: AppTheme.lossColorTheme(context),
+              foregroundColor: AppTheme.onDangerColorTheme(context),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
@@ -170,8 +174,6 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
   @override
   Widget build(BuildContext context) {
     final businessesAsync = ref.watch(allBusinessesProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Kelola Bisnis'),
@@ -195,7 +197,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
           Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(AppTheme.s16, AppTheme.s16, AppTheme.s16, AppTheme.s16),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s16),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -232,10 +234,10 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                           children: [
                             Icon(
                               Icons.store_rounded,
-                              size: 64,
-                              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                              size: AppIconSize.s64,
+                              color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.4),
                             ),
-                            const SizedBox(height: AppTheme.s16),
+                            const SizedBox(height: AppSpacing.s16),
                             Text(
                               _searchQuery.isNotEmpty
                                   ? 'Tidak ada bisnis ditemukan'
@@ -253,7 +255,7 @@ class _ManageBusinessesScreenState extends ConsumerState<ManageBusinessesScreen>
                         ref.invalidate(transactionRefreshProvider);
                       },
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final b = filtered[index];
@@ -326,57 +328,56 @@ class _BusinessItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final hasQris = business.qrisImageUrl != null &&
         business.qrisImageUrl!.isNotEmpty;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: AppTheme.s16),
+      margin: const EdgeInsets.only(bottom: AppSpacing.s16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
 
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(AppTheme.s16, AppTheme.s16, AppTheme.s4, AppTheme.s16),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s4, AppSpacing.s16),
           child: Row(
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+              backgroundColor: AppTheme.primaryColorTheme(context).withValues(alpha: 0.15),
               child: Text(
                 _initials(business.name),
                 style: AppTheme.subtitle.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: colorScheme.primary,
+                  color: AppTheme.primaryColorTheme(context),
                 ),
               ),
             ),
-            const SizedBox(width: AppTheme.s12),
+            const SizedBox(width: AppSpacing.s12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(business.name, style: AppTheme.heading3),
                   if (business.description != null && business.description!.isNotEmpty) ...[
-                    const SizedBox(height: AppTheme.s4),
+                    const SizedBox(height: AppSpacing.s4),
                     Text(
                       business.description!,
                       style: AppTheme.caption,
                     ),
                   ],
-                  const SizedBox(height: AppTheme.s4),
+                  const SizedBox(height: AppSpacing.s4),
                   Row(
                     children: [
                       Icon(
                         hasQris ? Icons.qr_code_2_rounded : Icons.qr_code_2_outlined,
-                        size: 14,
-                        color: hasQris ? AppTheme.profitColorTheme(context) : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        size: AppIconSize.s14,
+                        color: hasQris ? AppTheme.profitColorTheme(context) : AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.5),
                       ),
-                      const SizedBox(width: AppTheme.s4),
+                      const SizedBox(width: AppSpacing.s4),
                       Text(
                         hasQris ? 'QRIS aktif' : 'Belum ada QRIS',
                         style: AppTheme.labelSmall.copyWith(
-                          color: hasQris ? AppTheme.profitColorTheme(context) : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                          color: hasQris ? AppTheme.profitColorTheme(context) : AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.5),
                         ),
                       ),
                     ],
@@ -387,10 +388,10 @@ class _BusinessItemCard extends StatelessWidget {
             PopupMenuButton<String>(
               icon: Icon(
                 Icons.more_vert_rounded,
-                color: colorScheme.onSurfaceVariant,
+                color: AppTheme.onSurfaceVariantColorTheme(context),
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
               ),
               onSelected: (value) {
                 switch (value) {

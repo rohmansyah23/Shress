@@ -13,6 +13,10 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/debt_consignment_provider.dart';
 import 'add_consignment_screen.dart';
 import 'consignment_detail_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class ConsignorDetailScreen extends ConsumerStatefulWidget {
   final ConsignorModel consignor;
@@ -109,7 +113,7 @@ class _ConsignorDetailScreenState
       case AppConstants.consignmentCancelled:
         return AppTheme.lossColorTheme(context);
       default:
-        return Colors.grey;
+        return AppTheme.textSecondary;
     }
   }
 
@@ -129,10 +133,10 @@ class _ConsignorDetailScreenState
           : RefreshIndicator(
               onRefresh: _loadData,
               child: ListView(
-                padding: const EdgeInsets.all(AppTheme.s16),
+                padding: const EdgeInsets.all(AppSpacing.s16),
                 children: [
                   _buildConsignorInfoCard(),
-                  const SizedBox(height: AppTheme.s16),
+                  const SizedBox(height: AppSpacing.s16),
                   if (_consignments.isEmpty)
                     _buildEmptyState()
                   else
@@ -151,7 +155,7 @@ class _ConsignorDetailScreenState
   Widget _buildConsignorInfoCard() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s20),
+        padding: const EdgeInsets.all(AppSpacing.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -160,7 +164,7 @@ class _ConsignorDetailScreenState
                 CircleAvatar(
                   radius: 28,
                   backgroundColor:
-                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                      AppTheme.primaryColorTheme(context).withValues(alpha: 0.12),
                   child: Text(
                     widget.consignor.name.length >= 2
                         ? widget.consignor.name
@@ -168,11 +172,11 @@ class _ConsignorDetailScreenState
                             .toUpperCase()
                         : widget.consignor.name.toUpperCase(),
                     style: AppTheme.heading3.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: AppTheme.primaryColorTheme(context),
                     ),
                   ),
                 ),
-                const SizedBox(width: AppTheme.s16),
+                const SizedBox(width: AppSpacing.s16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +186,7 @@ class _ConsignorDetailScreenState
                           widget.consignor.phone!.isNotEmpty)
                         Text(
                           widget.consignor.phone!,
-                          style: AppTheme.caption.copyWith(fontSize: 13),
+                          style: AppTheme.caption,
                         ),
                     ],
                   ),
@@ -191,15 +195,15 @@ class _ConsignorDetailScreenState
             ),
             if (widget.consignor.notes != null &&
                 widget.consignor.notes!.isNotEmpty) ...[
-              const SizedBox(height: AppTheme.s12),
+              const SizedBox(height: AppSpacing.s12),
               const Divider(),
-              const SizedBox(height: AppTheme.s8),
+              const SizedBox(height: AppSpacing.s8),
               Text(
                 widget.consignor.notes!,
-                style: AppTheme.caption.copyWith(fontSize: 13),
+                style: AppTheme.caption,
               ),
             ],
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             Text(
               'Jumlah Titipan: ${_consignments.length}',
               style: AppTheme.labelSmall.copyWith(fontSize: 12),
@@ -213,17 +217,17 @@ class _ConsignorDetailScreenState
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppTheme.s64),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.s64),
         child: Column(
           children: [
             Icon(Icons.receipt_long_outlined,
-                size: 64, color: Theme.of(context).textTheme.bodySmall?.color),
-            const SizedBox(height: AppTheme.s16),
+                size: AppIconSize.s64, color: Theme.of(context).textTheme.bodySmall?.color),
+            const SizedBox(height: AppSpacing.s16),
             Text(
               'Belum ada titipan',
               style: AppTheme.caption.copyWith(fontSize: 14),
             ),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             Text(
               'Tekan tombol + untuk menambah titipan',
               style: AppTheme.caption.copyWith(
@@ -245,13 +249,13 @@ class _ConsignorDetailScreenState
     final totalQty = items.fold<int>(0, (sum, i) => sum + i.quantity);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: AppTheme.s12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.s12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
         onTap: () => _openConsignmentDetail(consignment),
         child: Padding(
-          padding: const EdgeInsets.all(AppTheme.s16),
+          padding: const EdgeInsets.all(AppSpacing.s16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -262,12 +266,12 @@ class _ConsignorDetailScreenState
                     height: 44,
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                     ),
                     child: Icon(Icons.inventory_2_outlined,
-                        size: 22, color: color),
+                        size: AppIconSize.s22, color: color),
                   ),
-                  const SizedBox(width: AppTheme.s12),
+                  const SizedBox(width: AppSpacing.s12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +281,7 @@ class _ConsignorDetailScreenState
                               consignment.consignmentDate),
                           style: AppTheme.caption.copyWith(fontSize: 11),
                         ),
-                        const SizedBox(height: AppTheme.s4),
+                        const SizedBox(height: AppSpacing.s4),
                         Text(
                           FormatHelpers.rupiah(
                             (consignment.isDaily || consignment.isReseller) &&
@@ -294,8 +298,8 @@ class _ConsignorDetailScreenState
                   PopupMenuButton<String>(
                     icon: Icon(
                       Icons.more_vert_rounded,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      size: AppIconSize.s20,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
                     ),
                     onSelected: (value) {
                       if (value == 'edit') _editConsignment(consignment);
@@ -306,8 +310,8 @@ class _ConsignorDetailScreenState
                         value: 'edit',
                         child: Row(
                           children: [
-                            Icon(Icons.edit_outlined, size: 18),
-                            SizedBox(width: AppTheme.s8),
+                            Icon(Icons.edit_outlined, size: AppIconSize.s18),
+                            SizedBox(width: AppSpacing.s8),
                             Text('Edit'),
                           ],
                         ),
@@ -319,10 +323,10 @@ class _ConsignorDetailScreenState
                           children: [
                             Icon(
                               Icons.delete_outline_rounded,
-                              size: 18,
+                              size: AppIconSize.s18,
                               color: AppTheme.lossColorTheme(context),
                             ),
-                            const SizedBox(width: AppTheme.s8),
+                            const SizedBox(width: AppSpacing.s8),
                             Text(
                               'Hapus',
                               style: TextStyle(color: AppTheme.lossColorTheme(context)),
@@ -335,7 +339,7 @@ class _ConsignorDetailScreenState
                 ],
               ),
               if (items.isNotEmpty) ...[
-                const SizedBox(height: AppTheme.s12),
+                const SizedBox(height: AppSpacing.s12),
                 Text(
                   '$totalQty pcs - $itemNames',
                   style: AppTheme.caption.copyWith(
@@ -346,32 +350,32 @@ class _ConsignorDetailScreenState
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              const SizedBox(height: AppTheme.s12),
+              const SizedBox(height: AppSpacing.s12),
               Row(
                 children: [
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: AppTheme.s4),
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s4),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(AppRadius.s6),
                     ),
                     child: Text(
                       statusLabel,
                       style: AppTheme.labelSmall.copyWith(color: color),
                     ),
                   ),
-                  const SizedBox(width: AppTheme.s8),
+                  const SizedBox(width: AppSpacing.s8),
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: AppTheme.s4),
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s4),
                     decoration: BoxDecoration(
                       color: consignment.isDaily
                           ? AppTheme.infoColorTheme(context)
                               .withValues(alpha: 0.2)
                           : AppTheme.primaryColorTheme(context)
                               .withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(AppRadius.s6),
                     ),
                     child: Text(
                       consignment.isDaily ? 'Harian' : 'Reseller',
@@ -385,7 +389,7 @@ class _ConsignorDetailScreenState
                   ),
                   const Spacer(),
                   Text('Dibayar', style: AppTheme.labelSmall),
-                  const SizedBox(width: AppTheme.s4),
+                  const SizedBox(width: AppSpacing.s4),
                   Text(
                     FormatHelpers.rupiah(consignment.settledAmount),
                     style: AppTheme.caption.copyWith(
@@ -411,7 +415,7 @@ class _ConsignorDetailScreenState
       builder: (ctx) => StatefulBuilder(
         builder: (dialogCtx, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+              borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
           title: const Text('Edit Titipan'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -428,7 +432,7 @@ class _ConsignorDetailScreenState
                     setDialogState(() => selectedDate = picked);
                   }
                 },
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                 child: InputDecorator(
                   decoration: const InputDecoration(
                     labelText: 'Tanggal Titip',
@@ -438,7 +442,7 @@ class _ConsignorDetailScreenState
                       '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}')),
                 ),
               ),
-              const SizedBox(height: AppTheme.s12),
+              const SizedBox(height: AppSpacing.s12),
               TextField(
                 controller: descCtrl,
                 decoration: const InputDecoration(labelText: 'Keterangan / Catatan'),
@@ -488,7 +492,7 @@ class _ConsignorDetailScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+            borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: const Text('Hapus Titipan'),
         content: Text(
           'Yakin ingin menghapus titipan tanggal ${FormatHelpers.displayDate(consignment.consignmentDate)}? Semua data terkait juga akan dihapus.',
@@ -502,7 +506,7 @@ class _ConsignorDetailScreenState
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: Theme.of(context).colorScheme.onError,
+              foregroundColor: AppTheme.onDangerColorTheme(context),
             ),
             child: const Text('Hapus'),
           ),

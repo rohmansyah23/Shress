@@ -6,6 +6,10 @@ import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../owner/owner_shell.dart';
 import '../manager/manager_shell.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 /// Splash screen with reactive route guard logic.
 class SplashScreen extends ConsumerStatefulWidget {
@@ -74,8 +78,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     });
 
     final authState = ref.watch(authProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       body: Center(
         child: Column(
@@ -85,34 +87,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               width: 96,
               height: 96,
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                color: AppTheme.primaryContainerColorTheme(context),
+                borderRadius: BorderRadius.circular(AppRadius.radiusXL),
               ),
               child: Icon(
                 Icons.account_balance_rounded,
-                size: 48,
-                color: colorScheme.primary,
+                size: AppIconSize.s48,
+                color: AppTheme.primaryColorTheme(context),
               ),
             ),
-            const SizedBox(height: AppTheme.s24),
+            const SizedBox(height: AppSpacing.s24),
             Text(
               AppConstants.appName,
               style: AppTheme.heading1.copyWith(
-                color: colorScheme.primary,
+                color: AppTheme.primaryColorTheme(context),
               ),
             ),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             Text(
               'Multi-tenant Financial Reports',
-              style: AppTheme.caption.copyWith(fontSize: 13),
+              style: AppTheme.caption,
             ),
-            const SizedBox(height: AppTheme.s48),
+            const SizedBox(height: AppSpacing.s48),
 
             if (authState.status == AuthStatus.unknown)
               Column(
                 children: [
                   const CircularProgressIndicator(),
-                  const SizedBox(height: AppTheme.s16),
+                  const SizedBox(height: AppSpacing.s16),
                   Text(
                     'Memeriksa sesi...',
                     style: AppTheme.caption,

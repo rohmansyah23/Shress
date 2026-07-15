@@ -6,6 +6,10 @@ import '../../providers/auth_provider.dart';
 import '../owner/owner_shell.dart';
 import '../manager/manager_shell.dart';
 import 'forgot_password_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -104,7 +108,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.s24),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
             child: FadeTransition(
               opacity: _fadeAnim,
               child: SlideTransition(
@@ -123,7 +127,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             : AppTheme.primary.withValues(alpha: 0.08),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
-                            AppTheme.radiusXL,
+                            AppRadius.radiusXL,
                           ),
                         ),
                         margin: EdgeInsets.zero,
@@ -132,28 +136,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           height: 88,
                           child: Icon(
                             Icons.account_balance_rounded,
-                            size: 44,
+                            size: AppIconSize.s44,
                             color: isDark ? AppTheme.accent : AppTheme.primary,
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppTheme.s24),
+                      const SizedBox(height: AppSpacing.s24),
                       Text(AppConstants.appName, style: AppTheme.heading1),
-                      const SizedBox(height: AppTheme.s8),
+                      const SizedBox(height: AppSpacing.s8),
                       Text(
                         'Multi-tenant Financial Reports',
                         style: AppTheme.caption,
                       ),
-                      const SizedBox(height: AppTheme.s48),
+                      const SizedBox(height: AppSpacing.s48),
 
                       // Error message
                       if (authState.errorMessage != null) ...[
                         Container(
-                          padding: const EdgeInsets.all(AppTheme.s12),
+                          padding: const EdgeInsets.all(AppSpacing.s12),
                           decoration: BoxDecoration(
                             color: AppTheme.danger.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(
-                              AppTheme.radiusSmall,
+                              AppRadius.radiusSmall,
                             ),
                           ),
                           child: Row(
@@ -161,9 +165,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               Icon(
                                 Icons.error_outline,
                                 color: AppTheme.danger,
-                                size: 20,
+                                size: AppIconSize.s20,
                               ),
-                              const SizedBox(width: AppTheme.s8),
+                              const SizedBox(width: AppSpacing.s8),
                               Expanded(
                                 child: Text(
                                   authState.errorMessage!,
@@ -176,7 +180,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ],
                           ),
                         ),
-                        const SizedBox(height: AppTheme.s16),
+                        const SizedBox(height: AppSpacing.s16),
                       ],
 
                       // Email/Username
@@ -195,7 +199,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           return null;
                         },
                       ),
-                      const SizedBox(height: AppTheme.s16),
+                      const SizedBox(height: AppSpacing.s16),
 
                       // Password
                       TextFormField(
@@ -227,7 +231,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           return null;
                         },
                       ),
-                      const SizedBox(height: AppTheme.s24),
+                      const SizedBox(height: AppSpacing.s24),
 
                       // Login button
                       SizedBox(
@@ -240,9 +244,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   height: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimary,
+                                    color: AppTheme.onPrimaryColorTheme(context),
                                   ),
                                 )
                               : const Text(
@@ -254,7 +256,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 ),
                         ),
                       ),
-                      const SizedBox(height: AppTheme.s16),
+                      const SizedBox(height: AppSpacing.s16),
 
                       // Forgot password
                       Center(

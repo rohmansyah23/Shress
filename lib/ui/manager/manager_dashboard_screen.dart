@@ -16,6 +16,10 @@ import '../../providers/transaction_provider.dart';
 import '../transaction/transaction_sheet.dart';
 import '../debtors/debtors_screen.dart';
 import '../consignments/consignors_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 enum _TrendTypeFilter {
   netProfit('Laba/Rugi Bersih'),
@@ -95,7 +99,6 @@ class _ManagerDashboardScreenState
     ref.listen<int>(transactionRefreshProvider, (prev, next) {
       if (prev != null && prev != next) _loadRecentTransactions();
     });
-    final cs = Theme.of(context).colorScheme;
     final currentUser = ref.watch(currentUserProvider);
     final isManager = currentUser?.role == AppConstants.roleManager;
     final summaryAsync = ref.watch(
@@ -114,9 +117,9 @@ class _ManagerDashboardScreenState
       data: (summary) {
         final netProfit = summary['netProfit'] ?? 0;
         final isProfit = netProfit >= 0;
-        return _buildContent(cs, summary, netProfit, isProfit, trendAsync, isManager);
+        return _buildContent(summary, netProfit, isProfit, trendAsync, isManager);
       },
-      loading: () => _buildLoadingState(cs),
+      loading: () => _buildLoadingState(),
       error: (error, _) => ErrorRetryWidget(
         message: ErrorHandler.classify(error).userMessage,
         onRetry: () => ref.invalidate(
@@ -133,12 +136,11 @@ class _ManagerDashboardScreenState
     );
   }
 
-  Widget _buildLoadingState(ColorScheme cs) {
+  Widget _buildLoadingState() {
     return const Center(child: CircularProgressIndicator());
   }
 
   Widget _buildContent(
-    ColorScheme cs,
     Map<String, double> summary,
     double netProfit,
     bool isProfit,
@@ -155,36 +157,36 @@ class _ManagerDashboardScreenState
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(
-          AppTheme.s16,
-          AppTheme.s12,
-          AppTheme.s16,
-          AppTheme.s16,
+          AppSpacing.s16,
+          AppSpacing.s12,
+          AppSpacing.s16,
+          AppSpacing.s16,
         ),
         children: [
-          _buildBusinessHeader(cs),
-          const SizedBox(height: AppTheme.s12),
+          _buildBusinessHeader(),
+          const SizedBox(height: AppSpacing.s12),
           _buildNetProfitCard(netProfit, isProfit),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           if (isManager) ...[
             // === Trend Chart ===
             Text('Tren Keuangan', style: AppTheme.heading3),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.s8),
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<TrendFilter>(
                     initialValue: _selectedTrendFilter,
                     isDense: true,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                     decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.s12, vertical: AppTheme.s8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
                       isDense: true,
                       labelText: 'Periode Waktu',
                       floatingLabelBehavior: FloatingLabelBehavior.never,
                     ),
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      color: AppTheme.onSurfaceColorTheme(context),
                     ),
                     items: TrendFilter.values
                         .map(
@@ -194,7 +196,7 @@ class _ManagerDashboardScreenState
                               _trendFilterLabel(f),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Theme.of(context).colorScheme.onSurface,
+                                color: AppTheme.onSurfaceColorTheme(context),
                               ),
                             ),
                           ),
@@ -206,21 +208,21 @@ class _ManagerDashboardScreenState
                     },
                   ),
                 ),
-                const SizedBox(width: AppTheme.s8),
+                const SizedBox(width: AppSpacing.s8),
                 Expanded(
                   child: DropdownButtonFormField<_TrendTypeFilter>(
                     initialValue: _selectedTypeFilter,
                     isDense: true,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                     decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.s12, vertical: AppTheme.s8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
                       isDense: true,
                       labelText: 'Tipe Grafik',
                       floatingLabelBehavior: FloatingLabelBehavior.never,
                     ),
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      color: AppTheme.onSurfaceColorTheme(context),
                     ),
                     items: _TrendTypeFilter.values
                         .map(
@@ -230,7 +232,7 @@ class _ManagerDashboardScreenState
                               f.label,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Theme.of(context).colorScheme.onSurface,
+                                color: AppTheme.onSurfaceColorTheme(context),
                               ),
                             ),
                           ),
@@ -244,7 +246,7 @@ class _ManagerDashboardScreenState
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.s12),
             trendAsync!.when(
               data: (trendData) {
                 if (trendData.isEmpty) {
@@ -285,9 +287,9 @@ class _ManagerDashboardScreenState
 
                 Color? customBarColor;
                 if (_selectedTypeFilter == _TrendTypeFilter.income) {
-                  customBarColor = AppTheme.profitColorTheme(context);
+                  customBarColor = AppTheme.profitChartColor(context);
                 } else if (_selectedTypeFilter == _TrendTypeFilter.expense) {
-                  customBarColor = AppTheme.lossColorTheme(context);
+                  customBarColor = AppTheme.lossChartColor(context);
                 }
 
                 return FinanceBarChart(
@@ -296,13 +298,13 @@ class _ManagerDashboardScreenState
                   barColor: customBarColor,
                   tooltipColorBuilder: (val) {
                     if (_selectedTypeFilter == _TrendTypeFilter.income) {
-                      return AppTheme.profitColorTheme(context);
+                      return AppTheme.profitChartColor(context);
                     } else if (_selectedTypeFilter == _TrendTypeFilter.expense) {
-                      return AppTheme.lossColorTheme(context);
+                      return AppTheme.lossChartColor(context);
                     }
                     return val >= 0
-                        ? AppTheme.profitColorTheme(context)
-                        : AppTheme.lossColorTheme(context);
+                        ? AppTheme.profitChartColor(context)
+                        : AppTheme.lossChartColor(context);
                   },
                 );
               },
@@ -314,10 +316,10 @@ class _ManagerDashboardScreenState
                 ),
               ),
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
           ],
           Text('Aksi Cepat', style: AppTheme.heading3),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Row(
             children: [
               Expanded(
@@ -332,7 +334,7 @@ class _ManagerDashboardScreenState
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.s10),
               Expanded(
                 child: QuickActionButton(
                   icon: Icons.trending_down_rounded,
@@ -345,7 +347,7 @@ class _ManagerDashboardScreenState
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.s10),
               Expanded(
                 child: QuickActionButton(
                   icon: Icons.qr_code_rounded,
@@ -356,7 +358,7 @@ class _ManagerDashboardScreenState
               ),
             ],
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Row(
             children: [
               Expanded(
@@ -372,7 +374,7 @@ class _ManagerDashboardScreenState
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.s10),
               Expanded(
                 child: QuickActionButton(
                   icon: Icons.inventory_2_rounded,
@@ -386,15 +388,15 @@ class _ManagerDashboardScreenState
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.s10),
               const Expanded(child: SizedBox()),
             ],
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           _buildDebtConsignmentSummary(widget.selectedBusiness.businessId),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Text('Transaksi Terbaru', style: AppTheme.heading3),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           if (_recentLoading)
             ...List.generate(
               3,
@@ -403,16 +405,16 @@ class _ManagerDashboardScreenState
           else if (_recentTransactions.isEmpty)
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(AppTheme.s24),
+                padding: const EdgeInsets.all(AppSpacing.s24),
                 child: Center(
                   child: Column(
                     children: [
                       Icon(
                         Icons.receipt_long_rounded,
-                        size: 48,
-                        color: cs.onSurfaceVariant.withValues(alpha: 0.4),
+                        size: AppIconSize.s48,
+                        color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.4),
                       ),
-                      const SizedBox(height: AppTheme.s12),
+                      const SizedBox(height: AppSpacing.s12),
                       const Text(
                         'Belum ada transaksi',
                         style: TextStyle(
@@ -420,7 +422,7 @@ class _ManagerDashboardScreenState
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: AppTheme.s4),
+                      const SizedBox(height: AppSpacing.s4),
                       Text(
                         'Tap tombol + untuk mencatat transaksi pertama',
                         style: AppTheme.caption,
@@ -443,7 +445,7 @@ class _ManagerDashboardScreenState
                   ),
                   child: Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(AppTheme.s12),
+                      padding: const EdgeInsets.all(AppSpacing.s12),
                       child: Row(
                         children: [
                           Container(
@@ -454,7 +456,7 @@ class _ManagerDashboardScreenState
                                   (isIncome
                                           ? AppTheme.profitColorTheme(context)
                                           : AppTheme.lossColorTheme(context))
-                                      .withValues(alpha: 0.12),                               borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                                      .withValues(alpha: 0.12),                               borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                             ),
                             child: Icon(
                               isIncome
@@ -463,10 +465,10 @@ class _ManagerDashboardScreenState
                               color: isIncome
                                   ? AppTheme.profitColorTheme(context)
                                   : AppTheme.lossColorTheme(context),
-                              size: 20,
+                              size: AppIconSize.s20,
                             ),
                           ),
-                          const SizedBox(width: AppTheme.s12),
+                          const SizedBox(width: AppSpacing.s12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,11 +506,11 @@ class _ManagerDashboardScreenState
                 ),
               );
             }),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           if (_recentTransactions.length >= 5)
             Center(
               child: TextButton.icon(
-                icon: const Icon(Icons.history_rounded, size: 18),
+                icon: const Icon(Icons.history_rounded, size: AppIconSize.s18),
                 label: const Text('Lihat Semua'),
                 onPressed: widget.onNavigateToRiwayat ?? () {},
               ),
@@ -518,40 +520,69 @@ class _ManagerDashboardScreenState
     );
   }
 
-  Widget _buildBusinessHeader(ColorScheme cs) {
+  Widget _buildBusinessHeader() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = isDark ? AppTheme.accentColorTheme(context) : AppTheme.profitColorTheme(context);
     return Card(
       child: InkWell(
         onTap: widget.businesses.length > 1 ? widget.onSwitchBusiness : null,
         splashColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(
-          alpha: 0.15,
+          alpha: isDark ? 0.15 : 0.08,
         ),
         highlightColor: (isDark ? AppTheme.accent : AppTheme.primary)
-            .withValues(alpha: 0.08),
+            .withValues(alpha: isDark ? 0.08 : 0.04),
         hoverColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(
-          alpha: 0.06,
+          alpha: isDark ? 0.06 : 0.02,
         ),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
         child: Padding(
-          padding: const EdgeInsets.all(AppTheme.s16),
+          padding: const EdgeInsets.all(AppSpacing.s16),
           child: Row(
             children: [
               Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppTheme.darkDivider
-                      : AppTheme.secondaryBackground,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                  gradient: LinearGradient(
+                    colors: [
+                      isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08),
+                      isDark ? AppTheme.accent : AppTheme.primary,
+                      (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.85),
+                    ],
+                    stops: const [0.0, 0.1, 1.0],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: isDark
+                      ? [
+                          BoxShadow(
+                            color: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.25),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            blurRadius: 2,
+                            spreadRadius: -1,
+                            offset: const Offset(0, 1),
+                          ),
+                        ]
+                      : [
+                          BoxShadow(
+                            color: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.18),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.store_rounded,
-                  color: isDark ? AppTheme.accent : AppTheme.primary,
-                  size: 24,
+                  color: Colors.white,
+                  size: AppIconSize.s24,
                 ),
               ),
-              const SizedBox(width: AppTheme.s12),
+              const SizedBox(width: AppSpacing.s12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -562,7 +593,7 @@ class _ManagerDashboardScreenState
                     ),
                     if (widget.selectedBusiness.description != null &&
                         widget.selectedBusiness.description!.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppSpacing.s2),
                       Text(
                         widget.selectedBusiness.description!,
                         style: AppTheme.caption,
@@ -570,59 +601,59 @@ class _ManagerDashboardScreenState
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-                    const SizedBox(height: AppTheme.s4),
+                    const SizedBox(height: AppSpacing.s4),
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
+                            horizontal: AppSpacing.s8,
+                            vertical: AppSpacing.s2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.profitColor.withValues(alpha: 0.1),
+                            color: activeColor.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(
-                              AppTheme.radiusLarge,
+                              AppRadius.radiusLarge,
                             ),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.check_circle_rounded,
-                                size: 10,
-                                color: AppTheme.profitColor,
+                                size: AppIconSize.s10,
+                                color: activeColor,
                               ),
-                              SizedBox(width: 3),
+                              const SizedBox(width: 3),
                               Text(
                                 'Aktif',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: AppTheme.profitColor,
+                                  color: activeColor,
                                 ),
                               ),
                             ],
                           ),
                         ),
                         if (widget.businesses.length > 1) ...[
-                          const SizedBox(width: AppTheme.s8),
+                          const SizedBox(width: AppSpacing.s8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
+                              horizontal: AppSpacing.s8,
+                              vertical: AppSpacing.s2,
                             ),
                             decoration: BoxDecoration(
-                              color: cs.surfaceContainerHighest.withValues(
+                              color: AppTheme.surfaceContainerHighestColorTheme(context).withValues(
                                 alpha: 0.5,
                               ),
                               borderRadius: BorderRadius.circular(
-                                AppTheme.radiusLarge,
+                                AppRadius.radiusLarge,
                               ),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.swap_horiz_rounded, size: 10),
+                                Icon(Icons.swap_horiz_rounded, size: AppIconSize.s10),
                                 SizedBox(width: 3),
                                 Text(
                                   'Ganti',
@@ -641,7 +672,7 @@ class _ManagerDashboardScreenState
                 ),
               ),
               if (widget.businesses.length > 1)
-                Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+                Icon(Icons.chevron_right_rounded, color: AppTheme.onSurfaceVariantColorTheme(context)),
             ],
           ),
         ),
@@ -677,7 +708,7 @@ class _ManagerDashboardScreenState
               Expanded(
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.s12),
+                    padding: const EdgeInsets.all(AppSpacing.s12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -685,10 +716,10 @@ class _ManagerDashboardScreenState
                           children: [
                             Icon(
                               Icons.receipt_long_rounded,
-                              size: 14,
+                              size: AppIconSize.s14,
                   color: AppTheme.warningColorTheme(context),
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: AppSpacing.s4),
                             Text(
                               'Piutang',
                               style: AppTheme.caption.copyWith(
@@ -697,7 +728,7 @@ class _ManagerDashboardScreenState
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppTheme.s4),
+                        const SizedBox(height: AppSpacing.s4),
                         Text(
                           FormatHelpers.rupiah(debtOwed),
                           style: TextStyle(
@@ -716,12 +747,12 @@ class _ManagerDashboardScreenState
                 ),
               ),
             if (debtOwed > 0 && consOwed > 0)
-              const SizedBox(width: AppTheme.s8),
+              const SizedBox(width: AppSpacing.s8),
             if (consOwed > 0)
               Expanded(
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.s12),
+                    padding: const EdgeInsets.all(AppSpacing.s12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -729,10 +760,10 @@ class _ManagerDashboardScreenState
                           children: [
                             Icon(
                               Icons.inventory_2_rounded,
-                              size: 14,
+                              size: AppIconSize.s14,
                   color: AppTheme.secondaryColorTheme(context),
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: AppSpacing.s4),
                             Text(
                               'Titipan',
                               style: AppTheme.caption.copyWith(
@@ -741,7 +772,7 @@ class _ManagerDashboardScreenState
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppTheme.s4),
+                        const SizedBox(height: AppSpacing.s4),
                         Text(
                           FormatHelpers.rupiah(consOwed),
                           style: TextStyle(

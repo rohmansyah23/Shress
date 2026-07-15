@@ -11,6 +11,10 @@ import '../../data/local/models/consignor_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/debt_consignment_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 class AddConsignmentScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
@@ -254,44 +258,44 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(AppTheme.s20),
+          padding: const EdgeInsets.all(AppSpacing.s20),
           children: [
             _buildTypeSection(),
-            const SizedBox(height: AppTheme.s24),
+            const SizedBox(height: AppSpacing.s24),
             _buildConsignorSection(),
-            const SizedBox(height: AppTheme.s24),
+            const SizedBox(height: AppSpacing.s24),
             Text('Item Titipan', style: AppTheme.heading3),
-            const SizedBox(height: AppTheme.s4),
+            const SizedBox(height: AppSpacing.s4),
             Text(
               'Tambahkan produk yang dititipkan',
               style: AppTheme.caption.copyWith(fontSize: 12),
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             ...List.generate(_items.length, (index) => _buildItemCard(index)),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             OutlinedButton.icon(
               onPressed: _addItem,
-              icon: const Icon(Icons.add_rounded, size: 18),
+              icon: const Icon(Icons.add_rounded, size: AppIconSize.s18),
               label: const Text('Tambah Item'),
             ),
-            const SizedBox(height: AppTheme.s24),
+            const SizedBox(height: AppSpacing.s24),
             Text('Detail Tambahan', style: AppTheme.heading3),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             _buildDetailSection(),
-            const SizedBox(height: AppTheme.s24),
+            const SizedBox(height: AppSpacing.s24),
             _buildDateSection(),
-            const SizedBox(height: AppTheme.s32),
+            const SizedBox(height: AppSpacing.s32),
             SizedBox(
               width: double.infinity,
               height: 52,
               child: FilledButton.icon(
                 onPressed: _isSaving ? null : _handleSave,
                 icon: _isSaving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                            strokeWidth: 2, color: AppTheme.onPrimaryColorTheme(context)),
                       )
                     : const Icon(Icons.save_outlined),
                 label: Text(_isSaving ? 'Menyimpan...' : 'Simpan Titipan'),
@@ -308,14 +312,14 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Jenis Titipan', style: AppTheme.heading3),
-        const SizedBox(height: AppTheme.s12),
+        const SizedBox(height: AppSpacing.s12),
         _buildTypeOption(
           value: AppConstants.consignmentTypeReseller,
           title: 'Reseller',
           subtitle: 'Produk tahan lama, komisi + cicilan',
           icon: Icons.store_outlined,
         ),
-        const SizedBox(height: AppTheme.s8),
+        const SizedBox(height: AppSpacing.s8),
         _buildTypeOption(
           value: AppConstants.consignmentTypeDaily,
           title: 'Harian',
@@ -324,12 +328,12 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
         ),
         if (_consignmentType == AppConstants.consignmentTypeDaily ||
             _consignmentType == AppConstants.consignmentTypeReseller) ...[
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           Container(
-            padding: const EdgeInsets.all(AppTheme.s12),
+            padding: const EdgeInsets.all(AppSpacing.s12),
             decoration: BoxDecoration(
               color: AppTheme.warningColorTheme(context).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
               border: Border.all(
                 color: AppTheme.warningColorTheme(context).withValues(alpha: 0.3),
               ),
@@ -337,8 +341,8 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             child: Row(
               children: [
                 Icon(Icons.info_outline_rounded,
-                    size: 16, color: AppTheme.warningColorTheme(context)),
-                const SizedBox(width: AppTheme.s8),
+                    size: AppIconSize.s16, color: AppTheme.warningColorTheme(context)),
+                const SizedBox(width: AppSpacing.s8),
                 Expanded(
                   child: Text(
                     'Produk akan dilaporkan dan dibayar sesuai penjualan',
@@ -360,7 +364,6 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
     required IconData icon,
   }) {
     final isSelected = _consignmentType == value;
-    final scheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: () => setState(() {
         _consignmentType = value;
@@ -368,17 +371,17 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
           _dueDate = null;
         }
       }),
-      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
       child: Container(
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         decoration: BoxDecoration(
           color: isSelected
-              ? scheme.primaryContainer.withValues(alpha: 0.4)
+              ? AppTheme.primaryContainerColorTheme(context).withValues(alpha: 0.4)
               : null,
-          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
           border: Border.all(
             color: isSelected
-                ? scheme.primary
+                ? AppTheme.primaryColorTheme(context)
                 : Theme.of(context).dividerColor,
             width: isSelected ? 2 : 1,
           ),
@@ -386,11 +389,11 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
         child: Row(
           children: [
             Icon(icon,
-                size: 20,
+                size: AppIconSize.s20,
                 color: isSelected
-                    ? scheme.primary
+                    ? AppTheme.primaryColorTheme(context)
                     : Theme.of(context).textTheme.bodySmall?.color),
-            const SizedBox(width: AppTheme.s12),
+            const SizedBox(width: AppSpacing.s12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -400,11 +403,11 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                     style: AppTheme.subtitle.copyWith(
                       fontSize: 14,
                       color: isSelected
-                          ? scheme.primary
+                          ? AppTheme.primaryColorTheme(context)
                           : Theme.of(context).textTheme.bodySmall?.color,
                     ),
                   ),
-                  const SizedBox(height: AppTheme.s4),
+                  const SizedBox(height: AppSpacing.s4),
                   Text(
                     subtitle,
                     style: AppTheme.caption.copyWith(fontSize: 12),
@@ -414,7 +417,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             ),
             if (isSelected)
               Icon(Icons.check_circle_rounded,
-                  size: 20, color: scheme.primary),
+                  size: AppIconSize.s20, color: AppTheme.primaryColorTheme(context)),
           ],
         ),
       ),
@@ -426,7 +429,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Data Pihak Penitip', style: AppTheme.heading3),
-        const SizedBox(height: AppTheme.s12),
+        const SizedBox(height: AppSpacing.s12),
         if (_existingConsignors.isNotEmpty &&
             widget.existingConsignor == null) ...[
           Row(
@@ -434,7 +437,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
               Expanded(
                 child: Text(
                   'Gunakan pihak penitip yang sudah ada?',
-                  style: AppTheme.caption.copyWith(fontSize: 13),
+                  style: AppTheme.caption,
                 ),
               ),
               Switch(
@@ -460,7 +463,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
               ),
             ],
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
         ],
         if (_useExistingConsignor && _existingConsignors.isNotEmpty)
           DropdownButtonFormField<int>(
@@ -497,7 +500,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 ? 'Nama pihak penitip harus diisi'
                 : null,
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           TextFormField(
             controller: _phoneController,
             textInputAction: TextInputAction.next,
@@ -508,7 +511,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             ),
             keyboardType: TextInputType.phone,
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           TextFormField(
             controller: _notesController,
             textInputAction: TextInputAction.next,
@@ -528,9 +531,9 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
   Widget _buildItemCard(int index) {
     final item = _items[index];
     return Card(
-      margin: const EdgeInsets.only(bottom: AppTheme.s12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.s12),
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -544,7 +547,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 if (_items.length > 1)
                   IconButton(
                     icon: Icon(Icons.close_rounded,
-                        size: 18, color: AppTheme.lossColorTheme(context)),
+                        size: AppIconSize.s18, color: AppTheme.lossColorTheme(context)),
                     onPressed: () => _removeItem(index),
                     tooltip: 'Hapus Item',
                     padding: EdgeInsets.zero,
@@ -552,7 +555,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             TextFormField(
               controller: item.nameController,
               textInputAction: TextInputAction.next,
@@ -561,7 +564,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 hintText: 'Contoh: Baju Merah',
               ),
             ),
-            const SizedBox(height: AppTheme.s8),
+            const SizedBox(height: AppSpacing.s8),
             TextFormField(
               controller: item.descController,
               textInputAction: TextInputAction.next,
@@ -572,7 +575,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
               ),
               maxLines: 2,
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             Row(
               children: [
                 Expanded(
@@ -594,7 +597,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
-                const SizedBox(width: AppTheme.s12),
+                const SizedBox(width: AppSpacing.s12),
                 Expanded(
                   child: TextFormField(
                     controller: item.priceController,
@@ -613,7 +616,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: AppSpacing.s12),
             TextFormField(
               controller: item.sellingPriceController,
               textInputAction: TextInputAction.next,
@@ -632,7 +635,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 (int.tryParse(item.qtyController.text) ?? 0) > 0 &&
                 FormatHelpers.unformatRupiah(item.priceController.text) > 0)
               Padding(
-                padding: const EdgeInsets.only(top: AppTheme.s8),
+                padding: const EdgeInsets.only(top: AppSpacing.s8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -649,7 +652,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                     if (item.sellingPriceController.text.isNotEmpty &&
                         FormatHelpers.unformatRupiah(item.sellingPriceController.text) > 0)
                       Padding(
-                        padding: const EdgeInsets.only(top: AppTheme.s4),
+                        padding: const EdgeInsets.only(top: AppSpacing.s4),
                         child: Text(
                           'Potensi Omzet: ${FormatHelpers.rupiah(
                             (int.tryParse(item.qtyController.text) ?? 0) *
@@ -693,10 +696,10 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Tanggal', style: AppTheme.heading3),
-        const SizedBox(height: AppTheme.s12),
+        const SizedBox(height: AppSpacing.s12),
         InkWell(
           onTap: () => _pickDate(false),
-          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
           child: InputDecorator(
             decoration: const InputDecoration(
               labelText: 'Tanggal Titip',
@@ -705,15 +708,15 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             child: Text(FormatHelpers.displayDate(_consignmentDate)),
           ),
         ),
-        const SizedBox(height: AppTheme.s20),
+        const SizedBox(height: AppSpacing.s20),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(AppTheme.s16),
+            padding: const EdgeInsets.all(AppSpacing.s16),
             child: Row(
               children: [
                 Icon(Icons.calculate_outlined,
-                    size: 20, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: AppTheme.s12),
+                    size: AppIconSize.s20, color: AppTheme.primaryColorTheme(context)),
+                const SizedBox(width: AppSpacing.s12),
                 Expanded(
                   child: Text('Total Nilai Titipan',
                       style: AppTheme.labelSmall),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/format_helpers.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 /// Widget reusable untuk menampilkan ringkasan data (misal: Piutang, Hutang, Laporan).
 class SummaryCard extends StatelessWidget {
@@ -29,18 +33,18 @@ class SummaryCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(titleIcon, size: 18, color: titleIconColor),
-                const SizedBox(width: 6),
+                Icon(titleIcon, size: AppIconSize.s18, color: titleIconColor),
+                const SizedBox(width: AppSpacing.s6),
                 Text(title, style: AppTheme.labelSmall),
               ],
             ),
-            const SizedBox(height: AppTheme.s16),
+            const SizedBox(height: AppSpacing.s16),
             Row(
               children: [
                 Expanded(
@@ -48,7 +52,7 @@ class SummaryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Total Aktif', style: AppTheme.caption),
-                      const SizedBox(height: AppTheme.s4),
+                      const SizedBox(height: AppSpacing.s4),
                       Text(
                         FormatHelpers.rupiah(totalOwed),
                         style: AppTheme.amountMedium.copyWith(
@@ -60,7 +64,7 @@ class SummaryCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.s16),
+            const SizedBox(height: AppSpacing.s16),
             Row(
               children: [
                 if (showDebtorCount) ...[
@@ -72,7 +76,7 @@ class SummaryCard extends StatelessWidget {
                       color: AppTheme.infoColorTheme(context),
                     ),
                   ),
-                  const SizedBox(width: AppTheme.s12),
+                  const SizedBox(width: AppSpacing.s12),
                 ],
                 if (showPaidAmount)
                   Expanded(
@@ -108,16 +112,16 @@ class _SummaryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppTheme.s12),
+      padding: const EdgeInsets.all(AppSpacing.s12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(height: 6),
+          Icon(icon, size: AppIconSize.s16, color: color),
+          const SizedBox(height: AppSpacing.s6),
           Text(
             value,
             style: TextStyle(
@@ -126,7 +130,7 @@ class _SummaryItem extends StatelessWidget {
               color: color,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: AppSpacing.s2),
           Text(label, style: AppTheme.caption.copyWith(fontSize: 11)),
         ],
       ),

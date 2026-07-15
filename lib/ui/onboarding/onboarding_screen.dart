@@ -7,6 +7,10 @@ import '../../core/widgets/error_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../owner/owner_shell.dart';
 import '../manager/manager_shell.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
+
+import '../../core/theme/app_icon_size.dart';
 
 /// Multi-page onboarding wizard for new users.
 /// Shown on first login when no businesses exist.
@@ -98,15 +102,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             // Top progress bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.s24, AppSpacing.s16, AppSpacing.s24, 0),
               child: Row(
                 children: List.generate(
                   4,
@@ -116,9 +118,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       margin: const EdgeInsets.symmetric(horizontal: 3),
                       decoration: BoxDecoration(
                         color: i <= _currentPage
-                            ? colorScheme.primary
-                            : colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(2),
+                            ? AppTheme.primaryColorTheme(context)
+                            : AppTheme.surfaceContainerHighestColorTheme(context),
+                        borderRadius: BorderRadius.circular(AppRadius.s2),
                       ),
                     ),
                   ),
@@ -130,7 +132,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: _isCreatingBusiness ? null : _finish,
-                  child: const Text('Lewati', style: TextStyle(fontSize: 13)),
+                  child: Text('Lewati', style: AppTheme.caption),
                 ),
               ),
 
@@ -143,10 +145,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   if (page == 1) _skipBusinessCreation = false;
                 }),
                 children: [
-                  _buildWelcomePage(colorScheme),
-                  _buildCreateBusinessPage(colorScheme),
-                  _buildFeatureTourPage(colorScheme),
-                  _buildReadyPage(colorScheme),
+                  _buildWelcomePage(),
+                  _buildCreateBusinessPage(),
+                  _buildFeatureTourPage(),
+                  _buildReadyPage(),
                 ],
               ),
             ),
@@ -158,9 +160,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // ============ Page 1: Welcome ============
 
-  Widget _buildWelcomePage(ColorScheme colorScheme) {
+  Widget _buildWelcomePage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -168,37 +170,37 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+              color: AppTheme.primaryContainerColorTheme(context),
+              borderRadius: BorderRadius.circular(AppRadius.radiusXL),
             ),
             child: Icon(
               Icons.account_balance_rounded,
-              size: 52,
-              color: colorScheme.primary,
+              size: AppIconSize.s52,
+              color: AppTheme.primaryColorTheme(context),
             ),
           ),
-          const SizedBox(height: AppTheme.s32),
+          const SizedBox(height: AppSpacing.s32),
           Text(
             'Selamat Datang di\n${AppConstants.appName}',
             textAlign: TextAlign.center,
-            style: AppTheme.heading1.copyWith(color: colorScheme.primary),
+            style: AppTheme.heading1.copyWith(color: AppTheme.primaryColorTheme(context)),
           ),
-          const SizedBox(height: AppTheme.s16),
+          const SizedBox(height: AppSpacing.s16),
           Text(
             'Aplikasi pencatatan keuangan multi-bisnis\nuntuk membantu Anda mengelola\npemasukan dan pengeluaran dengan mudah.',
             textAlign: TextAlign.center,                  style: AppTheme.bodyText.copyWith(
                     height: 1.6,
                   ),
           ),
-          const SizedBox(height: AppTheme.s48),
+          const SizedBox(height: AppSpacing.s48),
           SizedBox(
             width: double.infinity,
             height: 52,
             child: FilledButton(
               onPressed: _nextPage,
-              child: const Text('Mulai',
+              child: Text('Mulai',
                   style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      AppTheme.subtitle),
             ),
           ),
         ],
@@ -208,33 +210,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // ============ Page 2: Create Business ============
 
-  Widget _buildCreateBusinessPage(ColorScheme colorScheme) {
+  Widget _buildCreateBusinessPage() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: AppTheme.s40),
+          const SizedBox(height: AppSpacing.s40),
           Container(
             width: 80,
             height: 80,
             decoration: BoxDecoration(
               color: AppTheme.profitColorTheme(context).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+              borderRadius: BorderRadius.circular(AppRadius.radiusLarge),
             ),
             child: Icon(
               Icons.add_business_rounded,
-              size: 40,
+              size: AppIconSize.s40,
               color: AppTheme.profitColorTheme(context),
             ),
           ),
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppSpacing.s24),
           Text(
             'Buat Bisnis Pertama Anda',
             textAlign: TextAlign.center,
             style: AppTheme.heading2,
           ),
-          const SizedBox(height: AppTheme.s8),
+          const SizedBox(height: AppSpacing.s8),
           Text(
             'Isi nama bisnis untuk mulai\nmencatat keuangan.',
             textAlign: TextAlign.center,
@@ -242,7 +244,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: AppTheme.s32),
+          const SizedBox(height: AppSpacing.s32),
           TextFormField(
             controller: _businessNameCtrl,
             textInputAction: TextInputAction.next,
@@ -252,7 +254,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               hintText: 'Contoh: Warung Makmur',
             ),
           ),
-          const SizedBox(height: AppTheme.s16),
+          const SizedBox(height: AppSpacing.s16),
           TextFormField(
             controller: _businessDescCtrl,
             maxLines: 2,
@@ -262,7 +264,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               hintText: 'Jenis usaha atau keterangan',
             ),
           ),
-          const SizedBox(height: AppTheme.s32),
+          const SizedBox(height: AppSpacing.s32),
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -272,22 +274,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
+                          strokeWidth: 2, color: AppTheme.onPrimaryColorTheme(context)),
                     )
-                  : const Text('Buat Bisnis',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
+                  : Text('Buat Bisnis',
+                      style: AppTheme.subtitle),
             ),
           ),
-          const SizedBox(height: AppTheme.s12),
+          const SizedBox(height: AppSpacing.s12),
           TextButton(
             onPressed: () {
               setState(() => _skipBusinessCreation = true);
               _nextPage();
             },
-            child: const Text('Nanti Saja', style: TextStyle(fontSize: 13)),
+            child: Text('Nanti Saja', style: AppTheme.caption),
           ),
-          const SizedBox(height: AppTheme.s40),
+          const SizedBox(height: AppSpacing.s40),
         ],
       ),
     );
@@ -295,7 +296,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // ============ Page 3: Feature Tour ============
 
-  Widget _buildFeatureTourPage(ColorScheme colorScheme) {
+  Widget _buildFeatureTourPage() {
     final features = [
       _FeatureItem(
         icon: Icons.trending_up_rounded,
@@ -317,39 +318,39 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
       _FeatureItem(
         icon: Icons.qr_code_rounded,
-        iconColor: colorScheme.primary,
+        iconColor: AppTheme.primaryColorTheme(context),
         title: 'QRIS Pembayaran',
         desc: 'Tampilkan QRIS untuk pembayaran\npelanggan. Upload dari galeri atau URL.',
       ),
     ];
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s32),
       child: Column(
         children: [
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppSpacing.s24),
           Text(
             'Fitur Unggulan',
             textAlign: TextAlign.center,
             style: AppTheme.heading2,
           ),
-          const SizedBox(height: AppTheme.s32),
+          const SizedBox(height: AppSpacing.s32),
           ...features.map((f) => Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: _FeatureCard(item: f),
               )),
-          const SizedBox(height: AppTheme.s24),
+          const SizedBox(height: AppSpacing.s24),
           SizedBox(
             width: double.infinity,
             height: 52,
             child: FilledButton(
               onPressed: _nextPage,
-              child: const Text('Lanjutkan',
+              child: Text('Lanjutkan',
                   style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      AppTheme.subtitle),
             ),
           ),
-          const SizedBox(height: AppTheme.s32),
+          const SizedBox(height: AppSpacing.s32),
         ],
       ),
     );
@@ -357,9 +358,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // ============ Page 4: Ready ============
 
-  Widget _buildReadyPage(ColorScheme colorScheme) {
+  Widget _buildReadyPage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -368,21 +369,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             height: 100,
             decoration: BoxDecoration(
               color: AppTheme.profitColorTheme(context).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+              borderRadius: BorderRadius.circular(AppRadius.radiusXL),
             ),
             child: Icon(
               Icons.check_circle_rounded,
-              size: 52,
+              size: AppIconSize.s52,
               color: AppTheme.profitColorTheme(context),
             ),
           ),
-          const SizedBox(height: AppTheme.s32),
+          const SizedBox(height: AppSpacing.s32),
           Text(
             'Siap Memulai!',
             textAlign: TextAlign.center,
             style: AppTheme.heading1,
           ),
-          const SizedBox(height: AppTheme.s16),
+          const SizedBox(height: AppSpacing.s16),
           Text(
             'Anda sudah siap menggunakan ${AppConstants.appName}.\n'
             'Mulai catat transaksi dan pantau\nkeuangan bisnis Anda.',
@@ -390,15 +391,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     height: 1.6,
                   ),
           ),
-          const SizedBox(height: AppTheme.s48),
+          const SizedBox(height: AppSpacing.s48),
           SizedBox(
             width: double.infinity,
             height: 52,
             child: FilledButton(
               onPressed: _finish,
-              child: const Text('Mulai Sekarang',
+              child: Text('Mulai Sekarang',
                   style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      AppTheme.subtitle),
             ),
           ),
         ],
@@ -432,7 +433,7 @@ class _FeatureCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(AppSpacing.s16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -441,11 +442,11 @@ class _FeatureCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: item.iconColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
               ),
-              child: Icon(item.icon, color: item.iconColor, size: 24),
+              child: Icon(item.icon, color: item.iconColor, size: AppIconSize.s24),
             ),
-            const SizedBox(width: AppTheme.s16),
+            const SizedBox(width: AppSpacing.s16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -453,7 +454,7 @@ class _FeatureCard extends StatelessWidget {
                   Text(item.title,
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: AppTheme.s4),
+                  const SizedBox(height: AppSpacing.s4),
                   Text(item.desc,
                       style: AppTheme.caption.copyWith(height: 1.5)),
                 ],

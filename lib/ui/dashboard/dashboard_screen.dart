@@ -11,6 +11,8 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/business_providers.dart';
 import '../transaction/transaction_sheet.dart';
 import '../transaction/transaction_history_screen.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_radius.dart';
 
 enum DashboardTrendTypeFilter {
   netProfit('Laba/Rugi Bersih'),
@@ -130,15 +132,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(AppTheme.s16),
+              padding: const EdgeInsets.all(AppSpacing.s16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   NetProfitCard(
                     netProfit: netProfit,
-                    style: NetProfitCardStyle.accentBar,
+                    style: NetProfitCardStyle.row,
                   ),
-                  const SizedBox(height: AppTheme.s12),
+                  const SizedBox(height: AppSpacing.s12),
                   Row(
                     children: [
                       Expanded(
@@ -149,7 +151,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           color: AppTheme.profitColorTheme(context),
                         ),
                       ),
-                      const SizedBox(width: AppTheme.s12),
+                      const SizedBox(width: AppSpacing.s12),
                       Expanded(
                         child: SummaryCard(
                           title: 'HPP (COGS)',
@@ -160,7 +162,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppTheme.s12),
+                  const SizedBox(height: AppSpacing.s12),
                   Row(
                     children: [
                       Expanded(
@@ -171,7 +173,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           color: AppTheme.infoColorTheme(context),
                         ),
                       ),
-                      const SizedBox(width: AppTheme.s12),
+                      const SizedBox(width: AppSpacing.s12),
                       Expanded(
                         child: SummaryCard(
                           title: 'Pengeluaran',
@@ -182,28 +184,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppTheme.s24),
+                  const SizedBox(height: AppSpacing.s24),
 
                   Text('Tren Keuangan', style: AppTheme.heading3),
-                  const SizedBox(height: AppTheme.s8),
+                  const SizedBox(height: AppSpacing.s8),
                   Row(
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<TrendFilter>(
                           initialValue: _selectedTrendFilter,
                           isDense: true,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
+                              horizontal: AppSpacing.s12,
+                              vertical: AppSpacing.s8,
                             ),
                             isDense: true,
                             labelText: 'Periode Waktu',
                             floatingLabelBehavior: FloatingLabelBehavior.never,
                           ),
                           style: AppTheme.labelSmall.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: AppTheme.onSurfaceColorTheme(context),
                           ),
                           items: TrendFilter.values
                               .map(
@@ -212,7 +214,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   child: Text(
                                     _trendFilterLabel(f),
                                     style: AppTheme.labelSmall.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: AppTheme.onSurfaceColorTheme(context),
                                     ),
                                   ),
                                 ),
@@ -224,23 +226,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: AppTheme.s8),
+                      const SizedBox(width: AppSpacing.s8),
                       Expanded(
                         child: DropdownButtonFormField<DashboardTrendTypeFilter>(
                           initialValue: _selectedTypeFilter,
                           isDense: true,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
+                              horizontal: AppSpacing.s12,
+                              vertical: AppSpacing.s8,
                             ),
                             isDense: true,
                             labelText: 'Tipe Grafik',
                             floatingLabelBehavior: FloatingLabelBehavior.never,
                           ),
                           style: AppTheme.labelSmall.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: AppTheme.onSurfaceColorTheme(context),
                           ),
                           items: DashboardTrendTypeFilter.values
                               .map(
@@ -249,7 +251,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   child: Text(
                                     f.label,
                                     style: AppTheme.labelSmall.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: AppTheme.onSurfaceColorTheme(context),
                                     ),
                                   ),
                                 ),
@@ -263,7 +265,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppTheme.s16),
+                  const SizedBox(height: AppSpacing.s16),
                   trendAsync.when(
                     data: (trendData) {
                       if (trendData.isEmpty) {
@@ -308,9 +310,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
                       Color? customBarColor;
                       if (_selectedTypeFilter == DashboardTrendTypeFilter.income) {
-                        customBarColor = AppTheme.profitColorTheme(context);
+                        customBarColor = AppTheme.profitChartColor(context);
                       } else if (_selectedTypeFilter == DashboardTrendTypeFilter.expense) {
-                        customBarColor = AppTheme.lossColorTheme(context);
+                        customBarColor = AppTheme.lossChartColor(context);
                       }
 
                       return FinanceBarChart(
@@ -319,13 +321,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         barColor: customBarColor,
                         tooltipColorBuilder: (val) {
                           if (_selectedTypeFilter == DashboardTrendTypeFilter.income) {
-                            return AppTheme.profitColorTheme(context);
+                            return AppTheme.profitChartColor(context);
                           } else if (_selectedTypeFilter == DashboardTrendTypeFilter.expense) {
-                            return AppTheme.lossColorTheme(context);
+                            return AppTheme.lossChartColor(context);
                           }
                           return val >= 0
-                              ? AppTheme.profitColorTheme(context)
-                              : AppTheme.lossColorTheme(context);
+                              ? AppTheme.profitChartColor(context)
+                              : AppTheme.lossChartColor(context);
                         },
                       );
                     },
@@ -341,10 +343,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppTheme.s24),
+                  const SizedBox(height: AppSpacing.s24),
 
                   Text('Aksi Cepat', style: AppTheme.heading3),
-                  const SizedBox(height: AppTheme.s12),
+                  const SizedBox(height: AppSpacing.s12),
                   Row(
                     children: [
                       Expanded(
@@ -359,7 +361,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: AppTheme.s12),
+                      const SizedBox(width: AppSpacing.s12),
                       Expanded(
                         child: QuickActionButton(
                           icon: Icons.trending_down_rounded,
@@ -372,7 +374,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: AppTheme.s12),
+                      const SizedBox(width: AppSpacing.s12),
                       Expanded(
                         child: QuickActionButton(
                           icon: Icons.history_rounded,
