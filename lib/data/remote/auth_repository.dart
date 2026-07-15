@@ -101,7 +101,13 @@ class AuthRepository {
 
         await prefs.setString(AppConstants.keySessionUser, jsonEncode(freshUser.toMap()));
         return freshUser;
-      } catch (_) {
+      } catch (e) {
+        // If user not found (e.g., deleted from database), clear session
+        if (e is PostgrestException && e.code == 'PGRST116') {
+          await prefs.remove(AppConstants.keySessionUser);
+          return null;
+        }
+        // For other errors (network, etc.), fallback to cached user
         return cachedUser;
       }
     } catch (_) {
