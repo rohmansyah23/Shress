@@ -254,10 +254,10 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
     if (!mounted) return;
 
     if (result.success) {
-      triggerTransactionRefresh(ref);
-      Navigator.of(context).pop();
       ErrorSnackbar.showSuccess(
           context, result.message ?? 'Berhasil');
+      triggerTransactionRefresh(ref);
+      Navigator.of(context).pop();
     } else {
       ErrorSnackbar.showError(
           context, result.message ?? 'Gagal');

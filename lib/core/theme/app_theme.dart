@@ -272,6 +272,35 @@ class AppTheme {
   static Color lossChartColor(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? _red500 : _red500;
 
+  // ── Category Chart Palette ──────────────────────────────────
+  static const List<Color> _categoryChartColorsLight = [
+    Color(0xFF10B981), // emerald
+    Color(0xFF3B82F6), // blue
+    Color(0xFFF59E0B), // amber
+    Color(0xFF0D9488), // teal
+    Color(0xFF8B5CF6), // violet
+    Color(0xFFEC4899), // pink
+    Color(0xFF06B6D4), // cyan
+    Color(0xFFF97316), // orange
+  ];
+
+  static const List<Color> _categoryChartColorsDark = [
+    Color(0xFF2DD4BF), // teal 400
+    Color(0xFF60A5FA), // blue 400
+    Color(0xFFFBBF24), // amber 400
+    Color(0xFF34D399), // emerald 400
+    Color(0xFFA78BFA), // violet 400
+    Color(0xFFF472B6), // pink 400
+    Color(0xFF22D3EE), // cyan 400
+    Color(0xFFFB923C), // orange 400
+  ];
+
+  /// Theme-aware palette for category breakdown charts (pie, horizontal bar)
+  static List<Color> categoryChartColors(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? _categoryChartColorsDark
+          : _categoryChartColorsLight;
+
   /// Warning color (theme-aware)
   static Color warningColorTheme(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? _darkAmber : _amber500;

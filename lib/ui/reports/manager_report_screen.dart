@@ -5,33 +5,15 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/report_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
-
-// ==================== Data Models ====================
-
-class ManagerReportData {
-  final double totalIncome;
-  final double totalCogs;
-  final double grossProfit;
-  final double totalExpense;
-  final double netProfit;
-  final String status;
-
-  const ManagerReportData({
-    this.totalIncome = 0,
-    this.totalCogs = 0,
-    this.grossProfit = 0,
-    this.totalExpense = 0,
-    this.netProfit = 0,
-    this.status = 'laba',
-  });
-}
 
 enum PeriodFilter {
   today('Hari Ini'),
@@ -43,78 +25,6 @@ enum PeriodFilter {
   final String label;
   const PeriodFilter(this.label);
 }
-
-// ==================== Provider ====================
-
-final managerReportProvider =
-    FutureProvider.family<ManagerReportData, _ReportParams>((ref, params) async {
-  ref.watch(transactionRefreshProvider);
-  final supa = SupabaseService.instance;
-
-  List<TransactionModel> transactions;
-  if (params.startDate != null && params.endDate != null) {
-    transactions = await supa.getTransactionsByDateRange(
-      params.businessId,
-      params.startDate!,
-      params.endDate!,
-    );
-  } else {
-    final now = DateTime.now();
-    final start = '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
-    final end =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${FormatHelpers.daysInMonth(now.year, now.month)}';
-    transactions = await supa.getTransactionsByDateRange(
-        params.businessId, start, end);
-  }
-
-  double totalIncome = 0, totalCogs = 0, totalExpense = 0;
-
-  for (final tx in transactions) {
-    if (tx.type == AppConstants.typeIncome) {
-      totalIncome += tx.amount;
-      totalCogs += tx.cogs;
-    } else {
-      totalExpense += tx.amount;
-    }
-  }
-
-  final grossProfit = totalIncome - totalCogs;
-  final netProfit = grossProfit - totalExpense;
-
-  return ManagerReportData(
-    totalIncome: totalIncome,
-    totalCogs: totalCogs,
-    grossProfit: grossProfit,
-    totalExpense: totalExpense,
-    netProfit: netProfit,
-    status: netProfit >= 0 ? 'laba' : 'rugi',
-  );
-});
-
-class _ReportParams {
-  final int businessId;
-  final String? startDate;
-  final String? endDate;
-
-  const _ReportParams({
-    required this.businessId,
-    this.startDate,
-    this.endDate,
-  });
-
-  @override
-  bool operator ==(Object other) =>
-      other is _ReportParams &&
-      other.businessId == businessId &&
-      other.startDate == startDate &&
-      other.endDate == endDate;
-
-  @override
-  int get hashCode => Object.hash(businessId, startDate, endDate);
-}
-
-
-// ==================== UI ====================
 
 class ManagerReportScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
@@ -131,6 +41,25 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
   PeriodFilter _selectedPeriod = PeriodFilter.thisMonth;
   DateTime? _customStart;
   DateTime? _customEnd;
+  bool _isLoading = true;
+  AppError? _error;
+
+  Map<String, double> _summary = {
+    'totalIncome': 0,
+    'totalCogs': 0,
+    'grossProfit': 0,
+    'totalExpense': 0,
+    'netProfit': 0,
+  };
+
+  List<TransactionModel> _transactions = [];
+  List<TransactionModel> _prevTransactions = [];
+  Map<int, String> _categoryNames = {};
+  String _categoryTypeFilter = 'all';
+
+  double _prevIncomeVal = 0;
+  double _prevCogsVal = 0;
+  double _prevExpenseVal = 0;
 
   String _formatDate(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -167,6 +96,43 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
       case PeriodFilter.custom:
         if (_customEnd == null) return null;
         return _formatDate(_customEnd!);
+    }
+  }
+
+  String? get _prevStartDate {
+    final now = DateTime.now();
+    switch (_selectedPeriod) {
+      case PeriodFilter.today:
+        return _formatDate(now.subtract(const Duration(days: 1)));
+      case PeriodFilter.thisWeek:
+        return _formatDate(now.subtract(Duration(days: now.weekday - 1 + 7)));
+      case PeriodFilter.thisMonth:
+        final prev = DateTime(now.year, now.month - 1, 1);
+        return _formatDate(prev);
+      case PeriodFilter.thisYear:
+        return '${now.year - 1}-01-01';
+      case PeriodFilter.custom:
+        if (_customStart == null || _customEnd == null) return null;
+        final prevRange = _customEnd!.difference(_customStart!).inDays + 1;
+        return _formatDate(_customStart!.subtract(Duration(days: prevRange)));
+    }
+  }
+
+  String? get _prevEndDate {
+    final now = DateTime.now();
+    switch (_selectedPeriod) {
+      case PeriodFilter.today:
+        return _formatDate(now.subtract(const Duration(days: 1)));
+      case PeriodFilter.thisWeek:
+        return _formatDate(now.subtract(const Duration(days: 7)));
+      case PeriodFilter.thisMonth:
+        final prev = DateTime(now.year, now.month, 0);
+        return _formatDate(prev);
+      case PeriodFilter.thisYear:
+        return '${now.year - 1}-12-31';
+      case PeriodFilter.custom:
+        if (_customStart == null || _customEnd == null) return null;
+        return _formatDate(_customStart!.subtract(const Duration(days: 1)));
     }
   }
 
@@ -208,49 +174,340 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
         _customEnd = picked.end;
         _selectedPeriod = PeriodFilter.custom;
       });
+      _loadData();
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    ref.watch(transactionRefreshProvider);
+  }
+
+  Map<String, double> _computeSummary(List<TransactionModel> transactions) {
+    double totalIncome = 0, totalCogs = 0, totalExpense = 0;
+    for (final tx in transactions) {
+      if (tx.type == AppConstants.typeIncome) {
+        totalIncome += tx.amount;
+        totalCogs += tx.cogs;
+      } else {
+        totalExpense += tx.amount;
+      }
+    }
+    final grossProfit = totalIncome - totalCogs;
+    return {
+      'totalIncome': totalIncome,
+      'totalCogs': totalCogs,
+      'grossProfit': grossProfit,
+      'totalExpense': totalExpense,
+      'netProfit': grossProfit - totalExpense,
+    };
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    try {
+      final supa = SupabaseService.instance;
+      final businessId = widget.business.businessId;
+
+      // Fetch current period
+      if (_startDate != null && _endDate != null) {
+        _transactions = await supa.getTransactionsByDateRange(
+          businessId, _startDate!, _endDate!,
+        );
+        _summary = _computeSummary(_transactions);
+      } else {
+        _transactions = [];
+        _summary = await supa.getBusinessSummary(businessId);
+      }
+
+      // Fetch previous period
+      _prevTransactions = [];
+      if (_startDate != null && _endDate != null && _prevStartDate != null && _prevEndDate != null) {
+        try {
+          _prevTransactions = await supa.getTransactionsByDateRange(
+            businessId, _prevStartDate!, _prevEndDate!,
+          );
+        } catch (_) {
+          _prevTransactions = [];
+        }
+      }
+
+      _computePrevSummary();
+
+      // Fetch categories
+      _categoryNames = {};
+      try {
+        final cats = await supa.getCategoriesByBusiness(businessId);
+        for (final c in cats) {
+          _categoryNames[c.categoryId] = c.name;
+        }
+      } catch (_) {}
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = ErrorHandler.classify(e);
+        });
+      }
+    }
+  }
+
+  void _computePrevSummary() {
+    _prevIncomeVal = 0;
+    _prevCogsVal = 0;
+    _prevExpenseVal = 0;
+    for (final tx in _prevTransactions) {
+      if (tx.type == AppConstants.typeIncome) {
+        _prevIncomeVal += tx.amount;
+        _prevCogsVal += tx.cogs;
+      } else {
+        _prevExpenseVal += tx.amount;
+      }
+    }
+  }
+
+  double get _prevNetProfit {
+    if (_prevTransactions.isEmpty) return 0;
+    return (_prevIncomeVal - _prevCogsVal) - _prevExpenseVal;
+  }
+
+  double get _prevIncome => _prevIncomeVal;
+  double get _prevCogs => _prevCogsVal;
+  double get _prevGrossProfit => _prevIncomeVal - _prevCogsVal;
+  double get _prevExpense => _prevExpenseVal;
+
+  Map<String, double> _categoryBreakdown(String filter) {
+    final Map<int, double> grouped = {};
+    for (final tx in _transactions) {
+      final isIncome = tx.type == AppConstants.typeIncome;
+      if (filter == 'all') {
+        if (isIncome) {
+          grouped[tx.categoryId] = (grouped[tx.categoryId] ?? 0) + (tx.amount - tx.cogs);
+        } else {
+          grouped[tx.categoryId] = (grouped[tx.categoryId] ?? 0) + tx.amount;
+        }
+      } else if (filter == 'income' && isIncome) {
+        grouped[tx.categoryId] = (grouped[tx.categoryId] ?? 0) + (tx.amount - tx.cogs);
+      } else if (filter == 'expense' && !isIncome) {
+        grouped[tx.categoryId] = (grouped[tx.categoryId] ?? 0) + tx.amount;
+      }
+    }
+    final result = <String, double>{};
+    for (final entry in grouped.entries) {
+      final name = _categoryNames[entry.key] ?? 'Kategori #${entry.key}';
+      result[name] = (result[name] ?? 0) + entry.value;
+    }
+    return result;
+  }
+
+  List<TransactionItem> _toTransactionItems() {
+    return _transactions.map((tx) {
+      final catName = _categoryNames[tx.categoryId] ?? 'Kategori #${tx.categoryId}';
+      return TransactionItem(
+        type: tx.type,
+        category: catName,
+        amount: tx.amount,
+        date: FormatHelpers.displayDate(tx.transactionDate),
+        description: tx.description,
+      );
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final params = _ReportParams(
-      businessId: widget.business.businessId,
-      startDate: _startDate,
-      endDate: _endDate,
-    );
-    final reportAsync = ref.watch(managerReportProvider(params));
-    final body = reportAsync.when(
-      data: (data) => _buildSummary(data),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => ErrorRetryWidget.fromAppError(
-        ErrorHandler.classify(error),
-        onRetry: () => ref.invalidate(managerReportProvider(params)),
-      ),
-    );
+    final netProfit = _summary['netProfit'] ?? 0;
+    final user = ref.read(currentUserProvider);
+    final isStaff = user?.role == AppConstants.roleStaff;
 
-    final mainContent = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!widget.showAppBar) ...[
-          const SizedBox(height: AppSpacing.s12),
-          _buildPeriodSelector(),
-        ],
-        Expanded(child: body),
-      ],
-    );
+    final body = _buildBody(netProfit, isStaff);
 
-    if (!widget.showAppBar) return SafeArea(child: mainContent);
+    if (!widget.showAppBar) {
+      return SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: AppSpacing.s12),
+            _buildPeriodSelector(),
+            Expanded(child: body),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laporan Keuangan'),
-        actions: null,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: _buildPeriodSelector(),
         ),
       ),
       body: body,
+    );
+  }
+
+  Widget _buildBody(double netProfit, bool isStaff) {
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: _error != null
+          ? ErrorRetryWidget.fromAppError(
+              _error!,
+              onRetry: _loadData,
+            )
+          : SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(AppSpacing.s16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(_periodLabel,
+                      style: AppTheme.subtitle.copyWith(fontSize: 14)),
+                  const SizedBox(height: AppSpacing.s16),
+
+                  if (_isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else ...[
+                    NetProfitCard(
+                      netProfit: netProfit,
+                      style: NetProfitCardStyle.row,
+                      trailing: _prevNetProfit != 0
+                          ? PeriodComparisonBadge(
+                              currentValue: netProfit,
+                              previousValue: _prevNetProfit,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SummaryCard(
+                            title: 'Pendapatan',
+                            amount: _summary['totalIncome'] ?? 0,
+                            icon: Icons.trending_up_rounded,
+                            color: AppTheme.profitColorTheme(context),
+                            trailing: _prevTransactions.isNotEmpty
+                                ? PeriodComparisonBadge(
+                                    currentValue: _summary['totalIncome'] ?? 0,
+                                    previousValue: _prevIncome,
+                                  )
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.s12),
+                        Expanded(
+                          child: SummaryCard(
+                            title: 'HPP',
+                            amount: _summary['totalCogs'] ?? 0,
+                            icon: Icons.inventory_rounded,
+                            color: AppTheme.warningColorTheme(context),
+                            trailing: _prevTransactions.isNotEmpty
+                                ? PeriodComparisonBadge(
+                                    currentValue: _summary['totalCogs'] ?? 0,
+                                    previousValue: _prevCogs,
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SummaryCard(
+                            title: 'Laba Kotor',
+                            amount: _summary['grossProfit'] ?? 0,
+                            icon: Icons.monetization_on_rounded,
+                            color: AppTheme.infoColorTheme(context),
+                            trailing: _prevTransactions.isNotEmpty
+                                ? PeriodComparisonBadge(
+                                    currentValue: _summary['grossProfit'] ?? 0,
+                                    previousValue: _prevGrossProfit,
+                                  )
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.s12),
+                        Expanded(
+                          child: SummaryCard(
+                            title: 'Pengeluaran',
+                            amount: _summary['totalExpense'] ?? 0,
+                            icon: Icons.trending_down_rounded,
+                            color: AppTheme.lossColorTheme(context),
+                            trailing: _prevTransactions.isNotEmpty
+                                ? PeriodComparisonBadge(
+                                    currentValue: _summary['totalExpense'] ?? 0,
+                                    previousValue: _prevExpense,
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Category breakdown (hidden for Staff)
+                    if (!isStaff) ...[
+                      const SizedBox(height: AppSpacing.s20),
+                      Row(
+                        children: [
+                          Text('Per Kategori',
+                              style: AppTheme.subtitle.copyWith(fontSize: 15)),
+                          const Spacer(),
+                          SizedBox(
+                            width: 150,
+                            child: DropdownButtonFormField<String>(
+                              initialValue: _categoryTypeFilter,
+                              isDense: true,
+                              borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                                ),
+                                isDense: true,
+                                filled: true,
+                              ),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.onSurfaceColorTheme(context),
+                              ),
+                              dropdownColor: AppTheme.surfaceColorTheme(context),
+                              items: const [
+                                DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
+                                DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
+                                DropdownMenuItem(value: 'all', child: Text('Semua')),
+                              ],
+                              onChanged: (v) {
+                                if (v != null) setState(() => _categoryTypeFilter = v);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.s8),
+                      CategoryBreakdownChart(data: _categoryBreakdown(_categoryTypeFilter)),
+                    ],
+
+                    const SizedBox(height: AppSpacing.s20),
+
+                    // Transaction list (visible to all)
+                    TransactionSection(transactions: _toTransactionItems()),
+                  ],
+                ],
+              ),
+            ),
     );
   }
 
@@ -271,6 +528,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                       _pickCustomRange();
                     } else {
                       setState(() => _selectedPeriod = period);
+                      _loadData();
                     }
                   },
                   child: AnimatedContainer(
@@ -308,85 +566,4 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
       ),
     );
   }
-
-  _ReportParams get _currentParams => _ReportParams(
-    businessId: widget.business.businessId,
-    startDate: _startDate,
-    endDate: _endDate,
-  );
-
-  Widget _buildSummary(ManagerReportData data) {
-    final p = _currentParams;
-    return RefreshIndicator(
-      onRefresh: () async {
-        ref.invalidate(managerReportProvider(p));
-      },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.s16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(_periodLabel,
-                style: AppTheme.labelSmall.copyWith(fontSize: 12)),
-            const SizedBox(height: AppSpacing.s16),
-
-            NetProfitCard(
-              netProfit: data.netProfit,
-              style: NetProfitCardStyle.row,
-            ),
-            const SizedBox(height: AppSpacing.s12),
-
-            // Detail cards grid
-            Row(
-              children: [
-                Expanded(
-                  child: SummaryCard(
-                    title: 'Pendapatan',
-                    amount: data.totalIncome,
-                    icon: Icons.trending_up_rounded,
-                    color: AppTheme.profitColorTheme(context),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.s12),
-                Expanded(
-                  child: SummaryCard(
-                    title: 'HPP',
-                    amount: data.totalCogs,
-                    icon: Icons.inventory_rounded,
-                    color: AppTheme.warningColorTheme(context),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            Row(
-              children: [
-                Expanded(
-                  child: SummaryCard(
-                    title: 'Laba Kotor',
-                    amount: data.grossProfit,
-                    icon: Icons.monetization_on_rounded,
-                    color: AppTheme.infoColorTheme(context),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.s12),
-                Expanded(
-                  child: SummaryCard(
-                    title: 'Pengeluaran',
-                    amount: data.totalExpense,
-                    icon: Icons.trending_down_rounded,
-                    color: AppTheme.lossColorTheme(context),
-                  ),
-                ),
-              ],
-            ),
-
-          ],
-        ),
-      ),
-    );
-  }
 }
-
-

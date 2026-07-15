@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/report_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
@@ -62,6 +63,11 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
     'totalExpense': 0,
     'netProfit': 0,
   };
+
+  List<TransactionModel> _transactions = [];
+  List<TransactionModel> _prevTransactions = [];
+  Map<int, String> _categoryNames = {}; // categoryId -> name
+  String _categoryTypeFilter = 'all'; // 'income', 'expense', 'all'
 
   @override
   void initState() {
@@ -119,6 +125,108 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
     }
   }
 
+  String? get _prevStartDate {
+    final now = DateTime.now();
+    switch (_selectedPeriod) {
+      case OwnerPeriodFilter.today:
+        return _fmt(now.subtract(const Duration(days: 1)));
+      case OwnerPeriodFilter.thisWeek:
+        return _fmt(now.subtract(Duration(days: now.weekday - 1 + 7)));
+      case OwnerPeriodFilter.thisMonth:
+        final prev = DateTime(now.year, now.month - 1, 1);
+        return _fmt(prev);
+      case OwnerPeriodFilter.thisYear:
+        return '${now.year - 1}-01-01';
+      case OwnerPeriodFilter.custom:
+        if (_customStart == null || _customEnd == null) return null;
+        final prevRange = _customEnd!.difference(_customStart!).inDays + 1;
+        return _fmt(_customStart!.subtract(Duration(days: prevRange)));
+    }
+  }
+
+  String? get _prevEndDate {
+    final now = DateTime.now();
+    switch (_selectedPeriod) {
+      case OwnerPeriodFilter.today:
+        return _fmt(now.subtract(const Duration(days: 1)));
+      case OwnerPeriodFilter.thisWeek:
+        return _fmt(now.subtract(const Duration(days: 7)));
+      case OwnerPeriodFilter.thisMonth:
+        final prev = DateTime(now.year, now.month, 0);
+        return _fmt(prev);
+      case OwnerPeriodFilter.thisYear:
+        return '${now.year - 1}-12-31';
+      case OwnerPeriodFilter.custom:
+        if (_customStart == null || _customEnd == null) return null;
+        return _fmt(_customStart!.subtract(const Duration(days: 1)));
+    }
+  }
+
+  double _prevIncomeVal = 0;
+  double _prevCogsVal = 0;
+  double _prevExpenseVal = 0;
+
+  void _computePrevSummary() {
+    _prevIncomeVal = 0;
+    _prevCogsVal = 0;
+    _prevExpenseVal = 0;
+    for (final tx in _prevTransactions) {
+      if (tx.type == AppConstants.typeIncome) {
+        _prevIncomeVal += tx.amount;
+        _prevCogsVal += tx.cogs;
+      } else {
+        _prevExpenseVal += tx.amount;
+      }
+    }
+  }
+
+  double get _prevNetProfit {
+    if (_prevTransactions.isEmpty) return 0;
+    return (_prevIncomeVal - _prevCogsVal) - _prevExpenseVal;
+  }
+
+  double get _prevIncome => _prevIncomeVal;
+  double get _prevCogs => _prevCogsVal;
+  double get _prevGrossProfit => _prevIncomeVal - _prevCogsVal;
+  double get _prevExpense => _prevExpenseVal;
+
+  Map<String, double> _categoryBreakdown(String filter) {
+    final Map<int, double> grouped = {};
+    for (final tx in _transactions) {
+      final isIncome = tx.type == AppConstants.typeIncome;
+      if (filter == 'all') {
+        if (isIncome) {
+          grouped[tx.categoryId] = (grouped[tx.categoryId] ?? 0) + (tx.amount - tx.cogs);
+        } else {
+          grouped[tx.categoryId] = (grouped[tx.categoryId] ?? 0) + tx.amount;
+        }
+      } else if (filter == 'income' && isIncome) {
+        grouped[tx.categoryId] = (grouped[tx.categoryId] ?? 0) + (tx.amount - tx.cogs);
+      } else if (filter == 'expense' && !isIncome) {
+        grouped[tx.categoryId] = (grouped[tx.categoryId] ?? 0) + tx.amount;
+      }
+    }
+    final result = <String, double>{};
+    for (final entry in grouped.entries) {
+      final name = _categoryNames[entry.key] ?? 'Kategori #${entry.key}';
+      result[name] = (result[name] ?? 0) + entry.value;
+    }
+    return result;
+  }
+
+  List<TransactionItem> _toTransactionItems() {
+    return _transactions.map((tx) {
+      final catName = _categoryNames[tx.categoryId] ?? 'Kategori #${tx.categoryId}';
+      return TransactionItem(
+        type: tx.type,
+        category: catName,
+        amount: tx.amount,
+        date: FormatHelpers.displayDate(tx.transactionDate),
+        description: tx.description,
+      );
+    }).toList();
+  }
+
   Future<void> _pickCustomRange() async {
     final picked = await showDateRangePicker(
       context: context,
@@ -173,7 +281,6 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
     setState(() => _isLoading = true);
     try {
       final supa = SupabaseService.instance;
-      Map<String, double> summary;
 
       List<int> targetIds;
       if (_filterAllBusinesses) {
@@ -185,33 +292,67 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
       }
 
       if (targetIds.isEmpty) {
-        summary = {
-          'totalIncome': 0,
-          'totalCogs': 0,
-          'grossProfit': 0,
-          'totalExpense': 0,
-          'netProfit': 0,
-        };
-      } else if (_startDate != null && _endDate != null) {
+        setState(() {
+          _summary = {
+            'totalIncome': 0,
+            'totalCogs': 0,
+            'grossProfit': 0,
+            'totalExpense': 0,
+            'netProfit': 0,
+          };
+          _transactions = [];
+          _prevTransactions = [];
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Fetch current period
+      if (_startDate != null && _endDate != null) {
         final transactions = await supa.getAllTransactionsByDateRange(
           targetIds,
           _startDate!,
           _endDate!,
         );
-        summary = _computeSummary(transactions);
+        _transactions = transactions;
+        _summary = _computeSummary(transactions);
       } else {
         if (_filterAllBusinesses) {
-          summary = await supa.getAllBusinessesSummary(targetIds);
+          _summary = await supa.getAllBusinessesSummary(targetIds);
         } else {
-          summary = await supa.getBusinessSummary(targetIds.first);
+          _summary = await supa.getBusinessSummary(targetIds.first);
         }
+        _transactions = [];
+      }
+
+      // Fetch previous period for comparison
+      _prevTransactions = [];
+      if (_startDate != null && _endDate != null && _prevStartDate != null && _prevEndDate != null) {
+        try {
+          _prevTransactions = await supa.getAllTransactionsByDateRange(
+            targetIds,
+            _prevStartDate!,
+            _prevEndDate!,
+          );
+        } catch (_) {
+          _prevTransactions = [];
+        }
+      }
+      _computePrevSummary();
+
+      // Fetch category names
+      _categoryNames = {};
+      for (final bId in targetIds) {
+        try {
+          final cats = await supa.getCategoriesByBusiness(bId);
+          for (final c in cats) {
+            _categoryNames[c.categoryId] = c.name;
+          }
+        } catch (_) {}
       }
 
       if (mounted) {
-        setState(() {
-          _summary = summary;
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     } catch (e) {
       if (mounted) {
@@ -317,10 +458,16 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                       title: _filterAllBusinesses
                           ? 'Total Laba / Rugi Bersih'
                           : 'Laba / Rugi Bersih',
+                      trailing: _prevNetProfit != 0
+                          ? PeriodComparisonBadge(
+                              currentValue: netProfit,
+                              previousValue: _prevNetProfit,
+                            )
+                          : null,
                     ),
                     const SizedBox(height: AppSpacing.s12),
 
-                    // Detail cards
+                    // Detail cards with comparison
                     Row(
                       children: [
                         Expanded(
@@ -329,6 +476,12 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                             amount: _summary['totalIncome'] ?? 0,
                             icon: Icons.trending_up_rounded,
                             color: AppTheme.profitColorTheme(context),
+                            trailing: _prevTransactions.isNotEmpty
+                                ? PeriodComparisonBadge(
+                                    currentValue: _summary['totalIncome'] ?? 0,
+                                    previousValue: _prevIncome,
+                                  )
+                                : null,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.s12),
@@ -338,6 +491,12 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                             amount: _summary['totalCogs'] ?? 0,
                             icon: Icons.inventory_rounded,
                             color: AppTheme.warningColorTheme(context),
+                            trailing: _prevTransactions.isNotEmpty
+                                ? PeriodComparisonBadge(
+                                    currentValue: _summary['totalCogs'] ?? 0,
+                                    previousValue: _prevCogs,
+                                  )
+                                : null,
                           ),
                         ),
                       ],
@@ -351,6 +510,12 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                             amount: _summary['grossProfit'] ?? 0,
                             icon: Icons.monetization_on_rounded,
                             color: AppTheme.infoColorTheme(context),
+                            trailing: _prevTransactions.isNotEmpty
+                                ? PeriodComparisonBadge(
+                                    currentValue: _summary['grossProfit'] ?? 0,
+                                    previousValue: _prevGrossProfit,
+                                  )
+                                : null,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.s12),
@@ -360,10 +525,63 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                             amount: _summary['totalExpense'] ?? 0,
                             icon: Icons.trending_down_rounded,
                             color: AppTheme.lossColorTheme(context),
+                            trailing: _prevTransactions.isNotEmpty
+                                ? PeriodComparisonBadge(
+                                    currentValue: _summary['totalExpense'] ?? 0,
+                                    previousValue: _prevExpense,
+                                  )
+                                : null,
                           ),
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: AppSpacing.s20),
+
+                    // Category breakdown
+                    Row(
+                      children: [
+                        Text('Per Kategori',
+                            style: AppTheme.subtitle.copyWith(fontSize: 15)),
+                        const Spacer(),
+                        SizedBox(
+                          width: 150,
+                          child: DropdownButtonFormField<String>(
+                            initialValue: _categoryTypeFilter,
+                            isDense: true,
+                            borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                              ),
+                              isDense: true,
+                              filled: true,
+                            ),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppTheme.onSurfaceColorTheme(context),
+                            ),
+                            dropdownColor: AppTheme.surfaceColorTheme(context),
+                            items: const [
+                              DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
+                              DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
+                              DropdownMenuItem(value: 'all', child: Text('Semua')),
+                            ],
+                            onChanged: (v) {
+                              if (v != null) setState(() => _categoryTypeFilter = v);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s8),
+                    CategoryBreakdownChart(data: _categoryBreakdown(_categoryTypeFilter)),
+
+                    const SizedBox(height: AppSpacing.s20),
+
+                    // Transaction list
+                    TransactionSection(transactions: _toTransactionItems()),
                   ],
                 ],
               ),

@@ -199,12 +199,14 @@ class NetProfitCard extends StatelessWidget {
   final double netProfit;
   final NetProfitCardStyle style;
   final String? title;
+  final Widget? trailing;
 
   const NetProfitCard({
     super.key,
     required this.netProfit,
     this.style = NetProfitCardStyle.row,
     this.title,
+    this.trailing,
   });
 
   bool get isProfit => netProfit >= 0;
@@ -322,6 +324,10 @@ class NetProfitCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (trailing != null) ...[
+              const SizedBox(width: AppTheme.s8),
+              trailing!,
+            ],
             _buildBadge(context),
           ],
         ),
@@ -360,6 +366,7 @@ class SummaryCard extends StatelessWidget {
   final double amount;
   final IconData icon;
   final Color color;
+  final Widget? trailing;
 
   const SummaryCard({
     super.key,
@@ -367,6 +374,7 @@ class SummaryCard extends StatelessWidget {
     required this.amount,
     required this.icon,
     required this.color,
+    this.trailing,
   });
 
   @override
@@ -381,7 +389,22 @@ class SummaryCard extends StatelessWidget {
               children: [
                 Icon(icon, size: 18, color: color),
                 const SizedBox(width: AppTheme.s8),
-                Text(title, style: AppTheme.labelSmall),
+                if (trailing != null)
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: AppTheme.labelSmall,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  )
+                else
+                  Flexible(
+                    child: Text(title, style: AppTheme.labelSmall),
+                  ),
+                if (trailing != null) ...[
+                  const SizedBox(width: AppTheme.s4),
+                  trailing!,
+                ],
               ],
             ),
             const SizedBox(height: AppTheme.s12),
