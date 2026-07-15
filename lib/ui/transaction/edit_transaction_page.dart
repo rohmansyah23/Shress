@@ -70,6 +70,11 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
       );
       if (mounted) {
         setState(() {
+          categories.sort((a, b) {
+            if (a.name == 'Lain-lain') return 1;
+            if (b.name == 'Lain-lain') return -1;
+            return 0;
+          });
           _categories = categories;
           _selectedCategory = _categories.firstWhere(
             (c) => c.categoryId == widget.transaction.categoryId,

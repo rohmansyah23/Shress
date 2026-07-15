@@ -153,6 +153,11 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
       );
       if (mounted) {
         setState(() {
+          categories.sort((a, b) {
+            if (a.name == 'Lain-lain') return 1;
+            if (b.name == 'Lain-lain') return -1;
+            return 0;
+          });
           _categories = categories;
           if (_categories.isNotEmpty && _selectedCategory == null) {
             _selectedCategory = _categories.first;

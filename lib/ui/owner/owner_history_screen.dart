@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
+import '../../core/services/export_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import 'dart:async';
+import 'dart:io';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
@@ -374,6 +376,9 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
         (user.role == AppConstants.roleManager ||
             user.role == AppConstants.roleStaff ||
             user.role == AppConstants.roleOwner);
+    final canExport = user != null &&
+        (user.role == AppConstants.roleOwner ||
+            user.role == AppConstants.roleManager);
 
     PaginatedListState<TransactionModel> listState;
     if (_filterAllBusinesses && _allBusinessIds.isNotEmpty) {
@@ -527,6 +532,27 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                       },
                     ),
                   ),
+                  if (canExport) ...[
+                    const SizedBox(width: AppSpacing.s8),
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).colorScheme.outline),
+                        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                        color: Theme.of(context).inputDecorationTheme.fillColor,
+                      ),
+                      child: PopupMenuButton<String>(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: const Icon(Icons.file_download_rounded, size: 20),
+                        tooltip: 'Export',
+                        onSelected: (value) => _exportTransactions(value),
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'csv', child: Text('Export CSV')),
+                          PopupMenuItem(value: 'xlsx', child: Text('Export Excel')),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -611,7 +637,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                       onRefresh: () => _currentNotifier().refresh(),
                       child: ListView.separated(
                         controller: _scrollController,
-                        padding: const EdgeInsets.all(AppSpacing.s12),
+                        padding: const EdgeInsets.fromLTRB(AppSpacing.s12, AppSpacing.s4, AppSpacing.s12, AppSpacing.s12),
                         itemCount:
                             listState.items.length +
                             (listState.isLoading ? 1 : 0),
@@ -956,6 +982,89 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
         return 'QRIS';
       default:
         return method;
+    }
+  }
+
+  Future<void> _exportTransactions(String format) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.clearSnackBars();
+    scaffold.showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(width: 20, height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+            SizedBox(width: 12),
+            Text('Menyiapkan data...'),
+          ],
+        ),
+        duration: Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      PaginatedListState<TransactionModel> listState;
+      if (_filterAllBusinesses && _allBusinessIds.isNotEmpty) {
+        listState = ref.read(allTransactionsListProvider(_allBusinessIds));
+      } else if (_selectedBusinessId != null) {
+        listState = ref.read(transactionListProvider(_selectedBusinessId!));
+      } else {
+        throw ExportException('Tidak ada data transaksi');
+      }
+
+      final transactions = listState.items.toList();
+      if (transactions.isEmpty) throw ExportException('Tidak ada data transaksi');
+
+      // Fetch category names for all unique business IDs
+      final businessIds = transactions.map((t) => t.businessId).toSet();
+      final catMap = <int, String>{};
+      for (final bid in businessIds) {
+        final cats = await SupabaseService.instance.getCategoriesByBusiness(bid);
+        for (final c in cats) {
+          catMap[c.categoryId] = c.name;
+        }
+      }
+
+      final headers = ['Tanggal', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi'];
+      final rows = <List<dynamic>>[];
+
+      for (final tx in transactions) {
+        final isIncome = tx.type == AppConstants.typeIncome;
+        rows.add([
+          FormatHelpers.displayDate(tx.transactionDate),
+          catMap[tx.categoryId] ?? 'Kategori #${tx.categoryId}',
+          isIncome ? 'Uang Masuk' : 'Uang Keluar',
+          tx.amount,
+          isIncome ? tx.cogs : 0,
+          tx.paymentMethod,
+          tx.description ?? '',
+        ]);
+      }
+
+      final filename = 'riwayat_transaksi';
+      final service = ExportService.instance;
+      final File file;
+      if (format == 'csv') {
+        file = await service.toCsv(
+          headers: headers,
+          rows: rows.map((r) => r.map((e) => e.toString()).toList()).toList(),
+          filename: filename,
+        );
+      } else {
+        file = await service.toExcel(
+          headers: headers,
+          rows: rows,
+          filename: filename,
+        );
+      }
+
+      scaffold.clearSnackBars();
+      await service.shareFile(file, text: 'Export Riwayat Transaksi');
+    } catch (e) {
+      scaffold.clearSnackBars();
+      if (context.mounted) {
+        ErrorSnackbar.showError(context, 'Gagal export: ${e.toString()}');
+      }
     }
   }
 }

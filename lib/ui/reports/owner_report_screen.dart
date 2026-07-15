@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
+import '../../core/services/export_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
@@ -384,6 +386,69 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
     };
   }
 
+  Future<void> _exportReport(String format) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.clearSnackBars();
+    scaffold.showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(width: 20, height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+            SizedBox(width: 12),
+            Text('Menyiapkan laporan...'),
+          ],
+        ),
+        duration: Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      if (_transactions.isEmpty) throw ExportException('Tidak ada data laporan');
+
+      final headers = ['Tanggal', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi'];
+      final rows = <List<dynamic>>[];
+
+      for (final tx in _transactions) {
+        final isIncome = tx.type == AppConstants.typeIncome;
+        rows.add([
+          FormatHelpers.displayDate(tx.transactionDate),
+          _categoryNames[tx.categoryId] ?? 'Kategori #${tx.categoryId}',
+          isIncome ? 'Uang Masuk' : 'Uang Keluar',
+          tx.amount,
+          isIncome ? tx.cogs : 0,
+          tx.paymentMethod,
+          tx.description ?? '',
+        ]);
+      }
+
+      final filename = 'laporan_${_filterAllBusinesses ? 'semua_bisnis' : 'bisnis_terpilih'}';
+      final service = ExportService.instance;
+      final File file;
+      if (format == 'csv') {
+        file = await service.toCsv(
+          headers: headers,
+          rows: rows.map((r) => r.map((e) => e.toString()).toList()).toList(),
+          filename: filename,
+        );
+      } else {
+        file = await service.toExcel(
+          headers: headers,
+          rows: rows,
+          filename: filename,
+        );
+      }
+
+      scaffold.clearSnackBars();
+      await service.shareFile(file, text: 'Export Laporan');
+    } catch (e) {
+      scaffold.clearSnackBars();
+      if (context.mounted) {
+        ErrorSnackbar.showError(context, 'Gagal export: ${e.toString()}');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final netProfit = _summary['netProfit'] ?? 0;
@@ -397,6 +462,17 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
         title: Text(_filterAllBusinesses
             ? 'Laporan Semua Bisnis'
             : 'Laporan Bisnis'),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.file_download_rounded),
+            tooltip: 'Export',
+            onSelected: (value) => _exportReport(value),
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'csv', child: Text('Export CSV')),
+              PopupMenuItem(value: 'xlsx', child: Text('Export Excel')),
+            ],
+          ),
+        ],
       ),
       body: body,
     );

@@ -28,8 +28,9 @@ class PeriodComparisonBadge extends StatelessWidget {
     final isPositive = change >= 0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final Color arrowColor =
-        isPositive ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context);
+    final Color arrowColor = isPositive
+        ? AppTheme.profitColorTheme(context)
+        : AppTheme.lossColorTheme(context);
     final Color bgColor = arrowColor.withValues(alpha: isDark ? 0.15 : 0.1);
 
     return Container(
@@ -42,7 +43,9 @@ class PeriodComparisonBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+            isPositive
+                ? Icons.arrow_upward_rounded
+                : Icons.arrow_downward_rounded,
             size: 12,
             color: arrowColor,
           ),
@@ -79,10 +82,7 @@ class CategoryBreakdownChart extends StatelessWidget {
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Center(
-            child: Text(emptyMessage,
-                style: AppTheme.caption),
-          ),
+          child: Center(child: Text(emptyMessage, style: AppTheme.caption)),
         ),
       );
     }
@@ -151,7 +151,10 @@ class CategoryBreakdownChart extends StatelessWidget {
                                     entries[i].key,
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                                      color:
+                                          AppTheme.onSurfaceVariantColorTheme(
+                                            context,
+                                          ),
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -161,7 +164,9 @@ class CategoryBreakdownChart extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: AppTheme.onSurfaceColorTheme(context),
+                                    color: AppTheme.onSurfaceColorTheme(
+                                      context,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -221,21 +226,26 @@ class _TransactionSectionState extends State<TransactionSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text('Transaksi',
-                style: AppTheme.subtitle.copyWith(fontSize: 15)),
-            const Spacer(),
-            Text(
-              '$totalFiltered transaksi',
-              style: TextStyle(
-                fontSize: 13,
-                color: AppTheme.onSurfaceVariantColorTheme(context),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Row(
+            children: [
+              Text(
+                'Transaksi',
+                style: AppTheme.subtitle.copyWith(fontSize: 15),
               ),
-            ),
-          ],
+              const Spacer(),
+              Text(
+                '$totalFiltered transaksi',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppTheme.onSurfaceVariantColorTheme(context),
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: AppSpacing.s8),
+        const SizedBox(height: AppSpacing.s18),
         Row(
           children: [
             Expanded(
@@ -244,7 +254,10 @@ class _TransactionSectionState extends State<TransactionSection> {
                 isDense: true,
                 borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                 decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s12,
+                    vertical: AppSpacing.s8,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                   ),
@@ -259,7 +272,10 @@ class _TransactionSectionState extends State<TransactionSection> {
                 items: const [
                   DropdownMenuItem(value: 'all', child: Text('Semua')),
                   DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
-                  DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
+                  DropdownMenuItem(
+                    value: 'expense',
+                    child: Text('Pengeluaran'),
+                  ),
                 ],
                 onChanged: (v) {
                   if (v != null) setState(() => _typeFilter = v);
@@ -273,7 +289,10 @@ class _TransactionSectionState extends State<TransactionSection> {
                 isDense: true,
                 borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                 decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s12,
+                    vertical: AppSpacing.s8,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                   ),
@@ -297,21 +316,20 @@ class _TransactionSectionState extends State<TransactionSection> {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.s8),
+        const SizedBox(height: AppSpacing.s12),
         if (widget.isLoading)
-          const Center(child: Padding(
-            padding: EdgeInsets.all(16),
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ))
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          )
         else if (filtered.isEmpty)
           Card(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.s24),
               child: Center(
-                child: Text(
-                  'Belum ada transaksi',
-                  style: AppTheme.caption,
-                ),
+                child: Text('Belum ada transaksi', style: AppTheme.caption),
               ),
             ),
           )
@@ -342,7 +360,9 @@ class _TransactionTile extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
         side: BorderSide(
-          color: AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.5),
+          color: AppTheme.outlineVariantColorTheme(
+            context,
+          ).withValues(alpha: 0.5),
           width: 0.5,
         ),
       ),
@@ -358,7 +378,9 @@ class _TransactionTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.s6),
               ),
               child: Icon(
-                isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                isIncome
+                    ? Icons.arrow_upward_rounded
+                    : Icons.arrow_downward_rounded,
                 size: 16,
                 color: amountColor,
               ),

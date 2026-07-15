@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
+import '../../core/services/export_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import 'dart:async';
+import 'dart:io';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
@@ -235,6 +237,76 @@ class _TransactionHistoryScreenState
     }
   }
 
+  Future<void> _exportTransactions(BuildContext context, String format) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.clearSnackBars();
+    scaffold.showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(width: 20, height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+            SizedBox(width: 12),
+            Text('Menyiapkan file...'),
+          ],
+        ),
+        duration: Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      final listState = ref.read(transactionListProvider(widget.business.businessId));
+      final transactions = listState.items.toList();
+      if (transactions.isEmpty) throw ExportException('Tidak ada data untuk diexport');
+
+      // Fetch category names
+      final cats = await SupabaseService.instance
+          .getCategoriesByBusiness(widget.business.businessId);
+      final catMap = {for (final c in cats) c.categoryId: c.name};
+
+      final headers = ['Tanggal', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi'];
+      final rows = <List<dynamic>>[];
+
+      for (final tx in transactions) {
+        final isIncome = tx.type == AppConstants.typeIncome;
+        rows.add([
+          FormatHelpers.displayDate(tx.transactionDate),
+          catMap[tx.categoryId] ?? 'Kategori #${tx.categoryId}',
+          isIncome ? 'Uang Masuk' : 'Uang Keluar',
+          tx.amount,
+          isIncome ? tx.cogs : 0,
+          _paymentLabel(tx.paymentMethod),
+          tx.description ?? '',
+        ]);
+      }
+
+      final filename = 'transaksi_${widget.business.name.replaceAll(' ', '_')}';
+      final service = ExportService.instance;
+      final File file;
+      if (format == 'csv') {
+        file = await service.toCsv(
+          headers: headers,
+          rows: rows.map((r) => r.map((e) => e.toString()).toList()).toList(),
+          filename: filename,
+        );
+      } else {
+        file = await service.toExcel(
+          headers: headers,
+          rows: rows,
+          filename: filename,
+        );
+      }
+
+      scaffold.clearSnackBars();
+      await service.shareFile(file, text: 'Export Transaksi - ${widget.business.name}');
+    } catch (e) {
+      scaffold.clearSnackBars();
+      if (context.mounted) {
+        ErrorSnackbar.showError(context, 'Gagal export: ${e.toString()}');
+      }
+    }
+  }
+
   Future<String> _getCategoryName(int categoryId) async {
     return SupabaseService.instance
         .getCategoryName(widget.business.businessId, categoryId);
@@ -262,6 +334,9 @@ class _TransactionHistoryScreenState
         (user.role == AppConstants.roleManager ||
             user.role == AppConstants.roleStaff ||
             user.role == AppConstants.roleOwner);
+    final canExport = user != null &&
+        (user.role == AppConstants.roleOwner ||
+            user.role == AppConstants.roleManager);
 
     final body = RefreshIndicator(
       onRefresh: () => ref.read(transactionListProvider(widget.business.businessId).notifier).refresh(),
@@ -350,6 +425,27 @@ class _TransactionHistoryScreenState
                       },
                     ),
                   ),
+                  if (canExport) ...[
+                    const SizedBox(width: AppSpacing.s8),
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).colorScheme.outline),
+                        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                        color: Theme.of(context).inputDecorationTheme.fillColor,
+                      ),
+                      child: PopupMenuButton<String>(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        icon: const Icon(Icons.file_download_rounded, size: 20),
+                        tooltip: 'Export',
+                        onSelected: (value) => _exportTransactions(context, value),
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'csv', child: Text('Export CSV')),
+                          PopupMenuItem(value: 'xlsx', child: Text('Export Excel')),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

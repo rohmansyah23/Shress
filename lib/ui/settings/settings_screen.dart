@@ -1,11 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/constants.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/services/export_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/services/backup_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/theme_provider.dart';
@@ -167,6 +171,55 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.s24),
 
+          if (user?.role == AppConstants.roleOwner) ...[
+            // === Backup ===
+            Text('Backup & Restore', style: AppTheme.heading3),
+            const SizedBox(height: AppSpacing.s12),
+            Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.backup_rounded,
+                        color: AppTheme.infoColorTheme(context)),
+                    title: const Text('Backup Data'),
+                    subtitle: const Text('Ekspor data ke JSON atau SQL'),
+                    trailing: PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'json':
+                            _backupData(context, ref, asSql: false);
+                          case 'sql':
+                            _backupData(context, ref, asSql: true);
+                          case 'csv':
+                          case 'xlsx':
+                            _exportAllData(context, value);
+                        }
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(value: 'json', child: Text('Ekspor JSON')),
+                        PopupMenuItem(value: 'sql', child: Text('Ekspor SQL')),
+                        PopupMenuDivider(),
+                        PopupMenuItem(value: 'csv', child: Text('Export CSV')),
+                        PopupMenuItem(value: 'xlsx', child: Text('Export Excel')),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  ListTile(
+                    leading: Icon(Icons.storage_rounded,
+                        color: AppTheme.warningColorTheme(context)),
+                    title: const Text('Backup Schema'),
+                    subtitle: const Text('Ekspor skema database ke file SQL'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => _backupSchema(context),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s24),
+          ],
+
           // === Tentang ===
           Text('Tentang', style: AppTheme.heading3),
           const SizedBox(height: AppSpacing.s12),
@@ -222,6 +275,167 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _backupData(BuildContext context, WidgetRef ref, {required bool asSql}) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.clearSnackBars();
+    scaffold.showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 20, height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+            SizedBox(width: 12),
+            Text('Mengambil data...'),
+          ],
+        ),
+        duration: Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      final file = asSql
+          ? await BackupService.instance.exportDataAsSql(Supabase.instance.client)
+          : await BackupService.instance.backupData(Supabase.instance.client);
+      scaffold.clearSnackBars();
+      await BackupService.instance.shareFile(file);
+      if (context.mounted) {
+        ErrorSnackbar.showMessage(
+          context,
+          'File backup siap dibagikan',
+          isError: false,
+        );
+      }
+    } catch (e) {
+      scaffold.clearSnackBars();
+      if (context.mounted) {
+        ErrorSnackbar.showError(context, 'Gagal backup: ${e.toString()}');
+      }
+    }
+  }
+
+  Future<void> _backupSchema(BuildContext context) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.clearSnackBars();
+    scaffold.showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 20, height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+            SizedBox(width: 12),
+            Text('Menyiapkan skema...'),
+          ],
+        ),
+        duration: Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      final file = await BackupService.instance.backupSchema();
+      scaffold.clearSnackBars();
+      await BackupService.instance.shareFile(file);
+      if (context.mounted) {
+        ErrorSnackbar.showMessage(
+          context,
+          'File schema siap dibagikan',
+          isError: false,
+        );
+      }
+    } catch (e) {
+      scaffold.clearSnackBars();
+      if (context.mounted) {
+        ErrorSnackbar.showError(context, 'Gagal backup schema: ${e.toString()}');
+      }
+    }
+  }
+
+  Future<void> _exportAllData(BuildContext context, String format) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.clearSnackBars();
+    scaffold.showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(width: 20, height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+            SizedBox(width: 12),
+            Text('Menyiapkan data...'),
+          ],
+        ),
+        duration: Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      final supabase = Supabase.instance.client;
+
+      final catResponse = await supabase.from('categories').select().order('id', ascending: true);
+      final cats = catResponse as List<dynamic>;
+      final catMap = <int, String>{};
+      for (final c in cats) {
+        final m = c as Map<String, dynamic>;
+        catMap[m['id'] as int] = m['name'] as String;
+      }
+
+      final txResponse = await supabase
+          .from('transactions')
+          .select('*, users!inner (username, display_name)')
+          .order('transaction_date', ascending: false);
+      final transactions = txResponse as List<dynamic>;
+
+      if (transactions.isEmpty) throw ExportException('Tidak ada data transaksi');
+
+      final headers = ['Tanggal', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi', 'Oleh'];
+      final rows = <List<dynamic>>[];
+
+      for (final tx in transactions) {
+        final m = tx as Map<String, dynamic>;
+        final isIncome = m['type'] as String == AppConstants.typeIncome;
+        final userData = m['users'] as Map<String, dynamic>?;
+        final userName = userData?['display_name'] as String? ?? userData?['username'] as String? ?? '';
+
+        rows.add([
+          m['transaction_date'] as String? ?? '',
+          catMap[m['category_id'] as int?] ?? 'Kategori #${m['category_id']}',
+          isIncome ? 'Uang Masuk' : 'Uang Keluar',
+          (m['amount'] as num?)?.toDouble() ?? 0,
+          isIncome ? ((m['cogs'] as num?)?.toDouble() ?? 0) : 0,
+          m['payment_method'] as String? ?? '',
+          m['description'] as String? ?? '',
+          userName,
+        ]);
+      }
+
+      final filename = 'semua_transaksi';
+      final service = ExportService.instance;
+      final File file;
+      if (format == 'csv') {
+        file = await service.toCsv(
+          headers: headers,
+          rows: rows.map((r) => r.map((e) => e.toString()).toList()).toList(),
+          filename: filename,
+        );
+      } else {
+        file = await service.toExcel(
+          headers: headers,
+          rows: rows,
+          filename: filename,
+        );
+      }
+
+      scaffold.clearSnackBars();
+      await service.shareFile(file, text: 'Export Semua Transaksi');
+    } catch (e) {
+      scaffold.clearSnackBars();
+      if (context.mounted) {
+        ErrorSnackbar.showError(context, 'Gagal export: ${e.toString()}');
+      }
+    }
+  }
 
   void _showChangePasswordDialog(BuildContext context, WidgetRef ref) {
     final newPwdCtrl = TextEditingController();
