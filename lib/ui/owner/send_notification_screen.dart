@@ -334,17 +334,26 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
 
             if (_targetMode == 'role') ...[
               const SizedBox(height: AppSpacing.s8),
-              Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.s16),
-                child: SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'staff', label: Text('Staff')),
-                    ButtonSegment(value: 'manager', label: Text('Manager')),
-                  ],
-                  selected: {_selectedRole},
-                  onSelectionChanged: (v) =>
-                      setState(() => _selectedRole = v.first),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _RoleChip(
+                      icon: Icons.badge_rounded,
+                      label: 'Staff',
+                      isSelected: _selectedRole == 'staff',
+                      onTap: () => setState(() => _selectedRole = 'staff'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s8),
+                  Expanded(
+                    child: _RoleChip(
+                      icon: Icons.manage_accounts_rounded,
+                      label: 'Manager',
+                      isSelected: _selectedRole == 'manager',
+                      onTap: () => setState(() => _selectedRole = 'manager'),
+                    ),
+                  ),
+                ],
               ),
             ],
 
@@ -549,6 +558,78 @@ class _TargetOption extends StatelessWidget {
                 size: AppIconSize.s20,
                 color: AppTheme.primaryColorTheme(context),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Chip kustom untuk seleksi role.
+/// Menggunakan visual chip yang rapi, membagi lebar layar secara dinamis (Expanded).
+class _RoleChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RoleChip({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
+    final bgColor = isSelected
+        ? (isLight ? AppTheme.primaryColorTheme(context) : AppTheme.accent)
+        : (isLight
+            ? AppTheme.surfaceContainerColorTheme(context)
+            : AppTheme.darkBackground);
+
+    final borderColor = isSelected
+        ? Colors.transparent
+        : AppTheme.outlineVariantColorTheme(context);
+
+    final contentColor = isSelected
+        ? AppTheme.card
+        : AppTheme.onSurfaceVariantColorTheme(context);
+
+    final fontWeight = isSelected ? FontWeight.w600 : FontWeight.normal;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.s8,
+        ),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(AppRadius.s20),
+          border: Border.all(color: borderColor, width: 1),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: contentColor,
+            ),
+            const SizedBox(width: AppSpacing.s8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: fontWeight,
+                color: contentColor,
+              ),
+            ),
           ],
         ),
       ),
