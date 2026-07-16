@@ -20,6 +20,7 @@ class FinanceBarChart extends StatelessWidget {
   final String title;
   final Color? barColor;
   final Color Function(double value)? tooltipColorBuilder;
+  final bool isWeekly;
 
   const FinanceBarChart({
     super.key,
@@ -27,6 +28,7 @@ class FinanceBarChart extends StatelessWidget {
     required this.title,
     this.barColor,
     this.tooltipColorBuilder,
+    this.isWeekly = false,
   });
 
   @override
@@ -114,7 +116,14 @@ class FinanceBarChart extends StatelessWidget {
                                   String label;
                                   try {
                                     final date = DateTime.parse(period);
-                                    if (period.length == 10) {
+                                    if (isWeekly && period.length == 10) {
+                                      final endDate = date.add(const Duration(days: 6));
+                                      if (date.month == endDate.month) {
+                                        label = "${date.day}-${endDate.day} ${DateFormat('MMM', 'id_ID').format(date)}";
+                                      } else {
+                                        label = "${date.day} ${DateFormat('MMM', 'id_ID').format(date)} - ${endDate.day} ${DateFormat('MMM', 'id_ID').format(endDate)}";
+                                      }
+                                    } else if (period.length == 10) {
                                       label = DateFormat('dd MMM', 'id_ID').format(date);
                                     } else if (period.length == 7) {
                                       label = DateFormat('MMM', 'id_ID').format(date);
@@ -129,7 +138,7 @@ class FinanceBarChart extends StatelessWidget {
                                     child: Text(
                                       label,
                                       style: TextStyle(
-                                        fontSize: 9,
+                                        fontSize: isWeekly ? 8 : 9,
                                          color: AppTheme.onSurfaceVariantColorTheme(context),
                                       ),
                                     ),
@@ -167,8 +176,12 @@ class FinanceBarChart extends StatelessWidget {
                                 final d = data[groupIndex];
                                 String tooltipLabel;
                                 try {
-                                  DateTime.parse(d.period);
-                                  if (d.period.length == 10) {
+                                  final date = DateTime.parse(d.period);
+                                  if (isWeekly && d.period.length == 10) {
+                                    final endDate = date.add(const Duration(days: 6));
+                                    final endDateStr = "${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}";
+                                    tooltipLabel = "${FormatHelpers.displayDate(d.period)} - ${FormatHelpers.displayDate(endDateStr)}";
+                                  } else if (d.period.length == 10) {
                                     tooltipLabel = FormatHelpers.displayDate(d.period);
                                   } else if (d.period.length == 7) {
                                     tooltipLabel = FormatHelpers.displayPeriod(d.period);

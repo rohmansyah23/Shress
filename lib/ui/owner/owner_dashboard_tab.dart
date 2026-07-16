@@ -236,6 +236,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   }
 
                   return FinanceBarChart(
+                    isWeekly: _selectedTrendFilter == TrendFilter.weekly,
                     data: barPoints,
                     title: chartTitle,
                     barColor: customBarColor,

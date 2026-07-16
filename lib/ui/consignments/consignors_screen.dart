@@ -7,6 +7,7 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
+import '../../core/widgets/summary_card.dart' as summary_card;
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/consignor_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -215,101 +216,27 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
   }
 
   Widget _buildSummaryCard() {
-    final totalOwed = (_summary['totalOwed'] as double?) ?? 0;
-    final consignorCount = (_summary['consignorCount'] as int?) ?? 0;
-    final totalSettled = (_summary['totalSettled'] as double?) ?? 0;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.s20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                  ),
-                  child: Icon(Icons.inventory_2_outlined,
-                      size: AppIconSize.s20, color: AppTheme.primaryColorTheme(context)),
-                ),
-                const SizedBox(width: AppSpacing.s12),
-                Text('Ringkasan Titipan', style: AppTheme.heading3),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s20),
-            Row(
-              children: [
-                Expanded(
-                  child: _summaryItem(
-                    'Belum Dibayar',
-                    FormatHelpers.rupiah(totalOwed),
-                    AppTheme.warningColorTheme(context),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.s12),
-                Expanded(
-                  child: _summaryItem(
-                    'Sudah Dibayar',
-                    FormatHelpers.rupiah(totalSettled),
-                    AppTheme.profitColorTheme(context),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            _summaryItem(
-              'Jumlah Pihak Penitip',
-              '$consignorCount pihak penitip',
-              AppTheme.infoColorTheme(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _summaryItem(String label, String value, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTheme.labelSmall),
-        const SizedBox(height: AppSpacing.s4),
-        Text(
-          value,
-          style: AppTheme.amountMedium.copyWith(color: color),
-        ),
-      ],
+    return summary_card.SummaryCard(
+      title: 'Ringkasan Titipan',
+      titleIcon: Icons.inventory_2_outlined,
+      titleIconColor: AppTheme.secondaryColorTheme(context),
+      unpaidAmount: (_summary['totalOwed'] as num?)?.toDouble() ?? 0,
+      unpaidLabel: 'Belum Dibayar',
+      paidAmount: (_summary['totalSettled'] as num?)?.toDouble() ?? 0,
+      paidLabel: 'Sudah Dibayar',
+      countValue: (_summary['consignorCount'] as num?)?.toInt() ?? 0,
+      countLabel: 'Jumlah Pihak Penitip',
+      countSuffix: 'pihak penitip',
     );
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.s64),
-        child: Column(
-          children: [
-            Icon(Icons.people_outline_rounded,
-                size: AppIconSize.s64, color: Theme.of(context).textTheme.bodySmall?.color),
-            const SizedBox(height: AppSpacing.s16),
-            Text(
-              'Belum ada pihak penitip',
-              style: AppTheme.caption.copyWith(fontSize: 14),
-            ),
-            const SizedBox(height: AppSpacing.s8),
-            Text(
-              'Tekan tombol + untuk menambah pihak penitip baru',
-              style: AppTheme.caption.copyWith(
-                fontSize: 12,
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-            ),
-          ],
-        ),
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.s48),
+      child: PfEmptyState(
+        icon: Icons.people_outline_rounded,
+        title: 'Belum ada pihak penitip',
+        subtitle: 'Tekan + untuk menambah pihak penitip baru',
       ),
     );
   }

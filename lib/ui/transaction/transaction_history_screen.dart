@@ -194,7 +194,7 @@ class _TransactionHistoryScreenState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
         title: const Text('Hapus Transaksi'),
         content: Text(
-          'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDate(tx.transactionDate)}?',
+          'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt)}?',
         ),
         actions: [
           TextButton(
@@ -559,7 +559,7 @@ class _TransactionHistoryScreenState
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      FormatHelpers.displayDate(tx.transactionDate),
+                                      FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt),
                                       style: AppTheme.caption.copyWith(fontSize: 11),
                                     ),
                                     const SizedBox(height: AppSpacing.s4),
@@ -681,7 +681,7 @@ class _TransactionHistoryScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _detailRow('Tanggal',
-                FormatHelpers.displayDate(tx.transactionDate)),
+                FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt)),
             _detailRow('Kategori', catName),
             _detailRow('Jumlah', FormatHelpers.rupiah(tx.amount)),
             if (isIncome && tx.cogs > 0)

@@ -293,6 +293,7 @@ class _ManagerDashboardScreenState
                 }
 
                 return FinanceBarChart(
+                  isWeekly: _selectedTrendFilter == TrendFilter.weekly,
                   data: barPoints,
                   title: 'Tren ${_selectedTypeFilter.label} ($timeLabel)',
                   barColor: customBarColor,
@@ -474,7 +475,7 @@ class _ManagerDashboardScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  FormatHelpers.displayDate(tx.transactionDate),
+                                  FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt),
                                   style: AppTheme.caption.copyWith(
                                     fontSize: 11,
                                   ),

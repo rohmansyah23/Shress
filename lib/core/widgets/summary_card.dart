@@ -1,140 +1,167 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/format_helpers.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
+import '../../core/theme/app_icon_size.dart';
 import 'adaptive_amount_text.dart';
 
-import '../../core/theme/app_icon_size.dart';
-
-/// Widget reusable untuk menampilkan ringkasan data (misal: Piutang, Hutang, Laporan).
+/// Widget reusable untuk menampilkan ringkasan data keuangan (seperti Piutang, Titipan).
 class SummaryCard extends StatelessWidget {
   final String title;
   final IconData titleIcon;
   final Color titleIconColor;
-  final Map<String, dynamic> summary;
-  final bool showDebtorCount;
-  final bool showPaidAmount;
+  final double unpaidAmount;
+  final String unpaidLabel;
+  final double paidAmount;
+  final String paidLabel;
+  final int countValue;
+  final String countLabel;
+  final String countSuffix;
 
   const SummaryCard({
     super.key,
     required this.title,
     required this.titleIcon,
     required this.titleIconColor,
-    required this.summary,
-    this.showDebtorCount = true,
-    this.showPaidAmount = true,
+    required this.unpaidAmount,
+    required this.unpaidLabel,
+    required this.paidAmount,
+    required this.paidLabel,
+    required this.countValue,
+    required this.countLabel,
+    required this.countSuffix,
   });
 
   @override
   Widget build(BuildContext context) {
-    final totalOwed = (summary['totalOwed'] as num?)?.toDouble() ?? 0;
-    final debtorCount = (summary['debtorCount'] as num?)?.toInt() ?? 0;
-    final totalPaid = (summary['totalPaid'] as num?)?.toDouble() ?? 0;
-
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.s16),
+        padding: const EdgeInsets.all(AppSpacing.s20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(titleIcon, size: AppIconSize.s18, color: titleIconColor),
-                const SizedBox(width: AppSpacing.s6),
-                Text(title, style: AppTheme.labelSmall),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s16),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Total Aktif', style: AppTheme.caption),
-                      const SizedBox(height: AppSpacing.s4),
-                      AdaptiveAmountText(
-                        amount: totalOwed,
-                        style: AppTheme.amountMedium.copyWith(
-                          color: AppTheme.lossColorTheme(context),
-                        ),
-                      ),
-                    ],
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: titleIconColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                    border: Border.all(
+                      color: titleIconColor.withValues(alpha: 0.25),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    titleIcon,
+                    size: AppIconSize.s20,
+                    color: titleIconColor,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.s12),
+                Text(
+                  title,
+                  style: AppTheme.heading3.copyWith(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? const Color(0xFF1E293B) // Premium Slate/Navy
+                        : Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.s16),
+            const SizedBox(height: AppSpacing.s20),
             Row(
               children: [
-                if (showDebtorCount) ...[
-                  Expanded(
-                    child: _SummaryItem(
-                      label: 'Penghutang',
-                      value: '$debtorCount',
-                      icon: Icons.people_outline_rounded,
-                      color: AppTheme.infoColorTheme(context),
-                    ),
+                Expanded(
+                  child: _buildSummaryItem(
+                    context,
+                    unpaidLabel,
+                    unpaidAmount,
+                    AppTheme.warningColorTheme(context),
                   ),
-                  const SizedBox(width: AppSpacing.s12),
-                ],
-                if (showPaidAmount)
-                  Expanded(
-                    child: _SummaryItem(
-                      label: 'Sudah Dibayar',
-                      value: FormatHelpers.rupiah(totalPaid),
-                      icon: Icons.check_circle_outline_rounded,
-                      color: AppTheme.profitColorTheme(context),
-                    ),
+                ),
+                const SizedBox(width: AppSpacing.s12),
+                Expanded(
+                  child: _buildSummaryItem(
+                    context,
+                    paidLabel,
+                    paidAmount,
+                    AppTheme.profitColorTheme(context),
                   ),
+                ),
               ],
+            ),
+            const SizedBox(height: AppSpacing.s12),
+            _buildCountItem(
+              context,
+              countLabel,
+              countValue,
+              countSuffix,
+              AppTheme.infoColorTheme(context),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class _SummaryItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _SummaryItem({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.s12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: AppIconSize.s16, color: color),
-          const SizedBox(height: AppSpacing.s6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+  Widget _buildSummaryItem(
+    BuildContext context,
+    String label,
+    double amount,
+    Color color,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTheme.labelSmall.copyWith(
+            color: AppTheme.onSurfaceVariantColorTheme(context),
+            fontWeight: FontWeight.w500,
           ),
-          const SizedBox(height: AppSpacing.s2),
-          Text(label, style: AppTheme.caption.copyWith(fontSize: 11)),
-        ],
-      ),
+        ),
+        const SizedBox(height: AppSpacing.s6),
+        AdaptiveAmountText(
+          amount: amount,
+          style: AppTheme.amountMedium.copyWith(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCountItem(
+    BuildContext context,
+    String label,
+    int count,
+    String suffix,
+    Color color,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTheme.labelSmall.copyWith(
+            color: AppTheme.onSurfaceVariantColorTheme(context),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s6),
+        Text(
+          '$count $suffix',
+          style: AppTheme.amountMedium.copyWith(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+      ],
     );
   }
 }

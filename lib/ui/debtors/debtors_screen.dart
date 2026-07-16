@@ -70,42 +70,25 @@ class DebtorsScreen extends ConsumerWidget {
                     child: summary_card.SummaryCard(
                       title: 'Ringkasan Piutang',
                       titleIcon: Icons.account_balance_wallet_outlined,
-                      titleIconColor: AppTheme.infoColorTheme(context),
-                      summary: summary,
+                      titleIconColor: AppTheme.warningColorTheme(context),
+                      unpaidAmount: (summary['totalOwed'] as num?)?.toDouble() ?? 0,
+                      unpaidLabel: 'Belum Lunas',
+                      paidAmount: (summary['totalPaid'] as num?)?.toDouble() ?? 0,
+                      paidLabel: 'Sudah Dibayar',
+                      countValue: (summary['debtorCount'] as num?)?.toInt() ?? 0,
+                      countLabel: 'Jumlah Penghutang',
+                      countSuffix: 'orang',
                     ),
                   ),
                 ),
                 if (debtors.isEmpty)
-                  SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: MediaQuery.of(context).size.height - 200,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.people_outline_rounded,
-                              size: AppIconSize.s64,
-                              color: AppTheme.onSurfaceVariantColorTheme(context)
-                                  .withValues(alpha: 0.4),
-                            ),
-                            const SizedBox(height: AppSpacing.s8),
-                            Text(
-                              'Belum ada penghutang',
-                              style: AppTheme.title.copyWith(
-                                    fontSize: 18,
-                                    color: AppTheme.onSurfaceVariantColorTheme(context),
-                                  ),
-                            ),
-                            const SizedBox(height: AppSpacing.s12),
-                            Text(
-                              'Tekan + untuk menambah hutang baru',
-                              style: AppTheme.caption.copyWith(
-                                color: AppTheme.onSurfaceVariantColorTheme(context),
-                              ),
-                            ),
-                          ],
-                        ),
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: AppSpacing.s48),
+                      child: PfEmptyState(
+                        icon: Icons.people_outline_rounded,
+                        title: 'Belum ada penghutang',
+                        subtitle: 'Tekan + untuk menambah hutang baru',
                       ),
                     ),
                   )

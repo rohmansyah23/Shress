@@ -101,13 +101,6 @@ class FcmService {
               ? 'ios'
               : 'web';
 
-      // Deactivate old tokens for this user with same platform
-      await Supabase.instance.client
-          .from('push_tokens')
-          .update({'is_active': false})
-          .eq('user_id', _userId!)
-          .eq('platform', platform)
-          .neq('fcm_token', token);
 
       // Upsert current token
       await Supabase.instance.client.from('push_tokens').upsert(

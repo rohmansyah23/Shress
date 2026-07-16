@@ -316,6 +316,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       }
 
                       return FinanceBarChart(
+                        isWeekly: _selectedTrendFilter == TrendFilter.weekly,
                         data: barPoints,
                         title: chartTitle,
                         barColor: customBarColor,

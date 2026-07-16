@@ -21,6 +21,21 @@ class FormatHelpers {
     }
   }
 
+  /// Format date string (YYYY-MM-DD) and createdAt to display format (dd MMMM yyyy, HH:mm)
+  static String displayDateWithTime(String dateStr, DateTime? createdAt) {
+    try {
+      final date = DateTime.parse(dateStr);
+      final formattedDate = DateFormat('dd MMMM yyyy', 'id_ID').format(date);
+      if (createdAt != null) {
+        final timeStr = DateFormat('HH:mm', 'id_ID').format(createdAt.toLocal());
+        return '$formattedDate, $timeStr';
+      }
+      return formattedDate;
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
   /// Format period string (YYYY-MM) to display format (MMMM yyyy)
   static String displayPeriod(String periodStr) {
     try {

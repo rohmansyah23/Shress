@@ -274,7 +274,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
         ),
         title: const Text('Hapus Transaksi'),
         content: Text(
-          'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDate(tx.transactionDate)}?',
+          'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt)}?',
         ),
         actions: [
           TextButton(
@@ -751,8 +751,9 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                           ),
                                           const SizedBox(height: AppSpacing.s4),
                                           Text(
-                                            FormatHelpers.displayDate(
+                                            FormatHelpers.displayDateWithTime(
                                               tx.transactionDate,
+                                              tx.createdAt,
                                             ),
                                             style: AppTheme.caption.copyWith(
                                               fontSize: 11,
@@ -930,7 +931,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
           children: [
             _detailRow(
               'Tanggal',
-              FormatHelpers.displayDate(tx.transactionDate),
+              FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt),
             ),
             _detailRow('Kategori', catName),
             _detailRow('Jumlah', FormatHelpers.rupiah(tx.amount)),

@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/constants.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
+import '../../core/utils/search_query_parser.dart';
 import '../local/models/business_model.dart';
 import '../local/models/category_model.dart';
 import '../local/models/consignor_model.dart';
@@ -315,12 +316,34 @@ class SupabaseService {
         query = query.eq('payment_method', paymentMethod);
       }
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        query = query.ilike('description', '%$searchQuery%');
+        final parsed = SearchQueryParser.parse(searchQuery);
+        final List<String> orFilters = [];
+
+        final cleanDesc = parsed.cleanDescriptionQuery
+            .replaceAll(',', '')
+            .replaceAll('(', '')
+            .replaceAll(')', '');
+        if (cleanDesc.isNotEmpty) {
+          orFilters.add('description.ilike.%$cleanDesc%');
+        }
+
+        if (parsed.date != null) {
+          final dateStr = '${parsed.date!.year}-${parsed.date!.month.toString().padLeft(2, '0')}-${parsed.date!.day.toString().padLeft(2, '0')}';
+          orFilters.add('transaction_date.eq.$dateStr');
+        }
+
+        if (parsed.amount != null) {
+          orFilters.add('amount.eq.${parsed.amount}');
+        }
+
+        if (orFilters.isNotEmpty) {
+          query = query.or(orFilters.join(','));
+        }
       }
 
       query = query
           .order('transaction_date', ascending: false)
-          .order('id', ascending: false)
+          .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 
       final data = await query;
@@ -354,7 +377,8 @@ class SupabaseService {
           .eq('business_id', businessId)
           .gte('transaction_date', startDate)
           .lte('transaction_date', endDate)
-          .order('transaction_date', ascending: false);
+          .order('transaction_date', ascending: false)
+          .order('created_at', ascending: false);
       return _parseTransactions(data as List);
     });
   }
@@ -372,7 +396,8 @@ class SupabaseService {
           .inFilter('business_id', businessIds)
           .gte('transaction_date', startDate)
           .lte('transaction_date', endDate)
-          .order('transaction_date', ascending: false);
+          .order('transaction_date', ascending: false)
+          .order('created_at', ascending: false);
       return _parseTransactions(data as List);
     });
   }
@@ -386,7 +411,8 @@ class SupabaseService {
           .from('transactions')
           .select()
           .inFilter('business_id', businessIds)
-          .order('transaction_date', ascending: false);
+          .order('transaction_date', ascending: false)
+          .order('created_at', ascending: false);
       return _parseTransactions(data as List);
     });
   }
@@ -1659,7 +1685,8 @@ class SupabaseService {
   }) async {
     if (businessIds.isEmpty) return [];
     return ErrorHandler.guard(() async {
-      final now = DateTime.now();
+      final localNow = DateTime.now();
+      final now = DateTime.utc(localNow.year, localNow.month, localNow.day);
       String startStr;
       String endStr;
 
@@ -1670,21 +1697,15 @@ class SupabaseService {
         endStr =
             '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       } else if (filter == TrendFilter.weekly) {
-        final currentMonday = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).subtract(Duration(days: now.weekday - 1));
-        final startWeek = currentMonday.subtract(
-          const Duration(days: 28),
-        ); // Monday of 4 weeks ago
+        final currentMonday = now.subtract(Duration(days: now.weekday - 1));
+        final startWeek = currentMonday.subtract(const Duration(days: 28));
         startStr =
             '${startWeek.year}-${startWeek.month.toString().padLeft(2, '0')}-${startWeek.day.toString().padLeft(2, '0')}';
         endStr =
             '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       } else if (filter == TrendFilter.monthly) {
         const months = 6;
-        final startMonth = DateTime(now.year, now.month - months + 1, 1);
+        final startMonth = DateTime.utc(now.year, now.month - months + 1, 1);
         startStr =
             '${startMonth.year}-${startMonth.month.toString().padLeft(2, '0')}-01';
         endStr =
@@ -1712,17 +1733,14 @@ class SupabaseService {
 
       for (final tx in transactions) {
         String key;
-        final txDate = DateTime.parse(tx.transactionDate);
+        final parsedDate = DateTime.parse(tx.transactionDate);
+        final txDate = DateTime.utc(parsedDate.year, parsedDate.month, parsedDate.day);
 
         if (filter == TrendFilter.daily) {
           key =
               '${txDate.year}-${txDate.month.toString().padLeft(2, '0')}-${txDate.day.toString().padLeft(2, '0')}';
         } else if (filter == TrendFilter.weekly) {
-          final txMonday = DateTime(
-            txDate.year,
-            txDate.month,
-            txDate.day,
-          ).subtract(Duration(days: txDate.weekday - 1));
+          final txMonday = txDate.subtract(Duration(days: txDate.weekday - 1));
           key =
               '${txMonday.year}-${txMonday.month.toString().padLeft(2, '0')}-${txMonday.day.toString().padLeft(2, '0')}';
         } else if (filter == TrendFilter.monthly) {
@@ -1767,11 +1785,7 @@ class SupabaseService {
           result.add((period: key, income: income, expense: expense, netProfit: income - cogs - expense));
         }
       } else if (filter == TrendFilter.weekly) {
-        final currentMonday = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).subtract(Duration(days: now.weekday - 1));
+        final currentMonday = now.subtract(Duration(days: now.weekday - 1));
         final startWeek = currentMonday.subtract(const Duration(days: 28));
         for (int i = 0; i < 5; i++) {
           final d = startWeek.add(Duration(days: i * 7));
@@ -1785,7 +1799,7 @@ class SupabaseService {
       } else if (filter == TrendFilter.monthly) {
         const months = 6;
         for (int i = 0; i < months; i++) {
-          final d = DateTime(now.year, now.month - months + 1 + i, 1);
+          final d = DateTime.utc(now.year, now.month - months + 1 + i, 1);
           final key = '${d.year}-${d.month.toString().padLeft(2, '0')}';
           final income = incomeMap[key] ?? 0;
           final cogs = cogsMap[key] ?? 0;
