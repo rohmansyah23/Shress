@@ -43,6 +43,8 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
+  GlobalKey<NavigatorState>? _navigatorKey;
+
   static const String _prefKeyEnabled = 'notif_daily_enabled';
   static const String _prefKeyHour = 'notif_daily_hour';
   static const String _prefKeyMinute = 'notif_daily_minute';
@@ -59,13 +61,15 @@ class NotificationService {
   ///
   /// Memuat data timezone Asia/Jakarta, menginisialisasi plugin,
   /// dan mereschedule notifikasi yang sudah aktif (misal setelah reboot).
-  Future<void> init() async {
+  Future<void> init({GlobalKey<NavigatorState>? navigatorKey}) async {
     try {
+      _navigatorKey = navigatorKey;
+
       tz_data.initializeTimeZones();
       tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
 
       const androidSettings =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+          AndroidInitializationSettings('@drawable/ic_notification');
       const iosSettings = DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
@@ -91,6 +95,13 @@ class NotificationService {
 
   void _onNotificationTap(NotificationResponse response) {
     debugPrint('[Notification] Tapped: ${response.payload}');
+    // Navigate to root screen when notification is tapped
+    final navigator = _navigatorKey?.currentState;
+    if (navigator != null && navigator.canPop()) {
+      // If app is open, pop back to root (triggers role-based routing)
+      navigator.popUntil((route) => route.isFirst);
+    }
+    // If app was killed, tapping notification launches it normally via splash screen
   }
 
   /// Meminta seluruh izin notifikasi dan mengembalikan hasil detail.
@@ -140,8 +151,8 @@ class NotificationService {
     return result.canSchedule;
   }
 
-  /// Mengecek apakah izin notifikasi sudah diberikan.
-  Future<bool> hasPermission() async {
+  /// Mengecek apakah izin notifikasi dasar (POST_NOTIFICATIONS) sudah diberikan.
+  Future<bool> hasNotificationPermission() async {
     if (!Platform.isAndroid) return true;
 
     try {
@@ -150,16 +161,36 @@ class NotificationService {
       if (androidPlugin == null) return false;
 
       final notifGranted = await androidPlugin.areNotificationsEnabled();
-      if (notifGranted != true) return false;
-
-      // Also check exact alarm permission
-      final exactAlarmGranted =
-          await androidPlugin.canScheduleExactNotifications();
-      return exactAlarmGranted ?? false;
+      return notifGranted ?? false;
     } catch (e) {
       debugPrint('[Notification] Permission check error: $e');
       return false;
     }
+  }
+
+  /// Mengecek apakah izin exact alarm (SCHEDULE_EXACT_ALARM) sudah diberikan.
+  Future<bool> hasExactAlarmPermission() async {
+    if (!Platform.isAndroid) return true;
+
+    try {
+      final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlugin == null) return false;
+
+      final canSchedule =
+          await androidPlugin.canScheduleExactNotifications();
+      return canSchedule ?? false;
+    } catch (e) {
+      debugPrint('[Notification] Exact alarm check error: $e');
+      return false;
+    }
+  }
+
+  /// Mengecek apakah seluruh izin notifikasi sudah diberikan.
+  Future<bool> hasPermission() async {
+    final notifOk = await hasNotificationPermission();
+    if (!notifOk) return false;
+    return await hasExactAlarmPermission();
   }
 
   // ==================== Preferences ====================
@@ -191,8 +222,8 @@ class NotificationService {
     await prefs.setBool(_prefKeyEnabled, enabled);
 
     if (enabled) {
-      // Periksa izin sebelum scheduling
-      if (!await hasPermission()) {
+      // 1. Cek izin notifikasi dasar
+      if (!await hasNotificationPermission()) {
         final result = await requestPermissionsWithResult();
         if (!result.canSchedule) {
           debugPrint(
@@ -201,6 +232,12 @@ class NotificationService {
           await prefs.setBool(_prefKeyEnabled, false);
           return result;
         }
+      }
+
+      // 2. Cek exact alarm — jika ditolak, tetap schedule (inexact)
+      //    Tidak perlu gagal, cukup return info ke UI
+      if (!await hasExactAlarmPermission()) {
+        debugPrint('[Notification] Exact alarm denied, scheduling inexact');
       }
 
       final time = await getReminderTime();
@@ -260,7 +297,7 @@ class NotificationService {
         channelDescription: _channelDesc,
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: '@drawable/ic_notification',
         enableVibration: true,
         playSound: true,
         // Android 14+: pastikan notifikasi muncul di lock screen
@@ -319,6 +356,102 @@ class NotificationService {
       }
     } catch (e) {
       debugPrint('[Notification] Reschedule error: $e');
+    }
+  }
+
+  /// Mengirim notifikasi test langsung (bukan scheduled).
+  ///
+  /// Berguna untuk memverifikasi bahwa notifikasi berfungsi.
+  /// Mengembalikan `true` jika berhasil, `false` jika gagal.
+  Future<bool> showTestNotification() async {
+    try {
+      // Pastikan izin ada
+      if (!await hasNotificationPermission()) {
+        final result = await requestPermissionsWithResult();
+        if (!result.canSchedule) return false;
+      }
+
+      const androidDetails = AndroidNotificationDetails(
+        _channelId,
+        _channelName,
+        channelDescription: _channelDesc,
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@drawable/ic_notification',
+        enableVibration: true,
+        playSound: true,
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _plugin.show(
+        id: 99, // ID berbeda agar tidak replace scheduled notification
+        title: '🧪 Notifikasi Test',
+        body: 'Jika Anda melihat pesan ini, notifikasi berfungsi!',
+        notificationDetails: details,
+        payload: 'test_notification',
+      );
+
+      debugPrint('[Notification] Test notification sent');
+      return true;
+    } catch (e) {
+      debugPrint('[Notification] Test notification error: $e');
+      return false;
+    }
+  }
+
+  /// Menampilkan notifikasi push dari FCM saat app di foreground.
+  Future<void> showPushNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    try {
+      if (!await hasNotificationPermission()) return;
+
+      const androidDetails = AndroidNotificationDetails(
+        'owner_push',
+        'Pesan dari Owner',
+        channelDescription: 'Notifikasi push dari owner ke staff',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@drawable/ic_notification',
+        enableVibration: true,
+        playSound: true,
+        visibility: NotificationVisibility.public,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _plugin.show(
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: details,
+      );
+      debugPrint('[Notification] Push notification shown: $title');
+    } catch (e) {
+      debugPrint('[Notification] Show push error: $e');
     }
   }
 }

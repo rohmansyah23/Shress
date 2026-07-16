@@ -17,6 +17,10 @@ dependencies:
   # Supabase Backend
   supabase_flutter: ^2.16.0
 
+  # Firebase
+  firebase_core: ^3.8.1
+  firebase_messaging: ^15.1.6
+
   # Environment Variables
   flutter_dotenv: ^5.2.1
 

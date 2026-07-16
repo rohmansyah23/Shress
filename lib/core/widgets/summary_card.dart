@@ -3,6 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
+import 'adaptive_amount_text.dart';
 
 import '../../core/theme/app_icon_size.dart';
 
@@ -53,8 +54,8 @@ class SummaryCard extends StatelessWidget {
                     children: [
                       Text('Total Aktif', style: AppTheme.caption),
                       const SizedBox(height: AppSpacing.s4),
-                      Text(
-                        FormatHelpers.rupiah(totalOwed),
+                      AdaptiveAmountText(
+                        amount: totalOwed,
                         style: AppTheme.amountMedium.copyWith(
                           color: AppTheme.lossColorTheme(context),
                         ),

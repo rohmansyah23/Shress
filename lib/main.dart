@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -13,12 +15,17 @@ import 'core/widgets/global_error_boundary.dart';
 import 'core/widgets/offline_overlay.dart';
 import 'data/remote/supabase_service.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/fcm_service.dart';
+import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 import 'ui/splash/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Register background message handler (must be top-level)
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   try {
     await _runApp();
@@ -72,6 +79,16 @@ Future<void> _runApp() async {
   // Initialize locale data for Indonesian date formatting
   await initializeDateFormatting('id_ID');
 
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // ignore: avoid_print
+    print('⚠️  Firebase initialization failed: $e');
+  }
+
   // Initialize Supabase
   try {
     await Supabase.initialize(
@@ -95,20 +112,25 @@ Future<void> _runApp() async {
   await ConnectivityService.instance.initialize();
 
   // Initialize notification service for daily reminders
-  await NotificationService.instance.init();
+  final navigatorKey = GlobalKey<NavigatorState>();
+  await NotificationService.instance.init(navigatorKey: navigatorKey);
+
+  // Initialize FCM for push notifications
+  await FcmService.instance.init();
 
   runApp(
     ProviderScope(
       observers: [
         errorObserver,
       ],
-      child: const SheressApp(),
+      child: SheressApp(navigatorKey: navigatorKey),
     ),
   );
 }
 
 class SheressApp extends ConsumerStatefulWidget {
-  const SheressApp({super.key});
+  final GlobalKey<NavigatorState> navigatorKey;
+  const SheressApp({super.key, required this.navigatorKey});
 
   @override
   ConsumerState<SheressApp> createState() => _SheressAppState();
@@ -123,6 +145,7 @@ class _SheressAppState extends ConsumerState<SheressApp> {
     return MaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
+      navigatorKey: widget.navigatorKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,

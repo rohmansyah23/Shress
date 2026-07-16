@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "189853637011",
+    "project_id": "sheress-a5a57",
+    "storage_bucket": "sheress-a5a57.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:189853637011:android:001f4095bccb664bee7066",
+        "android_client_info": {
+          "package_name": "com.sheress.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAW8wEN3wEDvdqhD0aFVdHDBHSrYklcpB4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

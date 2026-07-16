@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -706,6 +707,34 @@ class _NotificationReminderCardState
                   ),
                 ],
               ),
+              if (kDebugMode) ...[
+                const SizedBox(height: AppSpacing.s12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.send_rounded, size: 16),
+                    label: const Text('Kirim Notifikasi Test'),
+                    onPressed: () async {
+                      final success =
+                          await NotificationService.instance.showTestNotification();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              success
+                                  ? 'Notifikasi test dikirim! Cek panel notifikasi Anda.'
+                                  : 'Gagal mengirim notifikasi test. Periksa izin notifikasi.',
+                            ),
+                            backgroundColor:
+                                success ? Colors.green.shade600 : Colors.red.shade600,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
             ],
           ],
         ),

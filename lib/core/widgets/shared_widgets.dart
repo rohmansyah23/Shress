@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../utils/format_helpers.dart';
+import 'adaptive_amount_text.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // POCKETFUND DESIGN SYSTEM — Reusable Components
@@ -257,8 +257,8 @@ class NetProfitCard extends StatelessWidget {
                     style: AppTheme.labelSmall.copyWith(fontSize: 12),
                   ),
                   const SizedBox(height: AppTheme.s4),
-                  Text(
-                    FormatHelpers.rupiah(netProfit),
+                  AdaptiveAmountText(
+                    amount: netProfit,
                     style: AppTheme.amountMedium.copyWith(color: pc),
                   ),
                 ],
@@ -280,8 +280,8 @@ class NetProfitCard extends StatelessWidget {
           children: [
             Text(title ?? 'Laba / Rugi Bersih', style: AppTheme.labelSmall),
             const SizedBox(height: AppTheme.s8),
-            Text(
-              FormatHelpers.rupiah(netProfit),
+            AdaptiveAmountText(
+              amount: netProfit,
               style: AppTheme.amountLarge.copyWith(color: pc),
             ),
             const SizedBox(height: AppTheme.s8),
@@ -317,8 +317,8 @@ class NetProfitCard extends StatelessWidget {
                     style: AppTheme.labelSmall.copyWith(fontSize: 12),
                   ),
                   const SizedBox(height: AppTheme.s4),
-                  Text(
-                    FormatHelpers.rupiah(netProfit),
+                  AdaptiveAmountText(
+                    amount: netProfit,
                     style: AppTheme.amountMedium.copyWith(color: pc),
                   ),
                 ],
@@ -408,8 +408,8 @@ class SummaryCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppTheme.s12),
-            Text(
-              FormatHelpers.rupiah(amount),
+            AdaptiveAmountText(
+              amount: amount,
               style: AppTheme.amountMedium.copyWith(color: color),
             ),
           ],
@@ -792,8 +792,8 @@ class PfBalanceCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppTheme.s8),
-            Text(
-              FormatHelpers.rupiah(amount),
+            AdaptiveAmountText(
+              amount: amount,
               style: AppTheme.amountMedium.copyWith(color: color),
             ),
             const SizedBox(height: AppTheme.s4),

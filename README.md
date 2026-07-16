@@ -42,7 +42,7 @@ A production-grade, offline-aware Flutter application that empowers business own
 | ⚡ **State Management**| Riverpod |
 | 🔥 **Backend** | Supabase |
 | 🗄️ **Database** | PostgreSQL |
-| 🔐 **Auth** | Supabase Auth |
+| 🔐 **Auth** | Custom (RPC-based) |
 | 🌐 **Language** | Indonesian (`id_ID`) |
 | 📦 **Version** | 1.0.0 |
 
@@ -56,10 +56,11 @@ A production-grade, offline-aware Flutter application that empowers business own
 | 🌙 **Theming** | Dynamic Dark & Light Mode |
 | 📊 **Charts** | fl_chart (Interactive Visualizations) |
 | 💳 **Payments** | Dynamic QRIS Integration |
-| 🐛 **Monitoring** | Sentry Crash Reporting |
-| 🔔 **Notifications** | Scheduled Local Reminders |
+| 🔔 **Notifications** | Local Reminders + FCM Push |
 | 📶 **Offline Status**| Network Connectivity Overlay |
 | 🏪 **Multi-Tenancy** | Role-Based Access Control (RBAC) |
+| 🐛 **Monitoring** | Sentry Crash Reporting |
+| 🔤 **Adaptive Text** | Auto-sizing monetary display |
 
 </td>
 </tr>
@@ -133,8 +134,8 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 
 #### 🔐 Authentication & Access
 * **Role-Based Access Control (RBAC)**: Distinct permissions for Owner, Manager, and Staff.
-* **Secure Auth**: JWT-based session management and email password reset flow.
-* **Auto-Login**: Session persistence across app restarts.
+* **Custom Auth**: Username-based login via Supabase RPC, JWT session stored locally.
+* **Auto-Login**: Session persistence across app restarts via SharedPreferences.
 
 #### 🏪 Multi-Business Management
 * **Multi-Tenant Isolation**: Switch between different business entities seamlessly.
@@ -151,6 +152,15 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 #### 📊 Visual Reports
 * **Profit & Loss (P&L)**: Real-time calculation of revenue, costs, and net profit margins.
 * **Interactive Charts**: Responsive charts for trends, category splits, and comparisons.
+
+#### 📱 Push Notifications
+* **Firebase Cloud Messaging (FCM)**: Owner-to-staff push notifications via Supabase Edge Functions.
+* **Token Lifecycle**: Auto-registration on login, deactivation on logout.
+* **Foreground Handling**: Push notifications displayed as local notifications when app is open.
+
+#### 🔤 Adaptive Amount Text
+* **Auto-Sizing**: Monetary values automatically shrink to fit available width.
+* **Step-Down Sizes**: 32pt → 20pt → 15pt → 14pt cascade for long numbers.
 
 #### 💳 QRIS Integration
 * **Dynamic Code Display**: Instant access to payment QR codes for customers.
@@ -217,6 +227,8 @@ graph TD
 lib/
 ├── main.dart                              # 🚀 App entry point
 │
+├── firebase_options.dart                      # 📱 Auto-generated Firebase config
+│
 ├── core/                                  # ⚙️ Shared Infrastructure & Utilities
 │   ├── config/                            #     Environment & app config
 │   │   └── app_config.dart
@@ -227,8 +239,9 @@ lib/
 │   ├── qris/                              #     QRIS image handling
 │   │   ├── qris_resolver.dart
 │   │   └── qris_upload_service.dart
-│   ├── services/                          #     Platform services (Notification, Sentry)
+│   ├── services/                          #     Platform services (Notification, Sentry, FCM)
 │   │   ├── notification_service.dart
+│   │   ├── fcm_service.dart
 │   │   └── sentry_service.dart
 │   ├── theme/                             #     Material 3 theming & sizes
 │   │   ├── app_icon_size.dart
@@ -239,6 +252,7 @@ lib/
 │   │   ├── error_handler.dart
 │   │   └── format_helpers.dart
 │   └── widgets/                           #     Reusable UI components
+│       ├── adaptive_amount_text.dart
 │       ├── error_widgets.dart
 │       ├── finance_bar_chart.dart
 │       ├── global_error_boundary.dart
@@ -284,7 +298,8 @@ lib/
     ├── debtors/                           #     Debt directory and payments
     ├── manager/                           #     Manager-specific dashboard
     ├── onboarding/                        #     Interactive onboarding flow
-    ├── owner/                             #     Business creator and staff managers
+    ├── owner/                             #     Business creator, staff managers, push notifications
+    │   ├── send_notification_screen.dart
     ├── profile/                           #     User settings & profile
     ├── reports/                           #     Consolidated statistics & PDF exports
     ├── settings/                          #     Theme mode and local notification controls
@@ -303,6 +318,7 @@ lib/
 | **[Riverpod](https://riverpod.dev)** | State Management | Compile-safe state caching, lifecycle monitoring, and testability. |
 | **[Supabase](https://supabase.com)** | Backend-as-a-Service | Open-source relational DB (PostgreSQL) with built-in RLS policies. |
 | **PostgreSQL** | Database | Relational integrity for ledger systems; powerful constraint engine. |
+| **[Firebase](https://firebase.google.com)** | Push Notifications | FCM for owner-to-staff messaging via Edge Functions. |
 | **[fl_chart](https://flchart.dev)** | Visual Graphs | Highly performant chart rendering optimized for Flutter views. |
 | **[Sentry](https://sentry.io)** | Error Logging | Automated stack trace collection and user impact analytics. |
 | **connectivity_plus** | Network Listener | Detects connection changes to prompt local cache overrides. |
@@ -326,6 +342,7 @@ lib/
 | 📦 **Consignments** | Register consignment transactions, daily stocks, and sales. | Owner, Manager |
 | 📈 **P&L Reports** | Periodically calculated P&L statements with charts. | Owner, Manager |
 | 👥 **Staff Management** | Invite, update, or revoke access roles for employees. | Owner |
+| 📤 **Send Notification** | Compose and push notifications to staff via FCM. | Owner |
 | ⚙️ **Settings** | Toggle Theme Mode and schedule notification reminders. | All |
 
 ---
@@ -414,6 +431,7 @@ QRIS_CACHE_DAYS=30
 | **Application Package ID**| `com.sheress.app` |
 | **Kotlin Version** | `2.0.21` |
 | **Android Gradle Plugin** | `9.0.1` |
+| **Firebase** | `google-services.json` configured |
 
 </details>
 
@@ -430,11 +448,11 @@ QRIS_CACHE_DAYS=30
 </details>
 
 <details>
-<summary>🗄️ <strong>PostgreSQL Migrations (21 steps)</strong></summary>
+<summary>🗄️ <strong>PostgreSQL Migrations (25 steps)</strong></summary>
 
 <br />
 
-The database relies on sequential migration files located in the `assets/` folder to set up schema structures, constraints, and Row Level Security:
+The database relies on sequential migration files located in the `supabase/migrations/` folder to set up schema structures, constraints, and Row Level Security:
 
 | Index | Migration Name | Focus area |
 | :--- | :--- | :--- |
@@ -459,6 +477,10 @@ The database relies on sequential migration files located in the `assets/` folde
 | **019** | `fix_categories_unique` | Ensures category names are unique per business entity. |
 | **020** | `migrate_debt_to_reseller` | Restructures older debt columns into the modern reseller model. |
 | **021** | `integrate_debt_transactions` | Automates transaction creation when debt payments are cleared. |
+| **022** | `push_tokens_and_notifications` | Creates `push_tokens` and `owner_notifications` tables. |
+| **023** | `fix_rls_push_tokens_and_notifications` | Drops old auth.uid() policies, creates anon_all. |
+| **024** | `grant_push_tokens_permissions` | Grants SELECT/INSERT/UPDATE/DELETE to `anon` role. |
+| **025** | `grant_service_role_push_tokens` | Grants SELECT/INSERT/UPDATE/DELETE to `service_role`. |
 
 </details>
 
@@ -470,6 +492,8 @@ We use these package dependencies to build a production-ready application:
 
 * **[flutter_riverpod](https://pub.dev/packages/flutter_riverpod)**: Compile-safe, reactive state caching.
 * **[supabase_flutter](https://pub.dev/packages/supabase_flutter)**: Connects authentication, storage buckets, and Postgres tables.
+* **[firebase_core](https://pub.dev/packages/firebase_core)**: Core Firebase initialization.
+* **[firebase_messaging](https://pub.dev/packages/firebase_messaging)**: FCM push notification handling.
 * **[fl_chart](https://pub.dev/packages/fl_chart)**: High-performance data graphs.
 * **[sentry_flutter](https://pub.dev/packages/sentry_flutter)**: Real-time telemetry, crash reports, and runtime exceptions.
 * **[flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)**: Local task scheduling and daily entry reminders.
@@ -542,6 +566,13 @@ flutter build web --release --web-renderer canvaskit
 flutter build web --release --base-href="/sheress/"
 ```
 
+### Supabase Edge Functions
+
+```bash
+# Deploy the owner push notification function
+supabase functions deploy send-owner-notification
+```
+
 ---
 
 ## 🗺️ Roadmap
@@ -555,7 +586,9 @@ flutter build web --release --base-href="/sheress/"
 - [x] Local notification alerts and scheduled daily reminders
 - [x] Global Exception Boundaries & Network Status Indicator
 - [x] Sentry SDK monitoring integration
-- [ ] Push Notifications using Firebase Cloud Messaging (FCM)
+- [x] Push Notifications using Firebase Cloud Messaging (FCM)
+- [x] Owner-to-staff push messaging via Edge Functions
+- [x] Adaptive amount text for auto-sizing monetary display
 - [ ] PDF report export and sharing features
 - [ ] Multi-Language support (Localization for id_ID and en_US)
 - [ ] Biometric login (FaceID / Fingerprint)

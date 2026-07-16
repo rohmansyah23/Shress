@@ -23,6 +23,7 @@ import '../transaction/transaction_history_screen.dart';
 import '../settings/settings_screen.dart';
 import '../category/category_management_screen.dart';
 import 'manage_businesses_screen.dart';
+import 'send_notification_screen.dart';
 import '../debtors/debtors_screen.dart';
 import '../consignments/consignors_screen.dart';
 import '../../core/theme/app_spacing.dart';
@@ -399,6 +400,21 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               const SizedBox(height: AppSpacing.s12),
               Row(
                 children: [
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.notifications_active_outlined,
+                      label: 'Kirim\nPesan',
+                      color: AppTheme.lossColorTheme(context),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SendNotificationScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s12),
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.settings_rounded,

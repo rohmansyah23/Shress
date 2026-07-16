@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/constants/constants.dart';
+import '../core/services/fcm_service.dart';
 import '../data/local/models/business_model.dart';
 import '../data/local/models/user_model.dart';
 import '../data/remote/auth_repository.dart';
@@ -76,6 +77,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           status: AuthStatus.authenticated,
           user: user,
         );
+        FcmService.instance.setUserId(user.userId);
       } else {
         state = const AuthState(status: AuthStatus.unauthenticated);
       }
@@ -101,6 +103,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: user,
       );
 
+      FcmService.instance.setUserId(user.userId);
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -112,6 +116,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
+    await FcmService.instance.deactivateToken();
+    FcmService.instance.clearUserId();
     await _authRepo.signOut();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
