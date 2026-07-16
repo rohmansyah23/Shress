@@ -170,6 +170,10 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 * **Debtor Directory**: Detailed tracking of outstanding reseller balances.
 * **Consignment Register**: Track inventory, sales, and consignor payouts dynamically.
 
+#### 🎨 Modern Design & UX
+* **Lag-Free Theme Toggling**: De-coupled local widget selection animations from global theme rebuilds for 60fps transitions.
+* **Unified Chip System**: Harmonized padding, border-radius, font-size, and theme-aware colors across all filters and preset chips.
+
 </td>
 </tr>
 </table>
@@ -589,6 +593,7 @@ supabase functions deploy send-owner-notification
 - [x] Push Notifications using Firebase Cloud Messaging (FCM)
 - [x] Owner-to-staff push messaging via Edge Functions
 - [x] Adaptive amount text for auto-sizing monetary display
+- [x] Lag-free theme transitions and unified custom chip styles
 - [ ] PDF report export and sharing features
 - [ ] Multi-Language support (Localization for id_ID and en_US)
 - [ ] Biometric login (FaceID / Fingerprint)

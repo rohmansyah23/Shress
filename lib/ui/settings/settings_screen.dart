@@ -740,7 +740,7 @@ class _NotificationReminderCardState
   }
 }
 
-class _ThemeSegmentedButton extends StatelessWidget {
+class _ThemeSegmentedButton extends StatefulWidget {
   final ThemeMode currentMode;
   final ValueChanged<ThemeMode> onSelectionChanged;
 
@@ -750,17 +750,36 @@ class _ThemeSegmentedButton extends StatelessWidget {
   });
 
   @override
+  State<_ThemeSegmentedButton> createState() => _ThemeSegmentedButtonState();
+}
+
+class _ThemeSegmentedButtonState extends State<_ThemeSegmentedButton> {
+  late ThemeMode _localMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _localMode = widget.currentMode;
+  }
+
+  @override
+  void didUpdateWidget(covariant _ThemeSegmentedButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentMode != widget.currentMode) {
+      _localMode = widget.currentMode;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
-        // Total width minus border (2 pixels)
-        final availableWidth = totalWidth - 2;
 
         // Subtract 2 pixels for the two dividers of width 1
-        final segmentsWidth = availableWidth - 2;
+        final segmentsWidth = totalWidth - 2;
 
         final selectedWidth = segmentsWidth * 0.50;
         final unselectedWidth = segmentsWidth * 0.25;
@@ -770,18 +789,21 @@ class _ThemeSegmentedButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDark ? Colors.grey[900] : Colors.grey[100],
             borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+          foregroundDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             border: Border.all(
               color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
               width: 1,
             ),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.sm - 1),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const NeverScrollableScrollPhysics(),
               child: SizedBox(
-                width: availableWidth,
+                width: totalWidth,
                 child: Row(
                   children: [
                     _buildSegment(
@@ -789,8 +811,8 @@ class _ThemeSegmentedButton extends StatelessWidget {
                       mode: ThemeMode.light,
                       icon: Icons.light_mode_rounded,
                       label: 'Terang',
-                      width: currentMode == ThemeMode.light ? selectedWidth : unselectedWidth,
-                      isSelected: currentMode == ThemeMode.light,
+                      width: _localMode == ThemeMode.light ? selectedWidth : unselectedWidth,
+                      isSelected: _localMode == ThemeMode.light,
                     ),
                     _buildDivider(isDark),
                     _buildSegment(
@@ -798,8 +820,8 @@ class _ThemeSegmentedButton extends StatelessWidget {
                       mode: ThemeMode.system,
                       icon: Icons.settings_brightness_rounded,
                       label: 'Sistem',
-                      width: currentMode == ThemeMode.system ? selectedWidth : unselectedWidth,
-                      isSelected: currentMode == ThemeMode.system,
+                      width: _localMode == ThemeMode.system ? selectedWidth : unselectedWidth,
+                      isSelected: _localMode == ThemeMode.system,
                     ),
                     _buildDivider(isDark),
                     _buildSegment(
@@ -807,8 +829,8 @@ class _ThemeSegmentedButton extends StatelessWidget {
                       mode: ThemeMode.dark,
                       icon: Icons.dark_mode_rounded,
                       label: 'Gelap',
-                      width: currentMode == ThemeMode.dark ? selectedWidth : unselectedWidth,
-                      isSelected: currentMode == ThemeMode.dark,
+                      width: _localMode == ThemeMode.dark ? selectedWidth : unselectedWidth,
+                      isSelected: _localMode == ThemeMode.dark,
                     ),
                   ],
                 ),
@@ -850,7 +872,18 @@ class _ThemeSegmentedButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => onSelectionChanged(mode),
+          onTap: () {
+            if (mode == _localMode) return;
+            setState(() {
+              _localMode = mode;
+            });
+            // Delay global theme change to let selection animation finish smoothly (matches 250ms duration)
+            Future.delayed(const Duration(milliseconds: 250), () {
+              if (mounted) {
+                widget.onSelectionChanged(mode);
+              }
+            });
+          },
           child: Center(
             child: FittedBox(
               fit: BoxFit.scaleDown,

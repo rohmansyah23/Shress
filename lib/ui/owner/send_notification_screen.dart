@@ -13,13 +13,11 @@ class _NotificationPreset {
   final String title;
   final String body;
   final IconData icon;
-  final Color color;
 
   const _NotificationPreset({
     required this.title,
     required this.body,
     required this.icon,
-    required this.color,
   });
 
   /// Daftar preset yang tersedia.
@@ -28,37 +26,31 @@ class _NotificationPreset {
       title: 'Pengingat Upload Laporan',
       body: 'Jangan lupa upload laporan penjualan hari ini ya. Batas akhir jam 17.00 WIB.',
       icon: Icons.assessment_rounded,
-      color: Color(0xFF1976D2), // Blue
     ),
     _NotificationPreset(
       title: 'Cek Stok Barang',
       body: 'Mohon cek dan update stok barang yang tersedia. Laporkan jika ada barang yang hampir habis.',
       icon: Icons.inventory_2_rounded,
-      color: Color(0xFF388E3C), // Green
     ),
     _NotificationPreset(
       title: 'Informasi Gaji',
       body: 'Gaji bulan ini sudah diproses. Silakan cek rekening masing-masing. Terima kasih.',
       icon: Icons.account_balance_wallet_rounded,
-      color: Color(0xFFE64A19), // Deep Orange
     ),
     _NotificationPreset(
       title: 'Tutup Toko Lebih Awal',
       body: 'Hari ini toko tutup lebih awal dari jam biasanya. Mohon selesaikan pekerjaan sebelum tutup.',
       icon: Icons.lock_clock_rounded,
-      color: Color(0xFF6A1B9A), // Purple
     ),
     _NotificationPreset(
       title: 'Undangan Rapat',
       body: 'Ada rapat evaluasi besok jam 10.00 WIB di ruang meeting. Hadir tepat waktu ya.',
       icon: Icons.groups_rounded,
-      color: Color(0xFF00838F), // Teal
     ),
     _NotificationPreset(
       title: 'Libur Hari Ini',
       body: 'Hari ini libur nasional. Toko tutup. Masuk kerja seperti biasa besok. Selamat beristirahat!',
       icon: Icons.celebration_rounded,
-      color: Color(0xFFC62828), // Red
     ),
   ];
 }
@@ -273,7 +265,7 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
             ),
             const SizedBox(height: AppSpacing.s8),
             SizedBox(
-              height: 52,
+              height: 38,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
@@ -286,7 +278,6 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
                   return _PresetChip(
                     icon: preset.icon,
                     label: preset.title,
-                    color: preset.color,
                     isSelected: isSelected,
                     onTap: () => _applyPreset(index),
                   );
@@ -429,64 +420,65 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
 class _PresetChip extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _PresetChip({
     required this.icon,
     required this.label,
-    required this.color,
     required this.isSelected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     final bgColor = isSelected
-        ? color.withValues(alpha: isDark ? 0.2 : 0.12)
-        : (isDark
-            ? Colors.white.withValues(alpha: 0.06)
-            : Colors.black.withValues(alpha: 0.04));
+        ? (isLight ? AppTheme.primaryColorTheme(context) : AppTheme.accent)
+        : (isLight
+            ? AppTheme.surfaceContainerColorTheme(context)
+            : AppTheme.darkBackground);
 
     final borderColor = isSelected
-        ? color.withValues(alpha: 0.6)
-        : (isDark
-            ? Colors.white.withValues(alpha: 0.1)
-            : Colors.black.withValues(alpha: 0.08));
+        ? Colors.transparent
+        : AppTheme.outlineVariantColorTheme(context);
 
-    final iconColor = isSelected ? color : null;
-    final textColor = isSelected ? color : null;
-    final fontWeight = isSelected ? FontWeight.w600 : FontWeight.w400;
+    final contentColor = isSelected
+        ? AppTheme.card
+        : AppTheme.onSurfaceVariantColorTheme(context);
 
-    return InkWell(
+    final fontWeight = isSelected ? FontWeight.w600 : FontWeight.normal;
+
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.radiusPill),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s16,
-          vertical: AppSpacing.s6,
+          horizontal: AppSpacing.s14,
+          vertical: AppSpacing.s8,
         ),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(AppRadius.radiusPill),
-          border: Border.all(color: borderColor, width: 1.5),
+          borderRadius: BorderRadius.circular(AppRadius.s20),
+          border: Border.all(color: borderColor, width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: AppIconSize.s16, color: iconColor),
+            Icon(
+              icon,
+              size: AppIconSize.s16,
+              color: contentColor,
+            ),
             const SizedBox(width: AppSpacing.s8),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: fontWeight,
-                color: textColor,
+                color: contentColor,
               ),
             ),
           ],
