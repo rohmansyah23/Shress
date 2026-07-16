@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Keep notification icon from being stripped by R8 resource shrinking.
+
+  R8 removes resources it considers "unused" based on Java/Kotlin code analysis.
+  However, flutter_local_notifications references this icon from Dart code
+  via a string literal ('@drawable/ic_notification'), which R8 cannot trace.
+  
+  Without this file, the ic_notification.xml drawable gets stripped in release builds,
+  causing NotificationService.init() to fail silently.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_notification" />

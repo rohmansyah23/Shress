@@ -8,6 +8,61 @@ import '../../core/theme/app_icon_size.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../providers/auth_provider.dart';
 
+/// Template pesan cepat yang bisa dipilih owner.
+class _NotificationPreset {
+  final String title;
+  final String body;
+  final IconData icon;
+  final Color color;
+
+  const _NotificationPreset({
+    required this.title,
+    required this.body,
+    required this.icon,
+    required this.color,
+  });
+
+  /// Daftar preset yang tersedia.
+  static const List<_NotificationPreset> presets = [
+    _NotificationPreset(
+      title: 'Pengingat Upload Laporan',
+      body: 'Jangan lupa upload laporan penjualan hari ini ya. Batas akhir jam 17.00 WIB.',
+      icon: Icons.assessment_rounded,
+      color: Color(0xFF1976D2), // Blue
+    ),
+    _NotificationPreset(
+      title: 'Cek Stok Barang',
+      body: 'Mohon cek dan update stok barang yang tersedia. Laporkan jika ada barang yang hampir habis.',
+      icon: Icons.inventory_2_rounded,
+      color: Color(0xFF388E3C), // Green
+    ),
+    _NotificationPreset(
+      title: 'Informasi Gaji',
+      body: 'Gaji bulan ini sudah diproses. Silakan cek rekening masing-masing. Terima kasih.',
+      icon: Icons.account_balance_wallet_rounded,
+      color: Color(0xFFE64A19), // Deep Orange
+    ),
+    _NotificationPreset(
+      title: 'Tutup Toko Lebih Awal',
+      body: 'Hari ini toko tutup lebih awal dari jam biasanya. Mohon selesaikan pekerjaan sebelum tutup.',
+      icon: Icons.lock_clock_rounded,
+      color: Color(0xFF6A1B9A), // Purple
+    ),
+    _NotificationPreset(
+      title: 'Undangan Rapat',
+      body: 'Ada rapat evaluasi besok jam 10.00 WIB di ruang meeting. Hadir tepat waktu ya.',
+      icon: Icons.groups_rounded,
+      color: Color(0xFF00838F), // Teal
+    ),
+    _NotificationPreset(
+      title: 'Libur Hari Ini',
+      body: 'Hari ini libur nasional. Toko tutup. Masuk kerja seperti biasa besok. Selamat beristirahat!',
+      icon: Icons.celebration_rounded,
+      color: Color(0xFFC62828), // Red
+    ),
+  ];
+}
+
 /// Screen untuk owner mengirim pesan notifikasi push ke staff/manager.
 class SendNotificationScreen extends ConsumerStatefulWidget {
   const SendNotificationScreen({super.key});
@@ -21,19 +76,50 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
   final _titleController = TextEditingController();
   final _bodyController = TextEditingController();
   bool _isSending = false;
+  int? _selectedPresetIndex;
   String _targetMode = 'all'; // 'all', 'role', 'specific'
   String _selectedRole = 'staff';
   List<Map<String, dynamic>> _allStaff = [];
   final Set<String> _selectedUserIds = {};
 
+  /// Terapkan preset pesan: isi title & body, lalu fokus ke body agar bisa diedit.
+  void _applyPreset(int index) {
+    final preset = _NotificationPreset.presets[index];
+    _titleController.text = preset.title;
+    _bodyController.text = preset.body;
+    setState(() => _selectedPresetIndex = index);
+    // Fokus ke body field agar user langsung bisa edit
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _bodyController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _bodyController.text.length),
+      );
+    });
+  }
+
+  /// Reset preset selection jika user mengedit title/body secara manual.
+  void _onTextChanged() {
+    if (_selectedPresetIndex == null) return;
+    final preset = _NotificationPreset.presets[_selectedPresetIndex!];
+    final currentTitle = _titleController.text;
+    final currentBody = _bodyController.text;
+    // Jika teks sudah berbeda dari preset, reset seleksi
+    if (currentTitle != preset.title || currentBody != preset.body) {
+      setState(() => _selectedPresetIndex = null);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _loadStaff();
+    _titleController.addListener(_onTextChanged);
+    _bodyController.addListener(_onTextChanged);
   }
 
   @override
   void dispose() {
+    _titleController.removeListener(_onTextChanged);
+    _bodyController.removeListener(_onTextChanged);
     _titleController.dispose();
     _bodyController.dispose();
     super.dispose();
@@ -175,6 +261,39 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
               },
             ),
 
+            const SizedBox(height: AppSpacing.s8),
+
+            // === Quick Preset Messages ===
+            Text(
+              'Pesan Cepat',
+              style: AppTheme.subtitle.copyWith(
+                fontSize: 13,
+                color: AppTheme.onSurfaceVariantColorTheme(context),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s8),
+            SizedBox(
+              height: 52,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
+                itemCount: _NotificationPreset.presets.length,
+                separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s8),
+                itemBuilder: (context, index) {
+                  final preset = _NotificationPreset.presets[index];
+                  final isSelected = _selectedPresetIndex == index;
+                  return _PresetChip(
+                    icon: preset.icon,
+                    label: preset.title,
+                    color: preset.color,
+                    isSelected: isSelected,
+                    onTap: () => _applyPreset(index),
+                  );
+                },
+              ),
+            ),
+
             const SizedBox(height: AppSpacing.s20),
 
             // Body field
@@ -297,6 +416,77 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
                       )
                     : const Icon(Icons.send_rounded),
                 label: Text(_isSending ? 'Mengirim...' : 'Kirim Notifikasi'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Chip preset pesan cepat — horizontal scrollable.
+class _PresetChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _PresetChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final bgColor = isSelected
+        ? color.withValues(alpha: isDark ? 0.2 : 0.12)
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.04));
+
+    final borderColor = isSelected
+        ? color.withValues(alpha: 0.6)
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.1)
+            : Colors.black.withValues(alpha: 0.08));
+
+    final iconColor = isSelected ? color : null;
+    final textColor = isSelected ? color : null;
+    final fontWeight = isSelected ? FontWeight.w600 : FontWeight.w400;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.radiusPill),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s16,
+          vertical: AppSpacing.s6,
+        ),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(AppRadius.radiusPill),
+          border: Border.all(color: borderColor, width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: AppIconSize.s16, color: iconColor),
+            const SizedBox(width: AppSpacing.s8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: fontWeight,
+                color: textColor,
               ),
             ),
           ],

@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../utils/notif_log.dart';
 import 'notification_service.dart';
 
 /// Service untuk mengelola Firebase Cloud Messaging (FCM).
@@ -25,7 +25,7 @@ class FcmService {
   /// Set user ID setelah login. Simpan token ke Supabase jika token sudah ada.
   void setUserId(String userId) {
     _userId = userId;
-    debugPrint('[FCM] User ID set: $userId');
+    NotifLog.info('FCM User ID set: $userId');
     // Simpan atau reactivate token
     if (_currentToken != null) {
       _saveToken(_currentToken!);
@@ -48,13 +48,13 @@ class FcmService {
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.denied) {
-        debugPrint('[FCM] Permission denied by user');
+        NotifLog.warn('FCM permission denied by user');
         return;
       }
 
       // 2. Dapatkan token
       _currentToken = await _messaging.getToken();
-      debugPrint('[FCM] Token: ${_currentToken?.substring(0, 20)}...');
+      NotifLog.info('FCM Token obtained: ${_currentToken?.substring(0, 20)}...');
 
       // 3. Simpan token ke Supabase
       if (_currentToken != null) {
@@ -63,7 +63,7 @@ class FcmService {
 
       // 4. Listen token refresh
       _messaging.onTokenRefresh.listen((newToken) {
-        debugPrint('[FCM] Token refreshed');
+        NotifLog.info('FCM Token refreshed');
         _currentToken = newToken;
         _saveToken(newToken);
       });
@@ -79,8 +79,8 @@ class FcmService {
       if (initialMessage != null) {
         _handleMessageTap(initialMessage);
       }
-    } catch (e) {
-      debugPrint('[FCM] Init error: $e');
+    } catch (e, stack) {
+      NotifLog.error('FCM init failed', e, stack);
     }
   }
 
@@ -91,7 +91,7 @@ class FcmService {
   Future<void> _saveToken(String token) async {
     try {
       if (_userId == null) {
-        debugPrint('[FCM] No user ID set, skipping token save');
+        NotifLog.info('FCM No user ID set — skipping token save');
         return;
       }
 
@@ -122,9 +122,9 @@ class FcmService {
         onConflict: 'user_id,fcm_token',
       );
 
-      debugPrint('[FCM] Token saved to Supabase');
-    } catch (e) {
-      debugPrint('[FCM] Save token error: $e');
+      NotifLog.info('FCM Token saved to Supabase');
+    } catch (e, stack) {
+      NotifLog.error('FCM save token failed', e, stack);
     }
   }
 
@@ -140,14 +140,14 @@ class FcmService {
           .eq('user_id', _userId!)
           .eq('fcm_token', _currentToken!);
 
-      debugPrint('[FCM] Token deactivated');
-    } catch (e) {
-      debugPrint('[FCM] Deactivate token error: $e');
+      NotifLog.info('FCM Token deactivated');
+    } catch (e, stack) {
+      NotifLog.error('FCM deactivate token failed', e, stack);
     }
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
-    debugPrint('[FCM] Foreground message: ${message.notification?.title}');
+    NotifLog.info('FCM Foreground message: title=${message.notification?.title}');
     if (message.notification != null) {
       NotificationService.instance.showPushNotification(
         id: message.hashCode,
@@ -158,7 +158,7 @@ class FcmService {
   }
 
   void _handleMessageTap(RemoteMessage message) {
-    debugPrint('[FCM] Message tapped: ${message.notification?.title}');
+    NotifLog.info('FCM Message tapped: title=${message.notification?.title}');
     // Navigate di-handle oleh listener di UI layer
   }
 
@@ -180,5 +180,5 @@ class FcmService {
 /// Harus di-declare di luar class (top-level) sesuai requirement Firebase.
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('[FCM] Background message: ${message.notification?.title}');
+  NotifLog.background('FCM Background message: ${message.notification?.title}');
 }

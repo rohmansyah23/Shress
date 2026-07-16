@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../constants/constants.dart';
+import '../utils/notif_log.dart';
 
 class BackupException implements Exception {
   final String message;
@@ -37,6 +38,7 @@ class BackupService {
   ];
 
   Future<File> exportDataAsSql(SupabaseClient supabase) async {
+    NotifLog.info('Backup: export SQL started');
     final buf = StringBuffer();
     final now = DateTime.now().toIso8601String();
     buf.writeln('-- Backup Sheress - ${AppConstants.appName}');
@@ -52,6 +54,7 @@ class BackupService {
         final response = await supabase.from(table).select().order('id', ascending: true);
         rows = (response as List<dynamic>).toList();
       } catch (e) {
+        NotifLog.warn('Backup: table $table skipped — ${e.toString().length > 80 ? e.toString().substring(0, 80) : e.toString()}');
         continue;
       }
       if (rows.isEmpty) continue;
@@ -75,6 +78,7 @@ class BackupService {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/sheress_backup_${DateTime.now().millisecondsSinceEpoch}.sql');
     await file.writeAsString(buf.toString(), encoding: utf8);
+    NotifLog.info('Backup: SQL exported to ${file.path}');
     return file;
   }
 
@@ -87,6 +91,7 @@ class BackupService {
   }
 
   Future<File> backupData(SupabaseClient supabase) async {
+    NotifLog.info('Backup: JSON backup started');
     final Map<String, List<dynamic>> allData = {};
 
     for (final table in _tables) {
@@ -94,6 +99,7 @@ class BackupService {
         final response = await supabase.from(table).select().order('id', ascending: true);
         allData[table] = (response as List<dynamic>).toList();
       } catch (e) {
+        NotifLog.warn('Backup: table $table failed — ${e.toString().length > 80 ? e.toString().substring(0, 80) : e.toString()}');
         allData[table] = [];
       }
     }
@@ -112,23 +118,28 @@ class BackupService {
       encoding: utf8,
     );
 
+    NotifLog.info('Backup: JSON exported to ${file.path}');
     return file;
   }
 
   Future<File> backupSchema() async {
+    NotifLog.info('Backup: schema export started');
     final schema = await rootBundle.loadString('assets/schema.sql');
 
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/sheress_schema_${DateTime.now().millisecondsSinceEpoch}.sql');
     await file.writeAsString(schema, encoding: utf8);
 
+    NotifLog.info('Backup: schema exported to ${file.path}');
     return file;
   }
 
   Future<void> shareFile(File file) async {
     if (!await file.exists()) {
+      NotifLog.error('Backup: file not found at ${file.path}');
       throw BackupException('File backup tidak ditemukan');
     }
+    NotifLog.info('Backup: sharing file ${file.path}');
     await Share.shareXFiles(
       [XFile(file.path)],
       text: 'Backup Sheress - ${AppConstants.appName}',

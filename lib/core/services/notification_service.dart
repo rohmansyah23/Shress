@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../utils/notif_log.dart';
+
 /// Hasil permintaan izin notifikasi.
 /// Mengandung informasi spesifik tentang izin yang ditolak agar UI
 /// dapat menampilkan pesan yang sesuai.
@@ -88,13 +90,13 @@ class NotificationService {
 
       // Reschedule notifikasi yang sudah ada (misal setelah reboot)
       await _rescheduleIfEnabled();
-    } catch (e) {
-      debugPrint('[Notification] Init error: $e');
+    } catch (e, stack) {
+      NotifLog.error('Init failed', e, stack);
     }
   }
 
   void _onNotificationTap(NotificationResponse response) {
-    debugPrint('[Notification] Tapped: ${response.payload}');
+    NotifLog.info('Tapped: payload=${response.payload}');
     // Navigate to root screen when notification is tapped
     final navigator = _navigatorKey?.currentState;
     if (navigator != null && navigator.canPop()) {
@@ -115,7 +117,10 @@ class NotificationService {
     try {
       final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
-      if (androidPlugin == null) return PermissionResult.schedulingBlocked;
+      if (androidPlugin == null) {
+        NotifLog.warn('Android plugin not available (null) — scheduling blocked');
+        return PermissionResult.schedulingBlocked;
+      }
 
       // 1. Request basic notification permission (Android 13+)
       final notifGranted = await androidPlugin.requestNotificationsPermission();
@@ -135,8 +140,8 @@ class NotificationService {
       }
 
       return PermissionResult.granted;
-    } catch (e) {
-      debugPrint('[Notification] Permission request error: $e');
+    } catch (e, stack) {
+      NotifLog.error('Permission request failed', e, stack);
       // Jika gagal request (misal API tidak tersedia), jangan blokir
       return PermissionResult.schedulingBlocked;
     }
@@ -158,12 +163,15 @@ class NotificationService {
     try {
       final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
-      if (androidPlugin == null) return false;
+      if (androidPlugin == null) {
+        NotifLog.warn('Android plugin null in hasNotificationPermission');
+        return false;
+      }
 
       final notifGranted = await androidPlugin.areNotificationsEnabled();
       return notifGranted ?? false;
-    } catch (e) {
-      debugPrint('[Notification] Permission check error: $e');
+    } catch (e, stack) {
+      NotifLog.error('hasNotificationPermission error', e, stack);
       return false;
     }
   }
@@ -175,13 +183,16 @@ class NotificationService {
     try {
       final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
-      if (androidPlugin == null) return false;
+      if (androidPlugin == null) {
+        NotifLog.warn('Android plugin null in hasExactAlarmPermission');
+        return false;
+      }
 
       final canSchedule =
           await androidPlugin.canScheduleExactNotifications();
       return canSchedule ?? false;
-    } catch (e) {
-      debugPrint('[Notification] Exact alarm check error: $e');
+    } catch (e, stack) {
+      NotifLog.error('hasExactAlarmPermission error', e, stack);
       return false;
     }
   }
@@ -226,9 +237,7 @@ class NotificationService {
       if (!await hasNotificationPermission()) {
         final result = await requestPermissionsWithResult();
         if (!result.canSchedule) {
-          debugPrint(
-            '[Notification] ${result.name}, cannot schedule',
-          );
+          NotifLog.warn('Cannot schedule: ${result.name}');
           await prefs.setBool(_prefKeyEnabled, false);
           return result;
         }
@@ -237,7 +246,7 @@ class NotificationService {
       // 2. Cek exact alarm — jika ditolak, tetap schedule (inexact)
       //    Tidak perlu gagal, cukup return info ke UI
       if (!await hasExactAlarmPermission()) {
-        debugPrint('[Notification] Exact alarm denied, scheduling inexact');
+        NotifLog.warn('Exact alarm denied — scheduling inexact');
       }
 
       final time = await getReminderTime();
@@ -327,11 +336,11 @@ class NotificationService {
         payload: 'daily_reminder',
       );
 
-      debugPrint('[Notification] Scheduled daily reminder at '
+      NotifLog.info('Scheduled daily reminder at '
           '${time.hour.toString().padLeft(2, '0')}:'
           '${time.minute.toString().padLeft(2, '0')}');
-    } catch (e) {
-      debugPrint('[Notification] Schedule error: $e');
+    } catch (e, stack) {
+      NotifLog.error('Schedule daily reminder failed', e, stack);
     }
   }
 
@@ -339,8 +348,9 @@ class NotificationService {
   Future<void> _cancelAll() async {
     try {
       await _plugin.cancelAll();
-    } catch (e) {
-      debugPrint('[Notification] Cancel error: $e');
+      NotifLog.info('All notifications cancelled');
+    } catch (e, stack) {
+      NotifLog.error('Cancel all notifications failed', e, stack);
     }
   }
 
@@ -354,8 +364,8 @@ class NotificationService {
         final time = await getReminderTime();
         await _scheduleDaily(time);
       }
-    } catch (e) {
-      debugPrint('[Notification] Reschedule error: $e');
+    } catch (e, stack) {
+      NotifLog.error('Reschedule if enabled failed', e, stack);
     }
   }
 
@@ -403,10 +413,10 @@ class NotificationService {
         payload: 'test_notification',
       );
 
-      debugPrint('[Notification] Test notification sent');
+      NotifLog.info('Test notification sent successfully');
       return true;
-    } catch (e) {
-      debugPrint('[Notification] Test notification error: $e');
+    } catch (e, stack) {
+      NotifLog.error('Test notification failed', e, stack);
       return false;
     }
   }
@@ -449,9 +459,9 @@ class NotificationService {
         body: body,
         notificationDetails: details,
       );
-      debugPrint('[Notification] Push notification shown: $title');
-    } catch (e) {
-      debugPrint('[Notification] Show push error: $e');
+      NotifLog.info('Push notification shown: $title');
+    } catch (e, stack) {
+      NotifLog.error('Show push notification failed: $title', e, stack);
     }
   }
 }
