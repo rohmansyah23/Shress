@@ -1,19 +1,12 @@
 <div align="center">
 
-<img src="assets/icons/app_icon.png" alt="Sheress" width="140" style="border-radius: 24px;" />
-
-<br />
-<br />
+<img src="assets/icons/app_icon.png" alt="Sheress Logo" width="140" style="border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
 
 # Sheress
 
 ### Multi-tenant financial reporting for Indonesian SMEs
 
-<br />
-
-A production-grade Flutter application that empowers business owners, managers, and staff
-with real-time financial insights, transaction tracking, QRIS payment integration, and
-multi-business management — all backed by Supabase.
+A production-grade, offline-aware Flutter application that empowers business owners, managers, and staff with real-time financial insights, transaction tracking, debt management, QRIS payments, and multi-business oversight — all backed by Supabase.
 
 <br />
 
@@ -21,25 +14,17 @@ multi-business management — all backed by Supabase.
 [![Dart](https://img.shields.io/badge/Dart-3.12+-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-2.16+-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](https://github.com/username/sheress/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](https://github.com/rohmansyah23/shress/pulls)
 
 <br />
 
-[![Download APK](https://img.shields.io/badge/⬇_Download-APK-blue?style=for-the-badge&logo=android)](#build)
-[![Documentation](https://img.shields.io/badge/📖_Documentation-white?style=for-the-badge&logo=github)](#table-of-contents)
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-green?style=for-the-badge&logo=vercel)](#preview)
-
-<br />
-
-<sub>
-
-**Flutter** • **Dart** • **Supabase** • **Riverpod** • **Clean Architecture**
-
-</sub>
-
-</div>
+[![Download APK](https://img.shields.io/badge/⬇_Download-APK-blue?style=for-the-badge&logo=android)](#-build)
+[![Documentation](https://img.shields.io/badge/📖_Documentation-white?style=for-the-badge&logo=github)](#-table-of-contents)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-green?style=for-the-badge&logo=vercel)](#-preview)
 
 ---
+
+</div>
 
 <br />
 
@@ -49,32 +34,32 @@ multi-business management — all backed by Supabase.
 <tr>
 <td width="50%" valign="top">
 
-| | |
-|:--|:--|
-| 📱 **Platform** | Android, Web |
-| 🏗️ **Architecture** | Clean Architecture |
-| ⚡ **State Management** | Riverpod |
+### ⚙️ Technical Metadata
+| Category | Value |
+| :--- | :--- |
+| 📱 **Platforms** | Android, Web |
+| 🏗️ **Architecture** | Clean Architecture (Feature-driven) |
+| ⚡ **State Management**| Riverpod |
 | 🔥 **Backend** | Supabase |
 | 🗄️ **Database** | PostgreSQL |
 | 🔐 **Auth** | Supabase Auth |
-| 🌐 **Language** | Indonesian (id_ID) |
-| 📄 **License** | MIT |
+| 🌐 **Language** | Indonesian (`id_ID`) |
 | 📦 **Version** | 1.0.0 |
 
 </td>
 <td width="50%" valign="top">
 
-| | |
-|:--|:--|
-| 🎨 **UI Framework** | Material 3 |
-| 🌙 **Theme** | Dark & Light Mode |
-| 📊 **Charts** | fl_chart |
-| 💳 **Payments** | QRIS Integration |
-| 🐛 **Monitoring** | Sentry |
-| 🔔 **Notifications** | Local Notifications |
-| 📶 **Offline** | Connectivity Detection |
-| 🏪 **Multi-Tenant** | Role-Based (Owner/Manager/Staff) |
-| ☁️ **Storage** | Supabase Storage |
+### 🎨 Features & Capabilities
+| Category | Value |
+| :--- | :--- |
+| 🎨 **UI Framework** | Material 3 Design System |
+| 🌙 **Theming** | Dynamic Dark & Light Mode |
+| 📊 **Charts** | fl_chart (Interactive Visualizations) |
+| 💳 **Payments** | Dynamic QRIS Integration |
+| 🐛 **Monitoring** | Sentry Crash Reporting |
+| 🔔 **Notifications** | Scheduled Local Reminders |
+| 📶 **Offline Status**| Network Connectivity Overlay |
+| 🏪 **Multi-Tenancy** | Role-Based Access Control (RBAC) |
 
 </td>
 </tr>
@@ -82,41 +67,28 @@ multi-business management — all backed by Supabase.
 
 <br />
 
----
-
-<br />
-
 ## 📸 Preview
 
-<p align="center">
-  <em>App screenshots and demo coming soon.</em>
-  <br /><br />
-  <img src="https://via.placeholder.com/300x600/1A237E/FFFFFF?text=Dashboard" alt="Dashboard" width="200" />
-  &nbsp;&nbsp;
-  <img src="https://via.placeholder.com/300x600/0D47A1/FFFFFF?text=Transactions" alt="Transactions" width="200" />
-  &nbsp;&nbsp;
-  <img src="https://via.placeholder.com/300x600/1565C0/FFFFFF?text=Reports" alt="Reports" width="200" />
-  &nbsp;&nbsp;
-  <img src="https://via.placeholder.com/300x600/1E88E5/FFFFFF?text=Dark+Mode" alt="Dark Mode" width="200" />
-</p>
+<div align="center">
+  <p><em>App screenshots and demo coming soon.</em></p>
+  <img src="https://via.placeholder.com/300x600/1A237E/FFFFFF?text=Dashboard" alt="Dashboard Screen" width="200" style="border-radius: 12px; margin: 4px;" />
+  <img src="https://via.placeholder.com/300x600/0D47A1/FFFFFF?text=Transactions" alt="Transactions Screen" width="200" style="border-radius: 12px; margin: 4px;" />
+  <img src="https://via.placeholder.com/300x600/1565C0/FFFFFF?text=Reports" alt="Reports Screen" width="200" style="border-radius: 12px; margin: 4px;" />
+  <img src="https://via.placeholder.com/300x600/1E88E5/FFFFFF?text=Dark+Mode" alt="Dark Mode Screen" width="200" style="border-radius: 12px; margin: 4px;" />
+</div>
 
-<br />
-
-> 💡 **Tip:** Replace the placeholder images above with actual screenshots in `docs/images/` folder.
-
-<br />
+> [!TIP]
+> Replace the placeholder images above with actual screenshots inside the `docs/images/` folder.
 
 ---
-
-<br />
 
 ## 📑 Table of Contents
 
 - [About](#-about)
 - [Features](#-features)
-- [Architecture](#-architecture)
+- [Architecture](#%EF%B8%8F-architecture)
 - [Folder Structure](#-folder-structure)
-- [Tech Stack](#-tech-stack)
+- [Tech Stack](#%EF%B8%8F-tech-stack)
 - [Screens](#-screens)
 - [Getting Started](#-getting-started)
 - [Environment Variables](#-environment-variables)
@@ -133,41 +105,25 @@ multi-business management — all backed by Supabase.
 - [Author](#-author)
 - [Acknowledgements](#-acknowledgements)
 
-<br />
-
 ---
-
-<br />
 
 ## 🎯 About
 
-<div align="center">
+### The Problem
+Most Indonesian SMEs (UMKM) still rely on manual bookkeeping — paper notebooks, spreadsheets, or scattered chats — leading to lost records, fragmented transaction histories, and zero real-time financial visibility.
 
-**The Problem**
-
-Most Indonesian SMEs still rely on manual bookkeeping — paper notebooks, spreadsheets, or scattered notes — leading to lost records, fragmented data, and zero real-time visibility.
-
-**The Solution**
-
-Sheress provides a **cloud-first**, **role-based** financial platform that unifies transaction tracking, debt management, QRIS payments, and multi-business oversight in a single, beautiful app.
-
-</div>
-
-<br />
+### The Solution
+Sheress provides a **cloud-first**, **role-based** financial platform that unifies transaction tracking, debt management, consignment monitoring, and QRIS payments under a single, cohesive, and beautiful application.
 
 ### Who Is This For?
 
-| Role | What They Can Do |
-|:-----|:-----------------|
-| 👔 **Business Owner** | Monitor multiple businesses, manage staff, view P&L reports |
-| 📊 **Manager** | Track daily transactions, generate reports, manage QRIS |
-| 👤 **Staff** | Record income & expenses in real-time |
-
-<br />
+| Role | Core Capabilities |
+| :--- | :--- |
+| 👔 **Business Owner** | Monitor multiple businesses, manage staff, view consolidated P&L reports, upload business QRIS. |
+| 📊 **Manager** | Track daily transactions, manage debt entries, generate reports, register consignments. |
+| 👤 **Staff** | Record daily income & expenses in real-time. |
 
 ---
-
-<br />
 
 ## ✨ Features
 
@@ -176,140 +132,92 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 <td width="50%" valign="top">
 
 #### 🔐 Authentication & Access
-- ✅ Username/password login
-- ✅ Role-based access control
-- ✅ Password reset flow
-- ✅ Session persistence
+* **Role-Based Access Control (RBAC)**: Distinct permissions for Owner, Manager, and Staff.
+* **Secure Auth**: JWT-based session management and email password reset flow.
+* **Auto-Login**: Session persistence across app restarts.
 
-#### 🏪 Multi-Business
-- ✅ Multiple business entities
-- ✅ Seamless business switching
-- ✅ Business-level data isolation
-- ✅ Business profile management
+#### 🏪 Multi-Business Management
+* **Multi-Tenant Isolation**: Switch between different business entities seamlessly.
+* **Independent Profiles**: Custom branding and data structure for each business.
 
-#### 💰 Transactions
-- ✅ Income & expense tracking
-- ✅ Category-based organization
-- ✅ Transaction history with filters
-- ✅ Edit & delete transactions
+#### 💰 Transaction Tracking
+* **Income & Expenses**: Group by customizable categories.
+* **Filters & Search**: Advanced filtering by dateRange, type, and search queries.
+* **History Management**: Full CRUD operations for authorized roles.
 
 </td>
 <td width="50%" valign="top">
 
-#### 📊 Financial Reports
-- ✅ Real-time dashboard
-- ✅ P&L (Profit & Loss) reports
-- ✅ Interactive bar charts
-- ✅ Period-based filtering
+#### 📊 Visual Reports
+* **Profit & Loss (P&L)**: Real-time calculation of revenue, costs, and net profit margins.
+* **Interactive Charts**: Responsive charts for trends, category splits, and comparisons.
 
 #### 💳 QRIS Integration
-- ✅ Display QRIS per business
-- ✅ Upload custom QRIS images
-- ✅ SVG rendering support
-- ✅ Image caching
+* **Dynamic Code Display**: Instant access to payment QR codes for customers.
+* **Formats Supported**: Render high-quality SVG and PNG files with local caching.
 
-#### 📋 Debt & Consignment
-- ✅ Debtor/reseller tracking
-- ✅ Payment status management
-- ✅ Consignment monitoring
-- ✅ Sales reports
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-#### 🎨 UI/UX
-- ✅ Material 3 design system
-- ✅ Dark & Light theme
-- ✅ Custom color palette
-- ✅ Smooth animations
-- ✅ Offline overlay
-
-#### 🔔 Notifications
-- ✅ Daily reminders
-- ✅ Local notifications
-- ✅ Customizable schedule
-
-</td>
-<td width="50%" valign="top">
-
-#### ⚡ Technical
-- ✅ Clean Architecture
-- ✅ Riverpod state management
-- ✅ Supabase backend
-- ✅ Sentry crash reporting
-- ✅ Connectivity monitoring
-- ✅ Global error boundary
+#### 📋 Debt & Consignments
+* **Debtor Directory**: Detailed tracking of outstanding reseller balances.
+* **Consignment Register**: Track inventory, sales, and consignor payouts dynamically.
 
 </td>
 </tr>
 </table>
 
-<br />
-
 ---
-
-<br />
 
 ## 🏗️ Architecture
 
-Sheress follows **Clean Architecture** with a **feature-based** structure, ensuring separation of concerns, testability, and maintainability.
+Sheress follows **Clean Architecture** combined with a **feature-driven** organization to ensure separation of concerns, complete testability, and high maintainability.
 
-```
-┌──────────────────────────────────────────────────────────┐
-│                    🎨 PRESENTATION                        │
-│                  UI Screens, Widgets                      │
-│                                                          │
-│    ┌──────────┐    ┌───────────┐    ┌──────────────┐    │
-│    │    UI    │    │ Providers │    │   Reusable   │    │
-│    │ Screens  │◄──▶│ (Riverpod)│◄──▶│   Widgets    │    │
-│    └──────────┘    └───────────┘    └──────────────┘    │
-└──────────────────────────┬───────────────────────────────┘
-                           │
-┌──────────────────────────▼───────────────────────────────┐
-│                      📦 DATA                             │
-│              Models, Services, Repositories               │
-│                                                          │
-│    ┌──────────┐    ┌───────────┐    ┌──────────────┐    │
-│    │  Models  │◄───│  Services │◄───│   Remote     │    │
-│    │  (DTOs)  │    │ (Supabase)│    │   API        │    │
-│    └──────────┘    └───────────┘    └──────────────┘    │
-└──────────────────────────┬───────────────────────────────┘
-                           │
-┌──────────────────────────▼───────────────────────────────┐
-│                      ⚙️ CORE                             │
-│            Config, Theme, Utils, Services                 │
-│                                                          │
-│    ┌────────┐ ┌────────┐ ┌────────┐ ┌────────────┐     │
-│    │ Config │ │ Theme  │ │ Utils  │ │  Services  │     │
-│    └────────┘ └────────┘ └────────┘ └────────────┘     │
-└──────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Presentation ["🎨 Presentation Layer (lib/ui & lib/providers)"]
+        UI["UI Screens & Sheets"]
+        Providers["Riverpod Providers (State)"]
+        Widgets["Reusable UI Widgets"]
+        UI <--> Providers
+        Widgets <--> UI
+    end
+
+    subgraph Data ["📦 Data Layer (lib/data)"]
+        Models["Data Models (DTOs)"]
+        Repos["Auth & API Repositories"]
+        Remote["Supabase Remote Source"]
+        Models <--> Repos
+        Repos <--> Remote
+    end
+
+    subgraph Core ["⚙️ Core Layer (lib/core)"]
+        Config["App Config & Consts"]
+        Theme["Material 3 Theme"]
+        Network["Connectivity & Services"]
+        Utils["Format & Error Helpers"]
+    end
+
+    Providers -.-> Repos
+    Remote -.-> Core
+    UI -.-> Core
 ```
 
 ### Layer Breakdown
 
 | Layer | Purpose | Key Components |
-|:------|:--------|:---------------|
-| ⚙️ **Core** | Shared infrastructure & utilities | `AppConfig`, `AppTheme`, `ErrorHandler`, `FormatHelpers`, `Constants` |
-| 📦 **Data** | Data models & API operations | `SupabaseService`, `AuthRepository`, 9 data models |
-| 🔄 **Providers** | Business logic & state management | `AuthProvider`, `TransactionProvider`, `ThemeProvider`, etc. |
-| 🎨 **UI** | Feature screens & widgets | 17 feature modules, 30+ screens |
-
-<br />
+| :--- | :--- | :--- |
+| ⚙️ **Core** | Shared infrastructure, configs, global themes, and utility classes. | `AppConfig`, `AppTheme`, `ErrorHandler`, `FormatHelpers`, `Constants` |
+| 📦 **Data** | Serialization models (DTOs), remote service adapters, and database interfaces. | `SupabaseService`, `AuthRepository`, 9 serialization models |
+| 🔄 **Providers** | Business logic flow and reactive state bindings via Riverpod. | `AuthProvider`, `TransactionProvider`, `ThemeProvider`, `DebtorProvider` |
+| 🎨 **UI** | Widget components and feature-specific layout screens. | 15+ UI modules, 30+ pages, custom styling widgets |
 
 ---
 
-<br />
-
 ## 📁 Folder Structure
 
-```
+```text
 lib/
-│
 ├── main.dart                              # 🚀 App entry point
 │
-├── core/                                  # ⚙️  Shared infrastructure
+├── core/                                  # ⚙️ Shared Infrastructure & Utilities
 │   ├── config/                            #     Environment & app config
 │   │   └── app_config.dart
 │   ├── constants/                         #     App-wide constants
@@ -319,12 +227,15 @@ lib/
 │   ├── qris/                              #     QRIS image handling
 │   │   ├── qris_resolver.dart
 │   │   └── qris_upload_service.dart
-│   ├── services/                          #     Platform services
+│   ├── services/                          #     Platform services (Notification, Sentry)
 │   │   ├── notification_service.dart
 │   │   └── sentry_service.dart
-│   ├── theme/                             #     Material 3 theming
+│   ├── theme/                             #     Material 3 theming & sizes
+│   │   ├── app_icon_size.dart
+│   │   ├── app_radius.dart
+│   │   ├── app_spacing.dart
 │   │   └── app_theme.dart
-│   ├── utils/                             #     Shared utilities
+│   ├── utils/                             #     Shared helpers
 │   │   ├── error_handler.dart
 │   │   └── format_helpers.dart
 │   └── widgets/                           #     Reusable UI components
@@ -336,9 +247,9 @@ lib/
 │       ├── summary_card.dart
 │       └── trend_chart.dart
 │
-├── data/                                  # 📦 Data layer
+├── data/                                  # 📦 Data Access Layer
 │   ├── local/
-│   │   └── models/                        #     Data models (9 models)
+│   │   └── models/                        #     Data models (9 entities)
 │   │       ├── business_model.dart
 │   │       ├── category_model.dart
 │   │       ├── consignment_model.dart
@@ -348,11 +259,11 @@ lib/
 │   │       ├── debtor_model.dart
 │   │       ├── transaction_model.dart
 │   │       └── user_model.dart
-│   └── remote/                            #     API services
+│   └── remote/                            #     Remote repositories & API clients
 │       ├── auth_repository.dart
 │       └── supabase_service.dart
 │
-├── providers/                             # 🔄 Riverpod providers
+├── providers/                             # 🔄 Riverpod State Management
 │   ├── auth_provider.dart
 │   ├── business_providers.dart
 │   ├── debt_consignment_provider.dart
@@ -364,544 +275,388 @@ lib/
 │   ├── transaction_list_provider.dart
 │   └── transaction_provider.dart
 │
-└── ui/                                    # 🎨 Presentation layer
-    ├── auth/                              #     Authentication
-    ├── business_detail/                   #     Business detail
-    ├── category/                          #     Category management
-    ├── consignments/                      #     Consignment tracking
-    ├── dashboard/                         #     Dashboard & QRIS
-    ├── debtors/                           #     Debt management
-    ├── manager/                           #     Manager role
-    ├── onboarding/                        #     Onboarding wizard
-    ├── owner/                             #     Owner role
-    ├── profile/                           #     User profile
-    ├── reports/                           #     Financial reports
-    ├── settings/                          #     App settings
-    ├── splash/                            #     Splash screen
-    ├── transaction/                       #     Transaction CRUD
-    └── widgetbook/                        #     Component showcase
+└── ui/                                    # 🎨 Presentation Layer (UI Screens)
+    ├── auth/                              #     Authentication & passwords
+    ├── business_detail/                   #     Business profile and QRIS
+    ├── category/                          #     Category list & CRUD
+    ├── consignments/                      #     Consignment & reseller lists
+    ├── dashboard/                         #     P&L summaries & transaction records
+    ├── debtors/                           #     Debt directory and payments
+    ├── manager/                           #     Manager-specific dashboard
+    ├── onboarding/                        #     Interactive onboarding flow
+    ├── owner/                             #     Business creator and staff managers
+    ├── profile/                           #     User settings & profile
+    ├── reports/                           #     Consolidated statistics & PDF exports
+    ├── settings/                          #     Theme mode and local notification controls
+    ├── splash/                            #     App startup checker
+    └── transaction/                       #     Income & expense sheets
 ```
 
-<br />
-
 ---
-
-<br />
 
 ## 🛠️ Tech Stack
 
-| Category | Technology | Purpose |
-|:---------|:-----------|:--------|
-| 🎨 **Framework** | [Flutter](https://flutter.dev) | Cross-platform UI toolkit |
-| 📝 **Language** | [Dart](https://dart.dev) | Type-safe programming language |
-| 🔄 **State** | [Riverpod](https://riverpod.dev) | Compile-safe state management |
-| ☁️ **Backend** | [Supabase](https://supabase.com) | Open-source Firebase alternative |
-| 🗄️ **Database** | PostgreSQL (Supabase) | Relational database with RLS |
-| 🔐 **Auth** | Supabase Auth | JWT-based authentication |
-| 📊 **Charts** | [fl_chart](https://flchart.dev) | Beautiful, interactive charts |
-| 🖼️ **SVG** | [flutter_svg](https://pub.dev/packages/flutter_svg) | SVG image rendering |
-| 🔤 **Fonts** | [google_fonts](https://fonts.google.com) | Inter font family |
-| 🐛 **Monitoring** | [Sentry](https://sentry.io) | Crash reporting & analytics |
-| 🔔 **Notifications** | flutter_local_notifications | Local push notifications |
-| 📶 **Network** | [connectivity_plus](https://pub.dev/packages/connectivity_plus) | Network status detection |
-| ⚙️ **Config** | [flutter_dotenv](https://pub.dev/packages/flutter_dotenv) | Environment variables |
-| 📅 **Locale** | [intl](https://pub.dev/packages/intl) | Indonesian date/number formatting |
-
-<br />
+| Tool/Library | Role | Why It Was Chosen |
+| :--- | :--- | :--- |
+| **[Flutter](https://flutter.dev)** | Framework | Expressive UI and native compilation on Android/Web. |
+| **[Dart](https://dart.dev)** | Language | Type-safe, compile-time performance, and modern features. |
+| **[Riverpod](https://riverpod.dev)** | State Management | Compile-safe state caching, lifecycle monitoring, and testability. |
+| **[Supabase](https://supabase.com)** | Backend-as-a-Service | Open-source relational DB (PostgreSQL) with built-in RLS policies. |
+| **PostgreSQL** | Database | Relational integrity for ledger systems; powerful constraint engine. |
+| **[fl_chart](https://flchart.dev)** | Visual Graphs | Highly performant chart rendering optimized for Flutter views. |
+| **[Sentry](https://sentry.io)** | Error Logging | Automated stack trace collection and user impact analytics. |
+| **connectivity_plus** | Network Listener | Detects connection changes to prompt local cache overrides. |
 
 ---
-
-<br />
 
 ## 📱 Screens
 
-| Screen | Description | Access |
-|:-------|:------------|:-------|
-| 🚀 **Splash** | App initialization & auth check | All |
-| 🔐 **Login** | Username/password authentication | All |
-| 🔄 **Forgot Password** | Password reset via email | All |
-| 📋 **Onboarding** | First-time user setup | All |
-| 📊 **Owner Dashboard** | Multi-business overview with charts | Owner |
-| 📊 **Manager Dashboard** | Business-specific summary | Manager |
-| 📝 **Transaction History** | Paginated list with filters | Owner, Manager |
-| ➕ **Transaction Sheet** | Add/edit income or expense | Owner, Manager, Staff |
-| 🏷️ **Category Management** | CRUD for categories | Owner |
-| 🏪 **Business Detail** | Business info & QRIS | Owner |
-| 🏪 **Manage Businesses** | Create/edit/delete businesses | Owner |
-| 💳 **QRIS Display** | Show QRIS payment code | Manager, Owner |
-| 📤 **QRIS Upload** | Upload QRIS image | Owner |
-| 👥 **Debtors List** | View all debtors/resellers | Owner, Manager |
-| 👤 **Debtor Detail** | Individual debtor info | Owner, Manager |
-| ➕ **Add Debt** | Record new debt entry | Owner, Manager |
-| 📦 **Consignors List** | View all consignors | Owner, Manager |
-| 👤 **Consignor Detail** | Consignor transactions | Owner, Manager |
-| 📦 **Consignment Detail** | Individual consignment | Owner, Manager |
-| 📊 **Report Sales** | Sales report | Owner, Manager |
-| 📈 **Owner Reports** | P&L by period | Owner |
-| 📈 **Manager Reports** | Business financial reports | Manager |
-| 👥 **User Management** | Manage staff users | Owner |
-| ✏️ **User Form** | Add/edit user | Owner |
-| 👤 **Profile** | User profile & settings | All |
-| ⚙️ **Settings** | App preferences & theme | All |
-
-<br />
+| Module | Purpose | Role Permissions |
+| :--- | :--- | :--- |
+| 🚀 **Splash** | Restores state sessions and checks internet connections. | All |
+| 🔐 **Login & Recover** | Secure password log-in and password resets via email links. | All |
+| 📋 **Onboarding** | Wizard guiding owners to create their first business and profile. | All |
+| 📊 **Owner Board** | Aggregated reports for all managed businesses, revenue charts. | Owner |
+| 📊 **Manager Board** | Focused daily stats for the assigned business. | Manager |
+| 📝 **Ledger History** | Paginated lists of cash activities with date filters. | Owner, Manager |
+| ➕ **Transaction Sheet** | Add/edit/delete income or expense logs. | Owner, Manager, Staff |
+| 🏪 **Manage Businesses**| Register and modify business names, structures, and assets. | Owner |
+| 📤 **QRIS Configuration**| Upload new QRIS layout images to Supabase storage buckets. | Owner |
+| 👥 **Debtor Directory** | Track debtors list, log payments, and view due dates. | Owner, Manager |
+| 📦 **Consignments** | Register consignment transactions, daily stocks, and sales. | Owner, Manager |
+| 📈 **P&L Reports** | Periodically calculated P&L statements with charts. | Owner, Manager |
+| 👥 **Staff Management** | Invite, update, or revoke access roles for employees. | Owner |
+| ⚙️ **Settings** | Toggle Theme Mode and schedule notification reminders. | All |
 
 ---
-
-<br />
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-| Requirement | Version | Check |
-|:------------|:--------|:------|
-| Flutter SDK | 3.12+ | `flutter --version` |
-| Dart SDK | 3.12+ | `dart --version` |
-| Android Studio | Latest | — |
-| Supabase Account | Free tier | [supabase.com](https://supabase.com) |
+Verify that your local system has these programs installed:
+
+* **Flutter SDK**: `3.12.0` or higher (`flutter --version`)
+* **Dart SDK**: `3.12.0` or higher (`dart --version`)
+* **Java Development Kit (JDK)**: JDK 17 (for Android build tools)
+* **Supabase Instance**: Active project URL and anonymous API keys.
 
 ### Installation
 
-```bash
-# 1️⃣  Clone the repository
-git clone https://github.com/username/sheress.git
-cd sheress
+Follow these steps to run the application locally:
 
-# 2️⃣  Install dependencies
+```bash
+# 1. Clone the repository
+git clone https://github.com/rohmansyah23/shress.git
+cd shress
+
+# 2. Retrieve Flutter dependency packages
 flutter pub get
 
-# 3️⃣  Configure environment
+# 3. Setup configuration variables
 cp .env.template .env
-# ✏️  Edit .env with your Supabase credentials
+# Open .env in your text editor and fill in your Supabase variables.
 
-# 4️⃣  Run the app
+# 4. Compile and launch the app in debug mode
 flutter run
 ```
 
-### Quick Start with Demo Data
+### Demo Credentials
 
-After setting up Supabase and running migrations, login with:
+You can test roles out of the box using our seeded demo credentials:
 
-| Role | Username | Password |
-|:-----|:---------|:---------|
-| 👔 Owner | `owner` | `password123` |
-| 📊 Manager | `manager` | `password123` |
-| 👤 Staff | `staff` | `password123` |
-
-<br />
+| Account Role | Username | Password |
+| :--- | :--- | :--- |
+| 👔 **Owner Account** | `owner` | `password123` |
+| 📊 **Manager Account**| `manager` | `password123` |
+| 👤 **Staff Account** | `staff` | `password123` |
 
 ---
 
-<br />
-
 ## 🔧 Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in your root folder. Use the template below:
 
 ```env
-# ─── Supabase (Required) ──────────────────────────
+# ─── Supabase Backend (Required) ──────────────────
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key
 
-# ─── Sentry (Optional) ────────────────────────────
+# ─── Crash Reporting (Optional) ────────────────────
 SENTRY_DSN=your-sentry-dsn
 
-# ─── App Config ───────────────────────────────────
+# ─── Application Configuration ─────────────────────
 APP_NAME=Sheress
 APP_ENVIRONMENT=development
 
-# ─── Sync Config ──────────────────────────────────
+# ─── Caching & Synchronization ─────────────────────
 SYNC_INTERVAL_SECONDS=30
 SYNC_BATCH_SIZE=50
 QRIS_CACHE_DAYS=30
 ```
 
-### Getting Supabase Credentials
-
-1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
-2. Select your project → **Project Settings → API**
-3. Copy **Project URL** and **anon/public** key
-
-<br />
+> [!WARNING]
+> Keep your `.env` private and never commit it to source control. It is already included in our `.gitignore`.
 
 ---
-
-<br />
 
 ## ⚙️ Configuration
 
 <details>
-<summary><strong>🟢 Android Configuration</strong></summary>
+<summary>🤖 <strong>Android Engine Details</strong></summary>
 
 <br />
 
-| Property | Value |
-|:---------|:------|
-| Min SDK | 24 (Android 7.0) |
-| Namespace | `com.sheress.app` |
-| Kotlin | 2.0.21 |
-| AGP | 9.0.1 |
+| Property | Target Value |
+| :--- | :--- |
+| **Minimum SDK** | `24` (Android 7.0) |
+| **Target SDK** | `34` (Android 14.0) |
+| **Application Package ID**| `com.sheress.app` |
+| **Kotlin Version** | `2.0.21` |
+| **Android Gradle Plugin** | `9.0.1` |
 
 </details>
 
 <details>
-<summary><strong>🔵 Web Configuration</strong></summary>
+<summary>🌐 <strong>Web Application Details</strong></summary>
 
 <br />
 
-| Property | Value |
-|:---------|:------|
-| PWA Manifest | `web/manifest.json` |
-| Deep Link | `sheress://reset-password` |
+| Property | Configuration File |
+| :--- | :--- |
+| **PWA Manifest Settings** | `web/manifest.json` |
+| **Deep Link Scheme** | `sheress://reset-password` |
 
 </details>
 
 <details>
-<summary><strong>🗄️ Database Migrations (21 files)</strong></summary>
+<summary>🗄️ <strong>PostgreSQL Migrations (21 steps)</strong></summary>
 
 <br />
 
-| # | Migration | Description |
-|:--|:----------|:------------|
-| 001 | `initial_schema` | Core tables: users, businesses, transactions |
-| 002 | `qris_storage_bucket` | QRIS image storage |
-| 003 | `demo_accounts` | Demo user accounts |
-| 004 | `public_passwords` | Password hashing functions |
-| 005 | `update_rls_policies` | Row Level Security |
-| 006 | `public_auth` | Auth helper functions |
-| 007 | `drop_unused_policies` | Cleanup unused RLS |
-| 008 | `allow_anon_rls` | Anonymous RLS access |
-| 009 | `insert_demo_users` | Seed demo users |
-| 010 | `username_login` | Username-based auth |
-| 011 | `qris_mime_types` | QRIS MIME restrictions |
-| 012 | `fix_qris_storage_policies` | Fix QRIS RLS |
-| 013 | `simplify_qris_storage_policies` | Simplify QRIS RLS |
-| 014 | `drop_financial_reports` | Remove legacy reports |
-| 015 | `add_debts_and_consignment` | Debt & consignment tables |
-| 016 | `grant_debt_consignment_permissions` | RLS for debt/consignment |
-| 017 | `consignment_two_models` | Reseller & daily models |
-| 018 | `enable_realtime_consignment` | Realtime subscriptions |
-| 019 | `fix_categories_unique` | Category uniqueness |
-| 020 | `migrate_debt_to_reseller` | Debt migration |
-| 021 | `integrate_debt_transactions` | Debt transaction integration |
+The database relies on sequential migration files located in the `assets/` folder to set up schema structures, constraints, and Row Level Security:
+
+| Index | Migration Name | Focus area |
+| :--- | :--- | :--- |
+| **001** | `initial_schema` | Creates primary user, business, category, and ledger tables. |
+| **002** | `qris_storage_bucket` | Initializes Supabase storage buckets for hosting QRIS images. |
+| **003** | `demo_accounts` | Seeds standard accounts for demo verification. |
+| **004** | `public_passwords` | Sets up secure password checking triggers. |
+| **005** | `update_rls_policies` | Activates Row Level Security on tables. |
+| **006** | `public_auth` | Configures auth handler routines. |
+| **007** | `drop_unused_policies` | Removes redundant access routines. |
+| **008** | `allow_anon_rls` | Custom rules for anonymous logins (first onboarding step). |
+| **009** | `insert_demo_users` | Populates demo schemas with seed data. |
+| **010** | `username_login` | Migrates authentication from emails to custom usernames. |
+| **011** | `qris_mime_types` | Restricts QRIS uploads to image MIME files only. |
+| **012** | `fix_qris_storage_policies` | Sets up read/write policies on storage directories. |
+| **013** | `simplify_qris_storage_policies`| Optimizes bucket RLS checks. |
+| **014** | `drop_financial_reports` | Drops legacy pre-compiled reports in favor of dynamic widgets. |
+| **015** | `add_debts_and_consignment` | Creates debt trackers, reseller tables, and consignment logs. |
+| **016** | `grant_debt_consignment_permissions` | Adds RLS permissions for staff and managers on debt logs. |
+| **017** | `consignment_two_models` | Separates consignments into daily records and reseller records. |
+| **018** | `enable_realtime_consignment` | Connects Supabase Realtime tracking to consignment updates. |
+| **019** | `fix_categories_unique` | Ensures category names are unique per business entity. |
+| **020** | `migrate_debt_to_reseller` | Restructures older debt columns into the modern reseller model. |
+| **021** | `integrate_debt_transactions` | Automates transaction creation when debt payments are cleared. |
 
 </details>
-
-<br />
 
 ---
-
-<br />
 
 ## 📦 Packages
 
-| Package | Purpose | Why This One |
-|:--------|:--------|:-------------|
-| `flutter_riverpod` | State management | Compile-safe, testable, no context needed |
-| `supabase_flutter` | Backend integration | Open-source, excellent Flutter SDK |
-| `flutter_dotenv` | Environment config | Simple `.env` file loading |
-| `connectivity_plus` | Network detection | Cross-platform connectivity status |
-| `flutter_svg` | SVG rendering | Best SVG support for Flutter |
-| `fl_chart` | Charts & graphs | Beautiful, customizable, performant |
-| `image_picker` | Camera/gallery | Native image selection |
-| `google_fonts` | Typography | Runtime font loading, no bundling |
-| `intl` | Formatting | Indonesian locale support |
-| `sentry` | Crash reporting | Industry-standard error tracking |
-| `flutter_local_notifications` | Notifications | Reliable local reminders |
-| `shared_preferences` | Local storage | Simple key-value persistence |
-| `path_provider` | File paths | Platform-specific directories |
-| `timezone` | Timezone data | Accurate notification scheduling |
+We use these package dependencies to build a production-ready application:
 
-<br />
+* **[flutter_riverpod](https://pub.dev/packages/flutter_riverpod)**: Compile-safe, reactive state caching.
+* **[supabase_flutter](https://pub.dev/packages/supabase_flutter)**: Connects authentication, storage buckets, and Postgres tables.
+* **[fl_chart](https://pub.dev/packages/fl_chart)**: High-performance data graphs.
+* **[sentry_flutter](https://pub.dev/packages/sentry_flutter)**: Real-time telemetry, crash reports, and runtime exceptions.
+* **[flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)**: Local task scheduling and daily entry reminders.
+* **[connectivity_plus](https://pub.dev/packages/connectivity_plus)**: Detects internet connections to trigger network indicators.
+* **[flutter_svg](https://pub.dev/packages/flutter_svg)**: Vector rendering of QRIS codes.
+* **[shared_preferences](https://pub.dev/packages/shared_preferences)**: Stores local theme settings and session tokens.
 
 ---
-
-<br />
 
 ## ⚡ Performance
 
-| Optimization | How It's Implemented |
-|:-------------|:---------------------|
-| 📄 **Pagination** | `PaginatedListNotifier` for transactions, debts, consignments |
-| 💾 **Query Caching** | `QueryCache` with configurable TTL reduces API calls |
-| 🦥 **Lazy Loading** | On-demand screen initialization |
-| 🔒 **Const Widgets** | Extensive `const` usage minimizes rebuilds |
-| 📊 **Chart Optimization** | Efficient data points for smooth rendering |
-| 🖼️ **Image Optimization** | SVG for QRIS (resolution-independent) |
-| 🛡️ **Error Boundaries** | `GlobalErrorBoundary` prevents cascade crashes |
-| 🔄 **Zone Handling** | Catch unhandled async errors gracefully |
-
-<br />
+To ensure smooth performance on all devices, we implemented these optimizations:
+* **Paginated Loading**: Built a generic `PaginatedListNotifier` to query transactions, debts, and consignments in batches rather than loading full lists.
+* **Cached Inquiries**: Integrated a `QueryCache` utility with custom Time-To-Live (TTL) policies to avoid duplicate backend API requests.
+* **Widget Lifecycle Boundaries**: Used `const` declarations across the UI hierarchy to reduce rebuild counts.
+* **Lazy Initialization**: Configured feature-based loaders to launch pages only when requested.
+* **Global Error Isolation**: Bound the top-level tree in a `GlobalErrorBoundary` to catch runtime rendering errors and display a clean fallback screen rather than crashing.
 
 ---
-
-<br />
 
 ## 🔒 Security
 
-| Measure | Implementation |
-|:--------|:---------------|
-| 🔐 **Row Level Security** | PostgreSQL RLS — tenants cannot access each other's data |
-| 🎭 **Role-Based Access** | Owner / Manager / Staff with distinct permissions |
-| 🔑 **Environment Variables** | Secrets in `.env` (gitignored) |
-| 🌐 **HTTPS Only** | All Supabase communication over TLS |
-| ✅ **Input Validation** | `ErrorHandler.classify()` for typed errors |
-| 🎫 **JWT Tokens** | Supabase Auth with automatic refresh |
-| 🐛 **Crash Reporting** | Sentry with sanitized error data |
-
-<br />
+* **Row Level Security (RLS)**: PostgreSQL enforces data isolation at the database level. Users cannot access data belonging to other businesses.
+* **Role-Based Access Control**: API queries are restricted. For instance, staff users are blocked from viewing P&L charts or deleting businesses.
+* **Encrypted Sessions**: JWT sessions are managed securely by Supabase and refreshed automatically on the device.
+* **Sanitized Logs**: Sentry configurations filter and remove sensitive parameters (e.g., user passwords) before shipping stack traces.
 
 ---
-
-<br />
 
 ## 🧪 Testing
 
 ```bash
-# Run all tests
+# Execute all local test suites
 flutter test
 
-# Run with coverage
+# Run tests and output coverage data
 flutter test --coverage
 
-# View coverage report
+# Generate and view HTML coverage reports
 genhtml coverage/lcov.info -o coverage/html
 open coverage/html/index.html
 ```
 
-<details>
-<summary><strong>📊 Test Structure</strong></summary>
-
-<br />
-
-```
-test/
-└── widget_test.dart        # Smoke test for SheressApp
-```
-
-> The test suite is currently minimal. Expanding coverage is on the roadmap.
-
-</details>
-
-<br />
+Currently, the app contains basic widget smoke tests (`test/widget_test.dart`). Expanding test coverage for repositories, view models, and providers is planned for future updates.
 
 ---
 
-<br />
-
 ## 📦 Build
 
-### Android APK
+### Android
 
 ```bash
-# Debug
+# Build a debug APK
 flutter build apk --debug
 
-# Release
+# Build a release APK
 flutter build apk --release
 
-# Split by ABI (recommended)
+# Build split APKs per ABI (reduces download size)
 flutter build apk --split-per-abi
-```
-
-### Android App Bundle
-
-```bash
-flutter build appbundle --release
 ```
 
 ### Web
 
 ```bash
-# Standard build
-flutter build web --release
+# Build the production web bundle
+flutter build web --release --web-renderer canvaskit
 
-# With base href
-flutter build web --base-href="/sheress/"
+# Build with a custom web base path
+flutter build web --release --base-href="/sheress/"
 ```
-
-### Windows
-
-```bash
-flutter build windows --release
-```
-
-<br />
 
 ---
-
-<br />
 
 ## 🗺️ Roadmap
 
-- [x] ✅ Authentication (username login)
-- [x] ✅ Role-based access (Owner / Manager / Staff)
-- [x] ✅ Multi-business management
-- [x] ✅ Transaction tracking (income/expense)
-- [x] ✅ Financial dashboard with charts
-- [x] ✅ QRIS payment integration
-- [x] ✅ Debt & consignment management
-- [x] ✅ Dark / Light theme
-- [x] ✅ Offline detection overlay
-- [x] ✅ Sentry crash reporting
-- [x] ✅ Local notifications
-- [x] ✅ P&L financial reports
-- [ ] 🔲 Push notifications (FCM)
-- [ ] 🔲 Export reports to PDF
-- [ ] 🔲 Multi-language support (i18n)
-- [ ] 🔲 Biometric authentication
-- [ ] 🔲 Receipt scanning (OCR)
-- [ ] 🔲 Realtime sync (Supabase Realtime)
-- [ ] 🔲 Unit & widget tests (80%+ coverage)
-- [ ] 🔲 CI/CD pipeline (GitHub Actions)
-- [ ] 🔲 iOS support
-
-<br />
+- [x] Username-based login and authentication
+- [x] Multi-business tenant switching
+- [x] Dynamic visual P&L dashboards and ledger listings
+- [x] Role-Based Access Control (Owner / Manager / Staff)
+- [x] Custom QRIS vector image rendering
+- [x] Debt tracking directory and consignment records
+- [x] Local notification alerts and scheduled daily reminders
+- [x] Global Exception Boundaries & Network Status Indicator
+- [x] Sentry SDK monitoring integration
+- [ ] Push Notifications using Firebase Cloud Messaging (FCM)
+- [ ] PDF report export and sharing features
+- [ ] Multi-Language support (Localization for id_ID and en_US)
+- [ ] Biometric login (FaceID / Fingerprint)
+- [ ] OCR-based receipt scanning and automated input
+- [ ] Offline database sync using local SQLite or Hive databases (v2)
 
 ---
-
-<br />
 
 ## ❓ FAQ
 
 <details>
-<summary><strong>Why Supabase instead of Firebase?</strong></summary>
+<summary><strong>Why choose Supabase instead of Firebase?</strong></summary>
 
 <br />
 
-Supabase provides a ** PostgreSQL database ** with ** Row Level Security **, which is perfect for multi -tenant apps. It's open - source, has excellent Flutter support, and the free tier is generous.
+Supabase uses a relational **PostgreSQL database** with native **Row Level Security (RLS)**, making it highly secure and easy to implement multi-tenant data structures. It also provides transparent SQL queries and schemas out of the box, unlike Firebase's NoSQL document structure.
 
 </details>
 
 <details>
-<summary><strong>Why Riverpod over Bloc or GetX?</strong></summary>
+<summary><strong>Why is Riverpod preferred for state management?</strong></summary>
 
 <br />
 
-Riverpod is ** compile - safe **, requires ** no BuildContext **, and has excellent testability. It's the evolution of Provider with better developer experience.
+Riverpod is **compile-safe**, does **not require a BuildContext**, and makes caching and testing state incredibly straightforward. It avoids the boilerplates of Bloc while offering more safety than Provider.
 
 </details>
 
 <details>
-<summary><strong>Can I use this app offline?</strong></summary>
+<summary><strong>Can this app be used without an internet connection?</strong></summary>
 
 <br />
 
-Sheress detects network connectivity and shows an offline overlay. Full offline mode with local database sync is planned for v2.
+Sheress monitors network states and prompts an offline overlay indicator when the connection drops. The app currently requires an active connection to write logs to Supabase, but local caching and offline database sync (v2) are planned for the future.
 
 </details>
 
 <details>
-<summary><strong>How does multi-tenancy work?</strong></summary>
+<summary><strong>How is multi-business data isolation secured?</strong></summary>
 
 <br />
 
-Each user is assigned to one or more businesses with a specific role (Owner, Manager, Staff). PostgreSQL Row Level Security ensures users can only access data for their assigned businesses.
+Every user is linked to a business entity with a designated role (Owner, Manager, Staff). Supabase's database enforces Row Level Security (RLS) policies on every query. If a user tries to query data without a valid membership, PostgreSQL rejects the request immediately.
 
 </details>
-
-<details>
-<summary><strong>Is this production-ready?</strong></summary>
-
-<br />
-
-Yes. The app uses Sentry for crash reporting, proper error handling, RLS for security, and follows Clean Architecture principles. It's actively developed and used.
-
-</details>
-
-<br />
 
 ---
-
-<br />
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how:
+We welcome contributions to Sheress! Follow these steps to submit changes:
 
-### 1. Fork & Clone
+1. **Fork the Repository** on GitHub.
+2. **Create a Feature Branch** (`git checkout -b feature/amazing-feature`).
+3. **Commit Your Changes** using Conventional Commits guidelines (`git commit -m "feat: add amazing feature"`).
+4. **Push to Your Fork** (`git push origin feature/amazing-feature`).
+5. **Open a Pull Request** to our `main` branch.
 
-```bash
-git clone https://github.com/your-username/sheress.git
-cd sheress
-```
+### Commit Conventions
 
-### 2. Create Branch
-
-```bash
-git checkout -b feature/amazing-feature
-```
-
-### 3. Commit (Conventional Commits)
-
-```bash
-git commit -m "feat: add amazing feature"
-git commit -m "fix: resolve login issue"
-git commit -m "docs: update README"
-```
-
-### 4. Push & PR
-
-```bash
-git push origin feature/amazing-feature
-```
-
-Then open a Pull Request on GitHub.
-
-### Commit Types
-
-| Type | Description |
-|:-----|:------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation |
-| `style` | Formatting (no code change) |
-| `refactor` | Code restructuring |
-| `test` | Adding tests |
-| `chore` | Maintenance tasks |
-
-<br />
+| Type | When to Use |
+| :--- | :--- |
+| `feat` | Adding a new feature |
+| `fix` | Resolving a bug or issue |
+| `docs` | Modifying documentation files |
+| `style` | Layout formatting or styling changes without code modification |
+| `refactor` | Restructuring internal code logic without changing feature behavior |
+| `test` | Adding missing tests or correcting existing test files |
+| `chore` | Maintenance tasks, library upgrades, or build script tweaks |
 
 ---
 
-<br />
-
 ## 📄 License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the terms of the **MIT License**.
 
-```
+```text
 MIT License
 
 Copyright (c) 2026 Sheress
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject
-to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-<br />
-
 ---
-
-<br />
 
 ## 👨‍💻 Author
 
@@ -909,36 +664,26 @@ SOFTWARE.
 
 **Built with ❤️ by**
 
-<br />
-
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/username)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rohmansyah23)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/username)
 [![Portfolio](https://img.shields.io/badge/Portfolio-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://yourportfolio.com)
 [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:your@email.com)
 
 </div>
 
-<br />
-
 ---
-
-<br />
 
 ## 🙏 Acknowledgements
 
-Built with these amazing technologies:
+We want to thank the open-source community behind these excellent resources:
 
-- [Flutter](https://flutter.dev) — Beautiful native apps in record time
-- [Supabase](https://supabase.com) — Open source Firebase alternative
-- [Riverpod](https://riverpod.dev) — Simple, compile-safe state management
-- [fl_chart](https://flchart.dev) — Powerful Flutter chart library
-- [Sentry](https://sentry.io) — Application monitoring & error tracking
-- [Google Fonts](https://fonts.google.com) — Inter font family
-- [Material Design 3](https://m3.material.io) — Design system
-
-<br />
-
----
+* [Flutter](https://flutter.dev) — Multi-platform application builder.
+* [Supabase](https://supabase.com) — Open-source Backend-as-a-Service.
+* [Riverpod](https://riverpod.dev) — Compile-safe state manager.
+* [fl_chart](https://flchart.dev) — Visual graphic library.
+* [Sentry](https://sentry.io) — Crash telemetry.
+* [Google Fonts](https://fonts.google.com) — Inter typeface source.
+* [Material Design 3](https://m3.material.io) — Visual design language.
 
 <br />
 
@@ -946,16 +691,10 @@ Built with these amazing technologies:
 
 **Made with 🇮🇩 by Indonesian Developer**
 
-<br />
-
-⭐ **Star this repo if you find it useful!**
+⭐ **Star this repository if you find it useful!**
 
 <br />
 
-<sub>
-
-[Back to Top](#-quick-overview)
-
-</sub>
+<sub>[Back to Top](#-quick-overview)</sub>
 
 </div>

@@ -102,39 +102,13 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.s12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<ThemeMode>(
-                      segments: [
-                        ButtonSegment(
-                          value: ThemeMode.light,
-                          icon: const Icon(Icons.light_mode_rounded, size: 22),
-                          label: themeMode == ThemeMode.light ? const Text('Terang') : null,
-                        ),
-                        ButtonSegment(
-                          value: ThemeMode.system,
-                          icon: const Icon(Icons.settings_brightness_rounded, size: 22),
-                          label: themeMode == ThemeMode.system ? const Text('Sistem') : null,
-                        ),
-                        ButtonSegment(
-                          value: ThemeMode.dark,
-                          icon: const Icon(Icons.dark_mode_rounded, size: 22),
-                          label: themeMode == ThemeMode.dark ? const Text('Gelap') : null,
-                        ),
-                      ],
-                      selected: {themeMode},
-                      onSelectionChanged: (Set<ThemeMode> selected) {
-                        ref
-                            .read(themeModeProvider.notifier)
-                            .setThemeMode(selected.first);
-                      },
-                      showSelectedIcon: false,
-                      style: SegmentedButton.styleFrom(
-                        foregroundColor: isDark ? Colors.white : AppTheme.primary,
-                        selectedForegroundColor: Colors.white,
-                        selectedBackgroundColor: AppTheme.primaryColorTheme(context),
-                      ),
-                    ),
+                  _ThemeSegmentedButton(
+                    currentMode: themeMode,
+                    onSelectionChanged: (selectedMode) {
+                      ref
+                          .read(themeModeProvider.notifier)
+                          .setThemeMode(selectedMode);
+                    },
                   ),
                   const SizedBox(height: AppSpacing.s8),
                   Text(
@@ -734,6 +708,159 @@ class _NotificationReminderCardState
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeSegmentedButton extends StatelessWidget {
+  final ThemeMode currentMode;
+  final ValueChanged<ThemeMode> onSelectionChanged;
+
+  const _ThemeSegmentedButton({
+    required this.currentMode,
+    required this.onSelectionChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        // Total width minus border (2 pixels)
+        final availableWidth = totalWidth - 2;
+
+        // Subtract 2 pixels for the two dividers of width 1
+        final segmentsWidth = availableWidth - 2;
+
+        final selectedWidth = segmentsWidth * 0.50;
+        final unselectedWidth = segmentsWidth * 0.25;
+
+        return Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: isDark ? Colors.grey[900] : Colors.grey[100],
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            border: Border.all(
+              color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+              width: 1,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.sm - 1),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              child: SizedBox(
+                width: availableWidth,
+                child: Row(
+                  children: [
+                    _buildSegment(
+                      context,
+                      mode: ThemeMode.light,
+                      icon: Icons.light_mode_rounded,
+                      label: 'Terang',
+                      width: currentMode == ThemeMode.light ? selectedWidth : unselectedWidth,
+                      isSelected: currentMode == ThemeMode.light,
+                    ),
+                    _buildDivider(isDark),
+                    _buildSegment(
+                      context,
+                      mode: ThemeMode.system,
+                      icon: Icons.settings_brightness_rounded,
+                      label: 'Sistem',
+                      width: currentMode == ThemeMode.system ? selectedWidth : unselectedWidth,
+                      isSelected: currentMode == ThemeMode.system,
+                    ),
+                    _buildDivider(isDark),
+                    _buildSegment(
+                      context,
+                      mode: ThemeMode.dark,
+                      icon: Icons.dark_mode_rounded,
+                      label: 'Gelap',
+                      width: currentMode == ThemeMode.dark ? selectedWidth : unselectedWidth,
+                      isSelected: currentMode == ThemeMode.dark,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDivider(bool isDark) {
+    return Container(
+      width: 1,
+      height: double.infinity,
+      color: isDark ? Colors.grey[800] : Colors.grey[300],
+    );
+  }
+
+  Widget _buildSegment(
+    BuildContext context, {
+    required ThemeMode mode,
+    required IconData icon,
+    required String label,
+    required double width,
+    required bool isSelected,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final selectedBgColor = AppTheme.primaryColorTheme(context);
+    final selectedFgColor = Colors.white;
+    final unselectedFgColor = isDark ? Colors.white70 : AppTheme.primaryColorTheme(context);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      width: width,
+      height: double.infinity,
+      color: isSelected ? selectedBgColor : Colors.transparent,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => onSelectionChanged(mode),
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    size: 20,
+                    color: isSelected ? selectedFgColor : unselectedFgColor,
+                  ),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    child: isSelected
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: AppSpacing.s8),
+                              Text(
+                                label,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: selectedFgColor,
+                                ),
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
