@@ -32,6 +32,8 @@ class BackupService {
     'consignments',
     'consignment_items',
     'consignment_settlements',
+    'push_tokens',
+    'owner_notifications',
   ];
 
   Future<File> exportDataAsSql(SupabaseClient supabase) async {
