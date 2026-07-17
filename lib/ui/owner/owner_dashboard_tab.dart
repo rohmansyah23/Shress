@@ -8,21 +8,15 @@ import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/finance_bar_chart.dart';
 import '../../data/local/models/business_model.dart';
+import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/transaction_provider.dart';
 import '../auth/login_screen.dart';
-import '../onboarding/onboarding_screen.dart';
-import '../dashboard/dashboard_screen.dart';
-import 'create_business_screen.dart';
 import 'user_management_panel.dart';
-import '../reports/owner_report_screen.dart';
 import '../transaction/transaction_sheet.dart';
-import '../transaction/transaction_history_screen.dart';
 import '../settings/settings_screen.dart';
-import '../category/category_management_screen.dart';
-import 'manage_businesses_screen.dart';
 import 'send_notification_screen.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
@@ -40,6 +34,18 @@ enum TrendTypeFilter {
   final String label;
   const TrendTypeFilter(this.label);
 }
+
+final recentTransactionsProvider = FutureProvider.family<List<TransactionModel>, String>((ref, businessIdsKey) async {
+  ref.watch(transactionRefreshProvider);
+  if (businessIdsKey.isEmpty) return [];
+  final businessIds = businessIdsKey.split(',').map(int.parse).toList();
+  return await SupabaseService.instance.getTransactionsPage(
+    businessId: 0,
+    offset: 0,
+    limit: 5,
+    businessIds: businessIds,
+  );
+});
 
 class OwnerDashboardTab extends ConsumerStatefulWidget {
   final dynamic user;
@@ -75,6 +81,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
             filter: _selectedTrendFilter,
           )),
         );
+        final recentTransactionsAsync = ref.watch(recentTransactionsProvider(idsKey));
 
         return RefreshIndicator(
           onRefresh: () async {
@@ -101,6 +108,124 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
 
               _buildTotalNetProfit(businesses),
               const SizedBox(height: AppSpacing.s12),
+              _buildFinanceOtherSummary(businesses),
+              const SizedBox(height: AppSpacing.s16),
+
+              Text('Menu Lainnya', style: AppTheme.heading3),
+              const SizedBox(height: AppSpacing.s12),
+              Row(
+                children: [
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.add_circle_rounded,
+                      label: 'Tambah\nTransaksi',
+                      color: AppTheme.infoColorTheme(context),
+                      onTap: () {
+                        _pickBusinessAndAdd(context, businesses);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.receipt_long_rounded,
+                      label: 'Piutang',
+                      color: AppTheme.warningColorTheme(context),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => OwnerDebtorsScreen(businesses: businesses),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.inventory_2_rounded,
+                      label: 'Titipan',
+                      color: AppTheme.secondaryColorTheme(context),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => OwnerConsignorsScreen(businesses: businesses),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s12),
+              Row(
+                children: [
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.category_rounded,
+                      label: 'Kelola\nKategori',
+                      color: AppTheme.warningColorTheme(context),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => OwnerCategoryManagementScreen(businesses: businesses),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.people_rounded,
+                      label: 'Kelola\nUser',
+                      color: AppTheme.infoColorTheme(context),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const UserManagementPanel(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s12),
+              Row(
+                children: [
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.notifications_active_outlined,
+                      label: 'Kirim\nPesan',
+                      color: AppTheme.lossColorTheme(context),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SendNotificationScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s12),
+                  Expanded(
+                    child: QuickActionButton(
+                      icon: Icons.settings_rounded,
+                      label: 'Pengaturan',
+                      color: AppTheme.infoColorTheme(context),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SettingsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s20),
 
               // === Trend Chart dengan Filter ===
               Text('Tren Keuangan', style: AppTheme.heading3),
@@ -261,190 +386,159 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   ),
                 ),
               ),
+              const SizedBox(height: AppSpacing.s24),
+              Text(
+                'Transaksi Terbaru',
+                style: AppTheme.heading3,
+              ),
               const SizedBox(height: AppSpacing.s12),
+              recentTransactionsAsync.when(
+                data: (recentTransactions) {
+                  if (recentTransactions.isEmpty) {
+                    return Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.s24),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.receipt_long_rounded,
+                                size: AppIconSize.s48,
+                                color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.4),
+                              ),
+                              const SizedBox(height: AppSpacing.s12),
+                              const Text(
+                                'Belum ada transaksi',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }
 
-              Text('Bisnis Saya', style: AppTheme.heading3),
-              const SizedBox(height: AppSpacing.s12),
+                  return Column(
+                    children: List.generate(recentTransactions.length, (i) {
+                      final tx = recentTransactions[i];
+                      final isIncome = tx.type == AppConstants.typeIncome;
+                      final bizName = businesses.firstWhere(
+                        (b) => b.businessId == tx.businessId,
+                        orElse: () => BusinessModel(
+                          businessId: tx.businessId,
+                          name: 'Bisnis',
+                        ),
+                      ).name;
 
-              if (businesses.isEmpty)
-                _buildEmptyBusinesses()
-              else ...[
-                for (int i = 0; i < businesses.length; i++) ...[
-                  FadeInEntrance(
-                    delay: Duration(milliseconds: i * 50),
-                    child: _BusinessCardWithSummary(
-                      business: businesses[i],
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => DashboardScreen(
-                              business: businesses[i],
-                              showAppBar: true,
-                              onNavigateToRiwayat: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => TransactionHistoryScreen(
-                                      business: businesses[i],
-                                      showAppBar: true,
-                                    ),
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: i < recentTransactions.length - 1 ? 8.0 : 0.0,
+                        ),
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.s12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: (isIncome
+                                            ? AppTheme.profitColorTheme(context)
+                                            : AppTheme.lossColorTheme(context))
+                                        .withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                                   ),
-                                );
-                              },
+                                  child: Icon(
+                                    isIncome
+                                        ? Icons.trending_up_rounded
+                                        : Icons.trending_down_rounded,
+                                    color: isIncome
+                                        ? AppTheme.profitColorTheme(context)
+                                        : AppTheme.lossColorTheme(context),
+                                    size: AppIconSize.s20,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.s12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        bizName,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt),
+                                        style: AppTheme.caption.copyWith(
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                      if (tx.description?.isNotEmpty == true) ...[
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          tx.description!,
+                                          style: AppTheme.caption,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  FormatHelpers.rupiah(tx.amount),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: isIncome
+                                        ? AppTheme.profitColorTheme(context)
+                                        : AppTheme.lossColorTheme(context),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        );
-                      },
-                      onLaporan: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => OwnerReportScreen(
-                              initialBusinessId: businesses[i].businessId,
-                              initialPeriod: OwnerPeriodFilter.thisWeek,
-                            ),
-                          ),
-                        );
-                      },
+                        ),
+                      );
+                    }),
+                  );
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.s24),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                error: (err, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.s12),
+                    child: Text(
+                      'Gagal memuat transaksi',
+                      style: TextStyle(color: AppTheme.lossColorTheme(context)),
                     ),
                   ),
-                  if (i < businesses.length - 1)
-                    const SizedBox(height: AppSpacing.s8),
-                ],
+                ),
+              ),
+              if (businesses.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.s8),
+                Center(
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.history_rounded, size: AppIconSize.s18),
+                    label: const Text('Lihat Semua'),
+                    onPressed: () {
+                      widget.onTabSwitch?.call(1);
+                    },
+                  ),
+                ),
               ],
-
-              const SizedBox(height: AppSpacing.s8),
-              _buildFinanceOtherSummary(businesses),
-              const SizedBox(height: AppSpacing.s12),
-              Text('Menu Lainnya', style: AppTheme.heading3),
-              const SizedBox(height: AppSpacing.s12),
-              Row(
-                children: [
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.add_circle_rounded,
-                      label: 'Tambah\nTransaksi',
-                      color: AppTheme.infoColorTheme(context),
-                      onTap: () {
-                        _pickBusinessAndAdd(context, businesses);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.receipt_long_rounded,
-                      label: 'Piutang',
-                      color: AppTheme.warningColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => OwnerDebtorsScreen(businesses: businesses),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.inventory_2_rounded,
-                      label: 'Titipan',
-                      color: AppTheme.secondaryColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => OwnerConsignorsScreen(businesses: businesses),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              Row(
-                children: [
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.store_rounded,
-                      label: 'Kelola\nBisnis',
-                      color: AppTheme.profitColorTheme(context),
-                      onTap: () async {
-                        await Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const ManageBusinessesScreen(),
-                          ),
-                        );
-                        ref.invalidate(allBusinessesProvider);
-                        ref.invalidate(transactionRefreshProvider);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.category_rounded,
-                      label: 'Kelola\nKategori',
-                      color: AppTheme.warningColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => OwnerCategoryManagementScreen(businesses: businesses),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.people_rounded,
-                      label: 'Kelola\nUser',
-                      color: AppTheme.infoColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const UserManagementPanel(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              Row(
-                children: [
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.notifications_active_outlined,
-                      label: 'Kirim\nPesan',
-                      color: AppTheme.lossColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SendNotificationScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.settings_rounded,
-                      label: 'Pengaturan',
-                      color: AppTheme.infoColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SettingsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: AppSpacing.s24),
             ],
           ),
@@ -502,73 +596,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     );
   }
 
-  Widget _buildEmptyBusinesses() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        child: Column(
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryContainerColorTheme(context),
-                borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
-              ),
-              child: Icon(
-                Icons.store_rounded,
-                size: AppIconSize.s32,
-                color: AppTheme.primaryColorTheme(context),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s16),
-            const Text(
-              'Selamat datang di Sheress!',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: AppSpacing.s8),
-            Text(
-              'Anda belum memiliki bisnis.\nBuat bisnis pertama Anda atau ikuti panduan\nuntuk memulai.',
-              textAlign: TextAlign.center,
-              style: AppTheme.caption.copyWith(height: 1.5),
-            ),              const SizedBox(height: AppSpacing.s20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.rocket_launch_rounded, size: AppIconSize.s18),
-                  label: const Text('Panduan Cepat'),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const OnboardingScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(width: AppSpacing.s12),
-                FilledButton.icon(
-                  icon: const Icon(Icons.add_business_rounded, size: AppIconSize.s18),
-                  label: const Text('Buat Bisnis'),
-                  onPressed: () async {
-                    final result = await Navigator.of(context).push<bool>(
-                      MaterialPageRoute(
-                        builder: (_) => const CreateBusinessScreen(),
-                      ),
-                    );
-                    if (result == true) {
-                      ref.invalidate(allBusinessesProvider);
-                      ref.invalidate(transactionRefreshProvider);
-                    }
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Removed unused _buildEmptyBusinesses helper method.
 
   void _pickBusinessAndAdd(
     BuildContext context,
@@ -768,138 +796,4 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
   }
 }
 
-class _BusinessCardWithSummary extends ConsumerWidget {
-  final BusinessModel business;
-  final VoidCallback onTap;
-  final VoidCallback onLaporan;
-
-  const _BusinessCardWithSummary({
-    required this.business,
-    required this.onTap,
-    required this.onLaporan,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final summaryAsync = ref.watch(
-      businessSummaryProvider(business.businessId),
-    );
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final netProfit = summaryAsync.asData?.value['netProfit'] as num?;
-    final isLoading = summaryAsync.isLoading;
-    final isProfit = netProfit != null && netProfit >= 0;
-
-    return Card(
-      child: InkWell(
-
-        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                  gradient: LinearGradient(
-                    colors: [
-                      isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08),
-                      isDark ? AppTheme.accent : AppTheme.primary,
-                      (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.85),
-                    ],
-                    stops: const [0.0, 0.1, 1.0],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: isDark
-                      ? [
-                          BoxShadow(
-                            color: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.25),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withValues(alpha: 0.05),
-                            blurRadius: 2,
-                            spreadRadius: -1,
-                            offset: const Offset(0, 1),
-                          ),
-                        ]
-                      : [
-                          BoxShadow(
-                            color: (isDark ? AppTheme.accent : AppTheme.primary).withValues(alpha: 0.18),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                ),
-                child: const Icon(
-                  Icons.store_rounded,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(business.name, style: AppTheme.heading3),
-                    const SizedBox(height: AppSpacing.s4),
-                    if (isLoading)
-                      const Text('Memuat...', style: TextStyle(fontSize: 12))
-                    else
-                      Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isProfit
-                                  ? AppTheme.profitColorTheme(context)
-                                  : AppTheme.lossChartColor(context),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.s6),
-                          Text(
-                            netProfit != null
-                                ? 'Laba/Rugi: ${FormatHelpers.rupiah(netProfit.toDouble())}'
-                                : 'Belum ada data',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isProfit
-                                  ? AppTheme.profitColorTheme(context)
-                                  : AppTheme.lossColorTheme(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.bar_chart_rounded,
-                  color: netProfit != null
-                      ? (isProfit
-                          ? AppTheme.profitColorTheme(context)
-                          : AppTheme.lossColorTheme(context))
-                      : (isDark ? AppTheme.accent : AppTheme.primary),
-                ),
-                tooltip: 'Laporan',
-                onPressed: onLaporan,
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: AppTheme.onSurfaceVariantColorTheme(context),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+// Removed unused _BusinessCardWithSummary widget.

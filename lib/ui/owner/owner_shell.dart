@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../data/local/models/business_model.dart';
 import '../../providers/auth_provider.dart';
-import '../transaction/transaction_sheet.dart';
 import 'owner_dashboard_tab.dart';
 import 'owner_history_screen.dart';
+import 'owner_businesses_tab.dart';
 import '../reports/owner_report_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_radius.dart';
 
 class OwnerShell extends ConsumerStatefulWidget {
   const OwnerShell({super.key});
@@ -28,7 +26,7 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
       case 1:
         return 'Riwayat Transaksi';
       case 2:
-        return '';
+        return 'Bisnis Saya';
       case 3:
         return 'Laporan Keuangan';
       case 4:
@@ -38,47 +36,7 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
     }
   }
 
-  void _handleAddTransaction() async {
-    final businesses = await ref.read(allBusinessesProvider.future);
-    if (!mounted || businesses.isEmpty) return;
 
-    if (businesses.length == 1) {
-      TransactionSheet.show(context, businesses.first);
-      return;
-    }
-
-    final selected = await showDialog<BusinessModel>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
-        ),
-        title: const Text('Pilih Bisnis'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: businesses.length,
-            separatorBuilder: (_, _) => Divider(height: 1, color: Theme.of(context).dividerColor),
-            itemBuilder: (_, i) => ListTile(
-              leading: const Icon(Icons.store_rounded),
-              title: Text(businesses[i].name),
-              onTap: () => Navigator.pop(ctx, businesses[i]),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-        ],
-      ),
-    );
-    if (selected != null && mounted) {
-      TransactionSheet.show(context, selected);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +68,10 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
         key: ValueKey('owner_history'),
         showAppBar: false,
       ),
-      const SizedBox.shrink(key: ValueKey('owner_empty')),
+      OwnerBusinessesTab(
+        key: const ValueKey('owner_businesses'),
+        onTabSwitch: (index) => setState(() => _selectedIndex = index),
+      ),
       const OwnerReportScreen(
         key: ValueKey('owner_report'),
         showAppBar: false,
@@ -132,7 +93,7 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
       bottomNavigationBar: PfBottomNav(
         selectedIndex: _selectedIndex,
         onItemSelected: (index) => setState(() => _selectedIndex = index),
-        onAddPressed: _handleAddTransaction,
+        showCenterAddButton: false,
         items: const [
           PfNavItemData(
             icon: Icons.dashboard_outlined,
@@ -143,6 +104,11 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
             icon: Icons.history_outlined,
             activeIcon: Icons.history_rounded,
             label: 'Riwayat',
+          ),
+          PfNavItemData(
+            icon: Icons.store_outlined,
+            activeIcon: Icons.store_rounded,
+            label: 'Bisnis',
           ),
           PfNavItemData(
             icon: Icons.assessment_outlined,

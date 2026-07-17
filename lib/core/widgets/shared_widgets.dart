@@ -890,14 +890,16 @@ class PfNavItemData {
 class PfBottomNav extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onItemSelected;
-  final VoidCallback onAddPressed;
+  final VoidCallback? onAddPressed;
+  final bool showCenterAddButton;
   final List<PfNavItemData> items;
 
   const PfBottomNav({
     super.key,
     required this.selectedIndex,
     required this.onItemSelected,
-    required this.onAddPressed,
+    this.onAddPressed,
+    this.showCenterAddButton = true,
     required this.items,
   });
 
@@ -940,33 +942,62 @@ class PfBottomNav extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // First two items (indices 0, 1)
-              for (int i = 0; i < 2; i++)
-                _PfNavItem(
-                  icon: items[i].icon,
-                  activeIcon: items[i].activeIcon,
-                  label: items[i].label,
-                  isSelected: selectedIndex == i,
-                  activeColor: activeColor,
-                  inactiveColor: inactiveColor,
-                  onTap: () => onItemSelected(i),
-                ),
-              // Center add button
-              _PfAddNavButton(
-                onPressed: onAddPressed,
-                activeColor: activeColor,
-              ),
-              // Last two items (indices 2, 3)
-              for (int i = 2; i < 4; i++)
-                _PfNavItem(
-                  icon: items[i].icon,
-                  activeIcon: items[i].activeIcon,
-                  label: items[i].label,
-                  isSelected: selectedIndex == (i + 1),
-                  activeColor: activeColor,
-                  inactiveColor: inactiveColor,
-                  onTap: () => onItemSelected(i + 1),
-                ),
+              if (showCenterAddButton) ...[
+                // First two items (indices 0, 1)
+                for (int i = 0; i < 2; i++)
+                  _PfNavItem(
+                    icon: items[i].icon,
+                    activeIcon: items[i].activeIcon,
+                    label: items[i].label,
+                    isSelected: selectedIndex == i,
+                    activeColor: activeColor,
+                    inactiveColor: inactiveColor,
+                    onTap: () => onItemSelected(i),
+                  ),
+                // Center add button
+                if (onAddPressed != null)
+                  _PfCenterActionButton(
+                    icon: Icons.add_rounded,
+                    label: 'Tambah',
+                    onPressed: onAddPressed!,
+                    isSelected: false,
+                    activeColor: activeColor,
+                    inactiveColor: inactiveColor,
+                  ),
+                // Last two items (indices 2, 3)
+                for (int i = 2; i < 4; i++)
+                  _PfNavItem(
+                    icon: items[i].icon,
+                    activeIcon: items[i].activeIcon,
+                    label: items[i].label,
+                    isSelected: selectedIndex == (i + 1),
+                    activeColor: activeColor,
+                    inactiveColor: inactiveColor,
+                    onTap: () => onItemSelected(i + 1),
+                  ),
+              ] else ...[
+                // Render 5 items for Owner, with the middle item (index 2) as a floating gradient button
+                for (int i = 0; i < items.length; i++)
+                  if (i == 2)
+                    _PfCenterActionButton(
+                      icon: items[i].icon,
+                      label: items[i].label,
+                      onPressed: () => onItemSelected(i),
+                      isSelected: selectedIndex == i,
+                      activeColor: activeColor,
+                      inactiveColor: inactiveColor,
+                    )
+                  else
+                    _PfNavItem(
+                      icon: items[i].icon,
+                      activeIcon: items[i].activeIcon,
+                      label: items[i].label,
+                      isSelected: selectedIndex == i,
+                      activeColor: activeColor,
+                      inactiveColor: inactiveColor,
+                      onTap: () => onItemSelected(i),
+                    ),
+              ],
             ],
           ),
         ),
@@ -1039,17 +1070,27 @@ class _PfNavItem extends StatelessWidget {
   }
 }
 
-/// Gradient add button with shadow, placed in the center of the nav.
-class _PfAddNavButton extends StatelessWidget {
+/// Gradient action button with shadow, placed in the center of the nav.
+class _PfCenterActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
   final VoidCallback onPressed;
+  final bool isSelected;
   final Color activeColor;
+  final Color inactiveColor;
 
-  const _PfAddNavButton({required this.onPressed, required this.activeColor});
+  const _PfCenterActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    required this.isSelected,
+    required this.activeColor,
+    required this.inactiveColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Use accent/green for the + button in both themes, not nav text color
     final buttonColor = isDark ? AppTheme.darkPrimary : AppTheme.primary;
 
     return Expanded(
@@ -1066,54 +1107,53 @@ class _PfAddNavButton extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                // Gradien dasar + Trik inner shadow halus di bagian atas/kiri
                 gradient: LinearGradient(
                   colors: [
                     isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08),
                     buttonColor,
                     buttonColor.withValues(alpha: 0.85),
                   ],
-                  stops: const [0.0, 0.1, 1.0], // 10% pertama memberikan efek inner shadow tipis
+                  stops: const [0.0, 0.1, 1.0],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                // Ukuran Outer Shadow yang diperkecil & dihaluskan
                 boxShadow: isDark
                     ? [
                         BoxShadow(
-                          color: buttonColor.withValues(alpha: 0.25), // Opacity diturunkan dari 0.4
-                          blurRadius: 4,  // Dikecilkan dari 8
-                          offset: const Offset(0, 2), // Dikecilkan dari (0, 4)
+                          color: buttonColor.withValues(alpha: 0.25),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
                         BoxShadow(
-                          color: Colors.white.withValues(alpha: 0.05), // Dibuat lebih samar
-                          blurRadius: 2,  // Dikecilkan dari 4
+                          color: Colors.white.withValues(alpha: 0.05),
+                          blurRadius: 2,
                           spreadRadius: -1,
-                          offset: const Offset(0, 1), // Dikecilkan dari (0, 2)
+                          offset: const Offset(0, 1),
                         ),
                       ]
                     : [
                         BoxShadow(
-                          color: buttonColor.withValues(alpha: 0.18), // Opacity diturunkan dari 0.3
-                          blurRadius: 4,  // Dikecilkan dari 8
-                          offset: const Offset(0, 2), // Dikecilkan dari (0, 4)
+                          color: buttonColor.withValues(alpha: 0.18),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
                       ],
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(
-                  Icons.add_rounded,
+                  icon,
                   color: Colors.white,
-                  size: 24,
+                  size: 22,
                 ),
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Tambah',
+              label,
               style: AppTheme.labelSmall.copyWith(
                 fontSize: 10,
-                color: activeColor,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected ? activeColor : inactiveColor,
               ),
             ),
           ],
