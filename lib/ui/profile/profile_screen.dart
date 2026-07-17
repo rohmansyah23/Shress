@@ -75,30 +75,85 @@ class ProfileScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.s20),
+        const SizedBox(height: AppSpacing.s12),
 
         // Info Akun
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.s16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Informasi Akun', style: AppTheme.heading3),
-                const SizedBox(height: AppSpacing.s16),
-                _InfoRow(
-                    icon: Icons.badge_outlined,
-                    label: 'Nama Tampilan',
-                    value: user.displayName?.isNotEmpty == true ? user.displayName! : '-'),
-                const SizedBox(height: AppSpacing.s12),
-                _InfoRow(icon: Icons.person_outlined, label: 'Username', value: user.username),
-                const SizedBox(height: AppSpacing.s12),
-                _InfoRow(icon: Icons.badge_outlined, label: 'Role', value: user.role),
-              ],
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.s16,
+                  AppSpacing.s16,
+                  AppSpacing.s16,
+                  AppSpacing.s12,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 20,
+                      color: AppTheme.primaryColorTheme(context),
+                    ),
+                    const SizedBox(width: AppSpacing.s8),
+                    Text(
+                      'Informasi Akun',
+                      style: AppTheme.subtitle.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 1,
+                thickness: 0.5,
+                color: AppTheme.outlineColorTheme(context).withValues(alpha: 0.3),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.s16),
+                child: Column(
+                  children: [
+                    _InfoRow(
+                      icon: Icons.person_outline_rounded,
+                      label: 'Nama Tampilan',
+                      value: user.displayName?.isNotEmpty == true ? user.displayName! : '-',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s10),
+                      child: Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        color: AppTheme.outlineColorTheme(context).withValues(alpha: 0.3),
+                      ),
+                    ),
+                    _InfoRow(
+                      icon: Icons.alternate_email_rounded,
+                      label: 'Username',
+                      value: user.username,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s10),
+                      child: Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        color: AppTheme.outlineColorTheme(context).withValues(alpha: 0.3),
+                      ),
+                    ),
+                    _InfoRow(
+                      icon: Icons.shield_outlined,
+                      label: 'Role',
+                      value: user.role,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: AppSpacing.s16),
+        const SizedBox(height: AppSpacing.s8),
 
         // Menu & Pengaturan
         Card(
@@ -145,7 +200,7 @@ class ProfileScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.s16),
+        const SizedBox(height: AppSpacing.s8),
         Card(
           child: ListTile(
             leading: Icon(Icons.logout_rounded, color: AppTheme.lossColorTheme(context)),
@@ -300,14 +355,43 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: AppIconSize.s20, color: AppTheme.onSurfaceVariantColorTheme(context)),
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.s8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: AppTheme.primaryColorTheme(context),
+          ),
+        ),
         const SizedBox(width: AppSpacing.s12),
-        Text('$label: ', style: AppTheme.caption),
         Expanded(
-          child: Text(
-            value,
-            style: AppTheme.subtitle.copyWith(fontSize: 14),
-            overflow: TextOverflow.ellipsis,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: AppTheme.caption.copyWith(
+                  color: AppTheme.onSurfaceVariantColorTheme(context),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: AppTheme.subtitle.copyWith(
+                  color: AppTheme.onSurfaceColorTheme(context),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ),
       ],
