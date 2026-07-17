@@ -28,6 +28,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 import 'owner_debtors_screen.dart';
 import 'owner_consignors_screen.dart';
+import 'owner_category_management_screen.dart';
 
 import '../../core/theme/app_icon_size.dart';
 
@@ -385,7 +386,11 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       label: 'Kelola\nKategori',
                       color: AppTheme.warningColorTheme(context),
                       onTap: () {
-                        _pickBusinessAndManageCategories(context, businesses);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => OwnerCategoryManagementScreen(businesses: businesses),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -605,57 +610,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     );
   }
 
-  void _pickBusinessAndManageCategories(
-    BuildContext context,
-    List<BusinessModel> businesses,
-  ) {
-    if (businesses.isEmpty) {
-      ErrorSnackbar.showWarning(context, 'Tambahkan bisnis terlebih dahulu');
-      return;
-    }
-    if (businesses.length == 1) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => CategoryManagementScreen(business: businesses.first),
-        ),
-      );
-      return;
-    }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
-        title: const Text('Pilih Bisnis'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: businesses.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (_, i) => ListTile(
-              leading: const Icon(Icons.store_rounded),
-              title: Text(businesses[i].name),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        CategoryManagementScreen(business: businesses[i]),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-        ],
-      ),
-    );
-  }
+  // Removed unused _pickBusinessAndManageCategories helper method.
 
   Widget _buildFinanceOtherSummary(List<BusinessModel> businesses) {
     if (businesses.isEmpty) return const SizedBox.shrink();
