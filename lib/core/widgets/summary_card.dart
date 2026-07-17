@@ -60,13 +60,17 @@ class SummaryCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.s12),
-                Text(
-                  title,
-                  style: AppTheme.heading3.copyWith(
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? const Color(0xFF1E293B) // Premium Slate/Navy
-                        : Colors.white,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTheme.heading3.copyWith(
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? const Color(0xFF1E293B) // Premium Slate/Navy
+                          : Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

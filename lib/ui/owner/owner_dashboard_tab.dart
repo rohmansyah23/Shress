@@ -24,10 +24,10 @@ import '../settings/settings_screen.dart';
 import '../category/category_management_screen.dart';
 import 'manage_businesses_screen.dart';
 import 'send_notification_screen.dart';
-import '../debtors/debtors_screen.dart';
-import '../consignments/consignors_screen.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
+import 'owner_debtors_screen.dart';
+import 'owner_consignors_screen.dart';
 
 import '../../core/theme/app_icon_size.dart';
 
@@ -334,7 +334,11 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       label: 'Piutang',
                       color: AppTheme.warningColorTheme(context),
                       onTap: () {
-                        _pickBusinessForPiutang(context, businesses);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => OwnerDebtorsScreen(businesses: businesses),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -345,7 +349,11 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       label: 'Titipan',
                       color: AppTheme.secondaryColorTheme(context),
                       onTap: () {
-                        _pickBusinessForTitipan(context, businesses);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => OwnerConsignorsScreen(businesses: businesses),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -677,35 +685,45 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   (snapshot.data?['totalOwed'] as num?)?.toDouble() ?? 0;
               final activeCount = (snapshot.data?['activeCount'] as int?) ?? 0;
               return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.s16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.receipt_long_rounded,
-                            size: AppIconSize.s18,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => OwnerDebtorsScreen(businesses: businesses),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.s16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.receipt_long_rounded,
+                              size: AppIconSize.s18,
+                              color: AppTheme.warningColorTheme(context),
+                            ),
+                            const SizedBox(width: AppSpacing.s8),
+                            Text('Piutang Aktif', style: AppTheme.labelSmall),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.s8),
+                        Text(
+                          FormatHelpers.rupiah(totalOwed),
+                          style: AppTheme.amountMedium.copyWith(
                             color: AppTheme.warningColorTheme(context),
                           ),
-                          const SizedBox(width: AppSpacing.s8),
-                          Text('Piutang Aktif', style: AppTheme.labelSmall),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.s8),
-                      Text(
-                        FormatHelpers.rupiah(totalOwed),
-                        style: AppTheme.amountMedium.copyWith(
-                          color: AppTheme.warningColorTheme(context),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.s4),
-                      Text(
-                        '$activeCount hutang aktif',
-                        style: AppTheme.caption,
-                      ),
-                    ],
+                        const SizedBox(height: AppSpacing.s4),
+                        Text(
+                          '$activeCount hutang aktif',
+                          style: AppTheme.caption,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -734,35 +752,45 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   (snapshot.data?['totalOwed'] as num?)?.toDouble() ?? 0;
               final activeCount = (snapshot.data?['activeCount'] as int?) ?? 0;
               return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.s16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.inventory_2_rounded,
-                            size: AppIconSize.s18,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => OwnerConsignorsScreen(businesses: businesses),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.s16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.inventory_2_rounded,
+                              size: AppIconSize.s18,
+                              color: AppTheme.secondaryColorTheme(context),
+                            ),
+                            const SizedBox(width: AppSpacing.s8),
+                            Text('Titipan Aktif', style: AppTheme.labelSmall),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.s8),
+                        Text(
+                          FormatHelpers.rupiah(totalOwed),
+                          style: AppTheme.amountMedium.copyWith(
                             color: AppTheme.secondaryColorTheme(context),
                           ),
-                          const SizedBox(width: AppSpacing.s8),
-                          Text('Titipan Aktif', style: AppTheme.labelSmall),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.s8),
-                      Text(
-                        FormatHelpers.rupiah(totalOwed),
-                        style: AppTheme.amountMedium.copyWith(
-                          color: AppTheme.secondaryColorTheme(context),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.s4),
-                      Text(
-                        '$activeCount titipan aktif',
-                        style: AppTheme.caption,
-                      ),
-                    ],
+                        const SizedBox(height: AppSpacing.s4),
+                        Text(
+                          '$activeCount titipan aktif',
+                          style: AppTheme.caption,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -773,101 +801,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     );
   }
 
-  void _pickBusinessForPiutang(
-    BuildContext context,
-    List<BusinessModel> businesses,
-  ) {
-    if (businesses.isEmpty) return;
-    if (businesses.length == 1) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => DebtorsScreen(business: businesses.first),
-        ),
-      );
-      return;
-    }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
-        title: const Text('Pilih Bisnis'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: businesses.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (_, i) => ListTile(
-              leading: const Icon(Icons.receipt_long_rounded),
-              title: Text(businesses[i].name),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => DebtorsScreen(business: businesses[i]),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _pickBusinessForTitipan(
-    BuildContext context,
-    List<BusinessModel> businesses,
-  ) {
-    if (businesses.isEmpty) return;
-    if (businesses.length == 1) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ConsignorsScreen(business: businesses.first),
-        ),
-      );
-      return;
-    }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
-        title: const Text('Pilih Bisnis'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: businesses.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (_, i) => ListTile(
-              leading: const Icon(Icons.inventory_2_rounded),
-              title: Text(businesses[i].name),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ConsignorsScreen(business: businesses[i]),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-        ],
-      ),
-    );
-  }
+  // Removed unused _pickBusinessForPiutang and _pickBusinessForTitipan helper methods.
 
   String _trendFilterLabel(TrendFilter filter) {
     return switch (filter) {
