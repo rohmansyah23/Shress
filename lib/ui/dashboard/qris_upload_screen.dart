@@ -180,17 +180,39 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
               padding: const EdgeInsets.all(AppSpacing.s20),
               child: Column(
                 children: [
-                  Icon(Icons.qr_code_scanner_rounded,
-                      size: AppIconSize.s48, color: AppTheme.primaryColor),
+                  Icon(
+                    Icons.qr_code_scanner_rounded,
+                    size: AppIconSize.s48,
+                    color: AppTheme.primaryColorTheme(context),
+                  ),
                   const SizedBox(height: AppSpacing.s12),
-                  Text('Upload QRIS',
-                      style: AppTheme.heading3),
-                  const SizedBox(height: AppSpacing.s8),
                   Text(
-                    'QRIS ini khusus untuk bisnis "${widget.business.name}".\n'
-                    'Bisa upload dari galeri atau masukkan URL manual.',
+                    'Upload QRIS',
+                    style: AppTheme.heading3.copyWith(
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s8),
+                  RichText(
                     textAlign: TextAlign.center,
-                    style: AppTheme.caption,
+                    text: TextSpan(
+                      style: AppTheme.caption.copyWith(
+                        color: AppTheme.onSurfaceVariantColorTheme(context),
+                      ),
+                      children: [
+                        const TextSpan(text: 'QRIS ini khusus untuk bisnis '),
+                        TextSpan(
+                          text: '"${widget.business.name}"',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryColorTheme(context),
+                          ),
+                        ),
+                        const TextSpan(
+                          text: '.\nBisa upload dari galeri atau masukkan URL manual.',
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -199,6 +221,22 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
           const SizedBox(height: AppSpacing.s20),
 
           SegmentedButton<bool>(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return AppTheme.accentColorTheme(context);
+                }
+                return Theme.of(context).brightness == Brightness.dark
+                    ? AppTheme.surfaceContainerColorTheme(context)
+                    : null;
+              }),
+              foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                return Colors.white;
+              }),
+              textStyle: WidgetStateProperty.resolveWith<TextStyle?>((states) {
+                return const TextStyle(color: Colors.white, fontWeight: FontWeight.w600);
+              }),
+            ),
             segments: const [
               ButtonSegment(
                   value: false, label: Text('Dari Galeri')),

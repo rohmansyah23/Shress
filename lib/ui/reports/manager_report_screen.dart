@@ -232,13 +232,14 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
     try {
       if (_transactions.isEmpty) throw ExportException('Tidak ada data laporan');
 
-      final headers = ['Tanggal', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi'];
+      final headers = ['Tanggal', 'Bisnis', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi'];
       final rows = <List<dynamic>>[];
 
       for (final tx in _transactions) {
         final isIncome = tx.type == AppConstants.typeIncome;
         rows.add([
           FormatHelpers.displayDate(tx.transactionDate),
+          widget.business.name,
           _categoryNames[tx.categoryId] ?? 'Kategori #${tx.categoryId}',
           isIncome ? 'Uang Masuk' : 'Uang Keluar',
           tx.amount,

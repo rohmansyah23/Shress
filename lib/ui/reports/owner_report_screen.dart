@@ -386,6 +386,14 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
     };
   }
 
+  String _findBusinessName(int businessId) {
+    final b = _businesses.cast<BusinessModel?>().firstWhere(
+      (b) => b?.businessId == businessId,
+      orElse: () => null,
+    );
+    return b?.name ?? 'Bisnis #$businessId';
+  }
+
   Future<void> _exportReport(String format) async {
     final scaffold = ScaffoldMessenger.of(context);
     scaffold.clearSnackBars();
@@ -406,13 +414,14 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
     try {
       if (_transactions.isEmpty) throw ExportException('Tidak ada data laporan');
 
-      final headers = ['Tanggal', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi'];
+      final headers = ['Tanggal', 'Bisnis', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi'];
       final rows = <List<dynamic>>[];
 
       for (final tx in _transactions) {
         final isIncome = tx.type == AppConstants.typeIncome;
         rows.add([
           FormatHelpers.displayDate(tx.transactionDate),
+          _findBusinessName(tx.businessId),
           _categoryNames[tx.categoryId] ?? 'Kategori #${tx.categoryId}',
           isIncome ? 'Uang Masuk' : 'Uang Keluar',
           tx.amount,

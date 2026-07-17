@@ -392,7 +392,7 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
                                               style: AppTheme.caption.copyWith(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600,
-                                                color: AppTheme.primaryColorTheme(context),
+                                                color: AppTheme.onSurfaceVariantColorTheme(context),
                                               ),
                                             ),
                                             const Text(' • '),

@@ -321,6 +321,10 @@ class AppTheme {
   static Color accentColorTheme(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkAccent : accent;
 
+  /// Consignment/Titipan color (theme-aware, purple)
+  static Color consignmentColorTheme(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? const Color(0xFFA78BFA) : const Color(0xFF8B5CF6);
+
   /// Surface color (theme-aware)
   static Color surfaceColorTheme(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? _darkSurfaceContainer : surface;

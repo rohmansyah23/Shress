@@ -93,7 +93,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               child: Icon(
                 Icons.account_balance_rounded,
                 size: AppIconSize.s48,
-                color: AppTheme.primaryColorTheme(context),
+                color: AppTheme.onPrimaryContainerColorTheme(context),
               ),
             ),
             const SizedBox(height: AppSpacing.s24),

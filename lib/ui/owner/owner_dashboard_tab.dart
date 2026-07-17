@@ -13,6 +13,7 @@ import '../../data/remote/supabase_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/business_providers.dart';
 import '../../providers/transaction_provider.dart';
+import '../../providers/recent_selected_businesses_provider.dart';
 import '../auth/login_screen.dart';
 import 'user_management_panel.dart';
 import '../transaction/transaction_sheet.dart';
@@ -145,7 +146,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: QuickActionButton(
                       icon: Icons.inventory_2_rounded,
                       label: 'Titipan',
-                      color: AppTheme.secondaryColorTheme(context),
+                      color: AppTheme.consignmentColorTheme(context),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -189,11 +190,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              Row(
-                children: [
+                  const SizedBox(width: AppSpacing.s12),
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.notifications_active_outlined,
@@ -208,7 +205,11 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       },
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.s12),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s12),
+              Row(
+                children: [
                   Expanded(
                     child: QuickActionButton(
                       icon: Icons.settings_rounded,
@@ -607,34 +608,41 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
       TransactionSheet.show(context, businesses.first);
       return;
     }
-    showDialog(
+
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
-        title: const Text('Pilih Bisnis'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: businesses.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (_, i) => ListTile(
-              leading: const Icon(Icons.store_rounded),
-              title: Text(businesses[i].name),
-              onTap: () {
-                Navigator.pop(ctx);
-                TransactionSheet.show(context, businesses[i]);
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (dialogCtx, setModalState) {
+            final double keyboardHeight = MediaQuery.of(dialogCtx).viewInsets.bottom;
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.4,
+              maxChildSize: 0.95,
+              expand: false,
+              builder: (sheetCtx, scrollController) {
+                return Material(
+                  color: AppTheme.surfaceColorTheme(sheetCtx),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppRadius.radiusMedium),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: keyboardHeight),
+                    child: _BusinessSelectorSheetContent(
+                      businesses: businesses,
+                      scrollController: scrollController,
+                      parentContext: context,
+                    ),
+                  ),
+                );
               },
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-        ],
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -754,7 +762,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                             Icon(
                               Icons.inventory_2_rounded,
                               size: AppIconSize.s18,
-                              color: AppTheme.secondaryColorTheme(context),
+                              color: AppTheme.consignmentColorTheme(context),
                             ),
                             const SizedBox(width: AppSpacing.s8),
                             Text('Titipan Aktif', style: AppTheme.labelSmall),
@@ -764,7 +772,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                         Text(
                           FormatHelpers.rupiah(totalOwed),
                           style: AppTheme.amountMedium.copyWith(
-                            color: AppTheme.secondaryColorTheme(context),
+                            color: AppTheme.consignmentColorTheme(context),
                           ),
                         ),
                         const SizedBox(height: AppSpacing.s4),
@@ -797,3 +805,248 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
 }
 
 // Removed unused _BusinessCardWithSummary widget.
+
+class _BusinessSelectorSheetContent extends ConsumerStatefulWidget {
+  final List<BusinessModel> businesses;
+  final ScrollController scrollController;
+  final BuildContext parentContext;
+
+  const _BusinessSelectorSheetContent({
+    required this.businesses,
+    required this.scrollController,
+    required this.parentContext,
+  });
+
+  @override
+  ConsumerState<_BusinessSelectorSheetContent> createState() =>
+      _BusinessSelectorSheetContentState();
+}
+
+class _BusinessSelectorSheetContentState
+    extends ConsumerState<_BusinessSelectorSheetContent> {
+  late TextEditingController _searchController;
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final recentIds = ref.watch(recentSelectedBusinessesProvider);
+
+    // Filter recent businesses based on the current list of businesses
+    final recentBusinesses = recentIds
+        .map((id) => widget.businesses.firstWhere(
+              (b) => b.businessId == id,
+              orElse: () => BusinessModel(businessId: -1, name: ''),
+            ))
+        .where((b) => b.businessId != -1)
+        .toList();
+
+    // Filter all businesses based on search query
+    final filteredBusinesses = widget.businesses.where((b) {
+      return b.name.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+
+    return Column(
+      children: [
+        // Handle bar indicator
+        const SizedBox(height: 8),
+        Container(
+          width: 36,
+          height: 4,
+          decoration: BoxDecoration(
+            color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Title
+        Text(
+          'Pilih Bisnis untuk Transaksi',
+          style: AppTheme.subtitle.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        // Search Bar
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+          child: TextField(
+            controller: _searchController,
+            style: TextStyle(
+              fontSize: 13,
+              color: AppTheme.onSurfaceColorTheme(context),
+            ),
+            decoration: InputDecoration(
+              hintText: 'Cari nama bisnis...',
+              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.s8),
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
+              ),
+            ),
+            onChanged: (val) {
+              setState(() {
+                _searchQuery = val;
+              });
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // Recent Businesses (Chips)
+        if (recentBusinesses.isNotEmpty && _searchQuery.isEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Sering Digunakan',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceVariantColorTheme(context),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 38,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12),
+              itemCount: recentBusinesses.length,
+              itemBuilder: (context, index) {
+                final b = recentBusinesses[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ActionChip(
+                    avatar: Icon(
+                      Icons.history_rounded,
+                      size: 14,
+                      color: AppTheme.primaryColorTheme(context),
+                    ),
+                    label: Text(
+                      b.name,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                    ),
+                    backgroundColor: AppTheme.surfaceContainerColorTheme(context),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                      side: BorderSide(
+                        color: AppTheme.outlineColorTheme(context).withValues(alpha: 0.15),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      // Update SharedPreferences recent selections
+                      ref.read(recentSelectedBusinessesProvider.notifier).addBusiness(b.businessId);
+                      TransactionSheet.show(widget.parentContext, b);
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+          const Divider(height: 16),
+        ],
+
+        // All Businesses List
+        Expanded(
+          child: filteredBusinesses.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.s32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.store_rounded,
+                          size: 40,
+                          color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.3),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Bisnis tidak ditemukan',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.onSurfaceVariantColorTheme(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  controller: widget.scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
+                  itemCount: filteredBusinesses.length,
+                  separatorBuilder: (_, index) => const Divider(height: 1),
+                  itemBuilder: (context, i) {
+                    final b = filteredBusinesses[i];
+                    return ListTile(
+                      leading: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.store_rounded,
+                          size: 16,
+                          color: AppTheme.primaryColorTheme(context),
+                        ),
+                      ),
+                      title: Text(
+                        b.name,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.onSurfaceColorTheme(context),
+                        ),
+                      ),
+                      subtitle: b.description != null && b.description!.isNotEmpty
+                          ? Text(
+                              b.description!,
+                              style: AppTheme.caption.copyWith(fontSize: 11),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : null,
+                      onTap: () {
+                        Navigator.pop(context);
+                        ref.read(recentSelectedBusinessesProvider.notifier).addBusiness(b.businessId);
+                        TransactionSheet.show(widget.parentContext, b);
+                      },
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+}

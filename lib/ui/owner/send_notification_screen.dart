@@ -23,33 +23,33 @@ class _NotificationPreset {
   /// Daftar preset yang tersedia.
   static const List<_NotificationPreset> presets = [
     _NotificationPreset(
-      title: 'Pengingat Upload Laporan',
-      body: 'Jangan lupa upload laporan penjualan hari ini ya. Batas akhir jam 17.00 WIB.',
-      icon: Icons.assessment_rounded,
+      title: 'Laporan Tutup Toko',
+      body: 'Jangan lupa lakukan rekonsiliasi kas dan upload laporan penjualan hari ini setelah toko tutup ya. Batas akhir jam 22.00 WIB.',
+      icon: Icons.assignment_rounded,
     ),
     _NotificationPreset(
-      title: 'Cek Stok Barang',
-      body: 'Mohon cek dan update stok barang yang tersedia. Laporkan jika ada barang yang hampir habis.',
+      title: 'Cek Bahan & Stok Cup',
+      body: 'Mohon cek sisa stok cup plastik, teh solo, kopi, dan gula. Laporkan jika ada yang kritis untuk di-restock besok pagi.',
       icon: Icons.inventory_2_rounded,
     ),
     _NotificationPreset(
-      title: 'Informasi Gaji',
-      body: 'Gaji bulan ini sudah diproses. Silakan cek rekening masing-masing. Terima kasih.',
+      title: 'Rekap Barang Titipan',
+      body: 'Tolong hitung penjualan snack/makanan titipan (konsinyasi) hari ini. Siapkan uang setoran untuk supplier.',
+      icon: Icons.assignment_turned_in_rounded,
+    ),
+    _NotificationPreset(
+      title: 'Pemeriksaan Piutang',
+      body: 'Tolong periksa catatan piutang pelanggan hari ini. Ingatkan pelanggan yang memiliki piutang jatuh tempo secara sopan.',
       icon: Icons.account_balance_wallet_rounded,
     ),
     _NotificationPreset(
-      title: 'Tutup Toko Lebih Awal',
-      body: 'Hari ini toko tutup lebih awal dari jam biasanya. Mohon selesaikan pekerjaan sebelum tutup.',
-      icon: Icons.lock_clock_rounded,
+      title: 'Setoran Kas Fisik',
+      body: 'Harap hitung kas fisik di laci sebelum pulang dan pastikan nominal uang tunai sama dengan catatan transaksi di aplikasi.',
+      icon: Icons.payments_rounded,
     ),
     _NotificationPreset(
-      title: 'Undangan Rapat',
-      body: 'Ada rapat evaluasi besok jam 10.00 WIB di ruang meeting. Hadir tepat waktu ya.',
-      icon: Icons.groups_rounded,
-    ),
-    _NotificationPreset(
-      title: 'Libur Hari Ini',
-      body: 'Hari ini libur nasional. Toko tutup. Masuk kerja seperti biasa besok. Selamat beristirahat!',
+      title: 'Pengumuman Libur Toko',
+      body: 'Besok toko libur sementara. Sebelum pulang malam ini, pastikan semua listrik (kecuali kulkas) dimatikan dan pintu dikunci rapat.',
       icon: Icons.celebration_rounded,
     ),
   ];
@@ -256,12 +256,32 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
             const SizedBox(height: AppSpacing.s8),
 
             // === Quick Preset Messages ===
-            Text(
-              'Pesan Cepat',
-              style: AppTheme.subtitle.copyWith(
-                fontSize: 13,
-                color: AppTheme.onSurfaceVariantColorTheme(context),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Pesan Cepat',
+                  style: AppTheme.subtitle.copyWith(
+                    fontSize: 13,
+                    color: AppTheme.onSurfaceVariantColorTheme(context),
+                  ),
+                ),
+                if (_selectedPresetIndex != null)
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    icon: const Icon(Icons.clear_rounded, size: 14),
+                    label: const Text('Batal Pilih', style: TextStyle(fontSize: 11)),
+                    onPressed: () {
+                      _titleController.clear();
+                      _bodyController.clear();
+                      setState(() => _selectedPresetIndex = null);
+                    },
+                  ),
+              ],
             ),
             const SizedBox(height: AppSpacing.s8),
             SizedBox(

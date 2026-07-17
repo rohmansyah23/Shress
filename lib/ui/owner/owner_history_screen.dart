@@ -1026,13 +1026,14 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
         }
       }
 
-      final headers = ['Tanggal', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi'];
+      final headers = ['Tanggal', 'Bisnis', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi'];
       final rows = <List<dynamic>>[];
 
       for (final tx in transactions) {
         final isIncome = tx.type == AppConstants.typeIncome;
         rows.add([
           FormatHelpers.displayDate(tx.transactionDate),
+          _findBusinessName(tx.businessId),
           catMap[tx.categoryId] ?? 'Kategori #${tx.categoryId}',
           isIncome ? 'Uang Masuk' : 'Uang Keluar',
           tx.amount,

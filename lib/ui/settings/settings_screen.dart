@@ -347,6 +347,14 @@ class SettingsScreen extends ConsumerWidget {
     try {
       final supabase = Supabase.instance.client;
 
+      final busResponse = await supabase.from('businesses').select('id, name');
+      final busList = busResponse as List<dynamic>;
+      final busMap = <int, String>{};
+      for (final b in busList) {
+        final m = b as Map<String, dynamic>;
+        busMap[m['id'] as int] = m['name'] as String;
+      }
+
       final catResponse = await supabase.from('categories').select().order('id', ascending: true);
       final cats = catResponse as List<dynamic>;
       final catMap = <int, String>{};
@@ -363,7 +371,7 @@ class SettingsScreen extends ConsumerWidget {
 
       if (transactions.isEmpty) throw ExportException('Tidak ada data transaksi');
 
-      final headers = ['Tanggal', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi', 'Oleh'];
+      final headers = ['Tanggal', 'Bisnis', 'Kategori', 'Tipe', 'Jumlah', 'HPP', 'Metode Bayar', 'Deskripsi', 'Oleh'];
       final rows = <List<dynamic>>[];
 
       for (final tx in transactions) {
@@ -374,6 +382,7 @@ class SettingsScreen extends ConsumerWidget {
 
         rows.add([
           m['transaction_date'] as String? ?? '',
+          busMap[m['business_id'] as int?] ?? 'Bisnis #${m['business_id']}',
           catMap[m['category_id'] as int?] ?? 'Kategori #${m['category_id']}',
           isIncome ? 'Uang Masuk' : 'Uang Keluar',
           (m['amount'] as num?)?.toDouble() ?? 0,
