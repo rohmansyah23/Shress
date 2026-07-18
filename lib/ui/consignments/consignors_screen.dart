@@ -219,7 +219,7 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
     return summary_card.SummaryCard(
       title: 'Ringkasan Titipan',
       titleIcon: Icons.inventory_2_outlined,
-      titleIconColor: AppTheme.secondaryColorTheme(context),
+      titleIconColor: AppTheme.consignmentColorTheme(context),
       unpaidAmount: (_summary['totalOwed'] as num?)?.toDouble() ?? 0,
       unpaidLabel: 'Belum Dibayar',
       paidAmount: (_summary['totalSettled'] as num?)?.toDouble() ?? 0,

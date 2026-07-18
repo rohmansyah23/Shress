@@ -8,6 +8,7 @@ import 'owner_businesses_tab.dart';
 import '../reports/owner_report_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../core/theme/app_spacing.dart';
+import 'owner_activity_logs_screen.dart';
 
 class OwnerShell extends ConsumerStatefulWidget {
   const OwnerShell({super.key});
@@ -85,6 +86,22 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_appBarTitle),
+        actions: _selectedIndex == 0
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.notifications_none_rounded),
+                  tooltip: 'Kotak Masuk Aktivitas',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OwnerActivityLogsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ]
+            : null,
       ),
       body: PfSlidePageView(
         index: _selectedIndex,

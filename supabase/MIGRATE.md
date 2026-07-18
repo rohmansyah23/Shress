@@ -14,7 +14,7 @@
 1. Login ke [Supabase Dashboard](https://supabase.com/dashboard)
 2. Pilih project Anda
 3. Buka **SQL Editor** (sidebar kiri)
-4. **Copy paste** isi file `supabase/migrations/001_initial_schema.sql` ke editor
+4. **Copy paste** isi file `supabase/migrations/20260718000000_initial_schema.sql` ke editor
 5. Klik **Run** (atau **Cmd+Enter**)
 6. Tunggu hingga semua query selesai (tidak ada error merah)
 
@@ -64,6 +64,9 @@ Setelah migrasi berhasil, pastikan tabel-tabel berikut muncul di Supabase Table 
 | `consignments` | Batch penitipan barang |
 | `consignment_items` | Detail item yang dititipkan |
 | `consignment_settlements` | Pembayaran ke penitip |
+| `push_tokens` | Token FCM push notification per user/device |
+| `owner_notifications` | Notifikasi yang dikirim oleh owner |
+| `owner_activity_logs` | Audit log untuk CUD operasi pada transaksi, piutang, titipan |
 
 ## Troubleshooting
 

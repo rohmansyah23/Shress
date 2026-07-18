@@ -188,6 +188,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         controller: _identifierController,
                         keyboardType: TextInputType.text,
                         textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.none,
+                        autocorrect: false,
                         decoration: const InputDecoration(
                           labelText: 'Email / Username',
                           prefixIcon: Icon(Icons.person_outlined),

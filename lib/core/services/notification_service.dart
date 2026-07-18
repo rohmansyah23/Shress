@@ -71,7 +71,7 @@ class NotificationService {
       tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
 
       const androidSettings =
-          AndroidInitializationSettings('@drawable/ic_notification');
+          AndroidInitializationSettings('ic_notification');
       const iosSettings = DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
@@ -87,6 +87,35 @@ class NotificationService {
         settings: initSettings,
         onDidReceiveNotificationResponse: _onNotificationTap,
       );
+
+      // Daftarkan channel notifikasi Android agar OS mengenali channel_id di background/killed state
+      if (Platform.isAndroid) {
+        final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+        if (androidPlugin != null) {
+          const ownerChannel = AndroidNotificationChannel(
+            'owner_push',
+            'Pesan dari Owner',
+            description: 'Notifikasi push dari owner ke staff',
+            importance: Importance.max,
+            playSound: true,
+            enableVibration: true,
+          );
+          await androidPlugin.createNotificationChannel(ownerChannel);
+
+          const reminderChannel = AndroidNotificationChannel(
+            'daily_reminder',
+            'Pengingat Transaksi',
+            description: 'Pengingat untuk mencatat transaksi harian',
+            importance: Importance.high,
+            playSound: true,
+            enableVibration: true,
+          );
+          await androidPlugin.createNotificationChannel(reminderChannel);
+          
+          NotifLog.info('Android notification channels registered successfully');
+        }
+      }
 
       // Reschedule notifikasi yang sudah ada (misal setelah reboot)
       await _rescheduleIfEnabled();
@@ -306,7 +335,6 @@ class NotificationService {
         channelDescription: _channelDesc,
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@drawable/ic_notification',
         enableVibration: true,
         playSound: true,
         // Android 14+: pastikan notifikasi muncul di lock screen
@@ -387,7 +415,6 @@ class NotificationService {
         channelDescription: _channelDesc,
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@drawable/ic_notification',
         enableVibration: true,
         playSound: true,
         category: AndroidNotificationCategory.reminder,
@@ -436,7 +463,6 @@ class NotificationService {
         channelDescription: 'Notifikasi push dari owner ke staff',
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@drawable/ic_notification',
         enableVibration: true,
         playSound: true,
         visibility: NotificationVisibility.public,

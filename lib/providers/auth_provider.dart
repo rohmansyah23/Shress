@@ -146,6 +146,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return _authRepo.getAllUsers();
   }
 
+  /// Force logout semua user (owner only)
+  Future<void> forceLogoutAllUsers() async {
+    await _authRepo.forceLogoutAllUsers();
+  }
+
+  /// Force logout satu user (owner only)
+  Future<void> forceLogoutUser(String userId) async {
+    await _authRepo.forceLogoutUser(userId);
+  }
+
   Future<void> updateUserRole(String userId, String newRole) async {
     await _authRepo.updateUserRole(userId: userId, newRole: newRole);
     if (state.user?.userId == userId) {
@@ -155,6 +165,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           username: state.user!.username,
           role: newRole,
           displayName: state.user!.displayName,
+          sessionToken: state.user!.sessionToken,
         ),
       );
     }
@@ -168,6 +179,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         username: state.user!.username,
         role: state.user!.role,
         displayName: newDisplayName,
+        sessionToken: state.user!.sessionToken,
       );
       state = state.copyWith(user: updatedUser);
       final prefs = await SharedPreferences.getInstance();

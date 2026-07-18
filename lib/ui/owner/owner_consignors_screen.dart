@@ -151,7 +151,7 @@ class _OwnerConsignorsScreenState extends ConsumerState<OwnerConsignorsScreen> {
                           ? 'Ringkasan ${_selectedBusinessFilter!.name}'
                           : 'Ringkasan Semua Bisnis',
                       titleIcon: Icons.inventory_2_outlined,
-                      titleIconColor: AppTheme.secondaryColorTheme(context),
+                      titleIconColor: AppTheme.consignmentColorTheme(context),
                       unpaidAmount: totalOwed,
                       unpaidLabel: 'Belum Dibayar',
                       paidAmount: totalSettled,
@@ -578,14 +578,14 @@ class _ConsignorCard extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: AppTheme.primaryColorTheme(context).withValues(alpha: 0.12),
+                backgroundColor: AppTheme.consignmentColorTheme(context).withValues(alpha: 0.12),
                 child: Text(
                   consignor.name.length >= 2
                       ? consignor.name.substring(0, 2).toUpperCase()
                       : consignor.name.toUpperCase(),
                   style: AppTheme.subtitle.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColorTheme(context),
+                    color: AppTheme.consignmentColorTheme(context),
                   ),
                 ),
               ),
@@ -603,7 +603,7 @@ class _ConsignorCard extends ConsumerWidget {
                           style: AppTheme.caption.copyWith(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.primaryColorTheme(context),
+                            color: AppTheme.onSurfaceVariantColorTheme(context),
                           ),
                         ),
                         if (consignor.phone != null && consignor.phone!.isNotEmpty) ...[

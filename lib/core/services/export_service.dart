@@ -105,9 +105,11 @@ class ExportService {
     if (!await file.exists()) {
       throw ExportException('File tidak ditemukan');
     }
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: text ?? 'Export - Sheress',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: text ?? 'Export - Sheress',
+      ),
     );
   }
 

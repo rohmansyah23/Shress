@@ -19,7 +19,7 @@ const String kFontFamily = 'Inter';
 // ═══════════════════════════════════════════════════════════════
 
 // ── Slate Palette (Primary Scale) ─────────────────────────────
-const Color _slate50 = Color(0xFFF8FAFC);
+
 const Color _slate100 = Color(0xFFF1F5F9);
 const Color _slate200 = Color(0xFFE2E8F0);
 const Color _slate300 = Color(0xFFCBD5E1);

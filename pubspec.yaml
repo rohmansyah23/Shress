@@ -46,7 +46,7 @@ dependencies:
   flutter_local_notifications: ^22.0.1
   shared_preferences: ^2.5.5
   timezone: ^0.11.1
-  share_plus: ^10.1.4
+  share_plus: ^13.2.1
   excel: ^4.0.0
 
 dev_dependencies:
@@ -65,7 +65,7 @@ flutter:
     - .env
     - assets/icons/
     - assets/images/qris/
-    - assets/schema.sql
+    - supabase/migrations/20260718000000_initial_schema.sql
 
 # Launcher Icons Configuration
 # Place your source icon as assets/icons/app_icon.png (1024x1024 recommended)

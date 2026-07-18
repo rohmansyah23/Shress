@@ -3,6 +3,7 @@ class UserModel {
   final String username;
   final String role; // 'owner', 'manager', 'staff'
   final String? displayName;
+  final String? sessionToken;
   final DateTime? lastSyncedAt;
   final DateTime? createdAt;
 
@@ -11,6 +12,7 @@ class UserModel {
     required this.username,
     required this.role,
     this.displayName,
+    this.sessionToken,
     this.lastSyncedAt,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
@@ -20,6 +22,7 @@ class UserModel {
         'username': username,
         'role': role,
         'displayName': displayName,
+        'sessionToken': sessionToken,
         'lastSyncedAt': lastSyncedAt?.toIso8601String(),
         'createdAt': createdAt?.toIso8601String(),
       };
@@ -29,6 +32,7 @@ class UserModel {
         username: map['username'] as String,
         role: map['role'] as String,
         displayName: map['displayName'] as String?,
+        sessionToken: map['sessionToken'] as String?,
         lastSyncedAt: map['lastSyncedAt'] != null
             ? DateTime.parse(map['lastSyncedAt'] as String)
             : null,

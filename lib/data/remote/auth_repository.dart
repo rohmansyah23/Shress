@@ -44,7 +44,10 @@ class AuthRepository {
         throw const AuthException('invalid login credentials');
       }
 
-      final userId = result as String;
+      final data = result as Map<String, dynamic>;
+      final userId = data['user_id'] as String;
+      final sessionToken = data['token'] as String;
+
       final profileData = await _supabase
           .from('users')
           .select()
@@ -56,6 +59,7 @@ class AuthRepository {
         username: profileData['username'] as String? ?? identifier.split('@').first,
         role: profileData['role'] as String? ?? 'staff',
         displayName: profileData['display_name'] as String?,
+        sessionToken: sessionToken,
       );
 
       final prefs = await SharedPreferences.getInstance();
@@ -85,7 +89,29 @@ class AuthRepository {
 
       final cachedUser = UserModel.fromMap(jsonDecode(userJson) as Map<String, dynamic>);
 
+      if (cachedUser.sessionToken == null) {
+        await prefs.remove(AppConstants.keySessionUser);
+        return null;
+      }
+
       try {
+        final verifyResult = await _supabase.rpc('verify_user_jwt', params: {
+          'p_token': cachedUser.sessionToken!,
+        });
+
+        if (verifyResult == null) {
+          await prefs.remove(AppConstants.keySessionUser);
+          return null;
+        }
+
+        final verifyData = verifyResult as Map<String, dynamic>;
+        final isValid = verifyData['valid'] as bool? ?? false;
+
+        if (!isValid) {
+          await prefs.remove(AppConstants.keySessionUser);
+          return null;
+        }
+
         final profileData = await _supabase
             .from('users')
             .select()
@@ -97,6 +123,7 @@ class AuthRepository {
           username: profileData['username'] as String? ?? cachedUser.username,
           role: profileData['role'] as String? ?? cachedUser.role,
           displayName: profileData['display_name'] as String? ?? cachedUser.displayName,
+          sessionToken: cachedUser.sessionToken,
         );
 
         await prefs.setString(AppConstants.keySessionUser, jsonEncode(freshUser.toMap()));
@@ -107,7 +134,7 @@ class AuthRepository {
           await prefs.remove(AppConstants.keySessionUser);
           return null;
         }
-        // For other errors (network, etc.), fallback to cached user
+        // For other errors (network, etc.), fallback to cached user to allow offline access
         return cachedUser;
       }
     } catch (_) {
@@ -200,6 +227,18 @@ class AuthRepository {
     await _supabase.rpc('update_public_user_password', params: {
       'p_user_id': userId,
       'p_new_password': password,
+    });
+  }
+
+  /// Force logout semua user (owner only — invalidasi semua sesi aktif)
+  Future<void> forceLogoutAllUsers() async {
+    await _supabase.rpc('force_logout_all_users');
+  }
+
+  /// Force logout satu user (owner only — device hilang / user dipecat)
+  Future<void> forceLogoutUser(String userId) async {
+    await _supabase.rpc('force_logout_user', params: {
+      'p_user_id': userId,
     });
   }
 

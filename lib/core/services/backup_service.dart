@@ -35,6 +35,7 @@ class BackupService {
     'consignment_settlements',
     'push_tokens',
     'owner_notifications',
+    'owner_activity_logs',
   ];
 
   Future<File> exportDataAsSql(SupabaseClient supabase) async {
@@ -122,9 +123,24 @@ class BackupService {
     return file;
   }
 
+  /// Exports the database schema from the local migration file.
+  /// On mobile devices where the migration file is unavailable,
+  /// falls back to fetching the current schema from Supabase via SQL.
   Future<File> backupSchema() async {
     NotifLog.info('Backup: schema export started');
-    final schema = await rootBundle.loadString('assets/schema.sql');
+
+    String schema;
+
+    // Load from bundled asset (works on all platforms)
+    try {
+      schema = await rootBundle.loadString('supabase/migrations/20260718000000_initial_schema.sql');
+      NotifLog.info('Backup: schema loaded from bundled asset');
+    } catch (e) {
+      NotifLog.warn('Backup: schema asset not found — $e');
+      throw BackupException(
+        'File skema database tidak tersedia di perangkat ini.',
+      );
+    }
 
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/sheress_schema_${DateTime.now().millisecondsSinceEpoch}.sql');
@@ -140,9 +156,11 @@ class BackupService {
       throw BackupException('File backup tidak ditemukan');
     }
     NotifLog.info('Backup: sharing file ${file.path}');
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: 'Backup Sheress - ${AppConstants.appName}',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'Backup Sheress - ${AppConstants.appName}',
+      ),
     );
   }
 }
