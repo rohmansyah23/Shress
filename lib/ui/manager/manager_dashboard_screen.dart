@@ -167,6 +167,81 @@ class _ManagerDashboardScreenState
           const SizedBox(height: AppSpacing.s12),
           _buildNetProfitCard(netProfit, isProfit),
           const SizedBox(height: AppSpacing.s12),
+          Text('Aksi Cepat', style: AppTheme.heading3),
+          const SizedBox(height: AppSpacing.s12),
+          Row(
+            children: [
+              Expanded(
+                child: QuickActionButton(
+                  icon: Icons.trending_up_rounded,
+                  label: 'Uang\nMasuk',
+                  color: AppTheme.profitColorTheme(context),
+                  onTap: () => TransactionSheet.show(
+                    context,
+                    widget.selectedBusiness,
+                    startAsIncome: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s10),
+              Expanded(
+                child: QuickActionButton(
+                  icon: Icons.trending_down_rounded,
+                  label: 'Uang\nKeluar',
+                  color: AppTheme.lossColorTheme(context),
+                  onTap: () => TransactionSheet.show(
+                    context,
+                    widget.selectedBusiness,
+                    startAsIncome: false,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s10),
+              Expanded(
+                child: QuickActionButton(
+                  icon: Icons.qr_code_rounded,
+                  label: 'QRIS',
+                  color: AppTheme.infoColorTheme(context),
+                  onTap: widget.onShowQris,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s12),
+          Row(
+            children: [
+              Expanded(
+                child: QuickActionButton(
+                  icon: Icons.receipt_long_rounded,
+                  label: 'Hutang',
+                  color: AppTheme.warningColor,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          DebtorsScreen(business: widget.selectedBusiness),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s10),
+              Expanded(
+                child: QuickActionButton(
+                  icon: Icons.inventory_2_rounded,
+                  label: 'Titipan',
+                  color: AppTheme.secondaryColor,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          ConsignorsScreen(business: widget.selectedBusiness),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s10),
+              const Expanded(child: SizedBox()),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s12),
           if (isManager) ...[
             // === Trend Chart ===
             Text('Tren Keuangan', style: AppTheme.heading3),
@@ -319,81 +394,6 @@ class _ManagerDashboardScreenState
             ),
             const SizedBox(height: AppSpacing.s12),
           ],
-          Text('Aksi Cepat', style: AppTheme.heading3),
-          const SizedBox(height: AppSpacing.s12),
-          Row(
-            children: [
-              Expanded(
-                child: QuickActionButton(
-                  icon: Icons.trending_up_rounded,
-                  label: 'Uang\nMasuk',
-                  color: AppTheme.profitColorTheme(context),
-                  onTap: () => TransactionSheet.show(
-                    context,
-                    widget.selectedBusiness,
-                    startAsIncome: true,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s10),
-              Expanded(
-                child: QuickActionButton(
-                  icon: Icons.trending_down_rounded,
-                  label: 'Uang\nKeluar',
-                  color: AppTheme.lossColorTheme(context),
-                  onTap: () => TransactionSheet.show(
-                    context,
-                    widget.selectedBusiness,
-                    startAsIncome: false,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s10),
-              Expanded(
-                child: QuickActionButton(
-                  icon: Icons.qr_code_rounded,
-                  label: 'QRIS',
-                  color: AppTheme.infoColorTheme(context),
-                  onTap: widget.onShowQris,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.s12),
-          Row(
-            children: [
-              Expanded(
-                child: QuickActionButton(
-                  icon: Icons.receipt_long_rounded,
-                  label: 'Hutang',
-                  color: AppTheme.warningColor,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          DebtorsScreen(business: widget.selectedBusiness),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s10),
-              Expanded(
-                child: QuickActionButton(
-                  icon: Icons.inventory_2_rounded,
-                  label: 'Titipan',
-                  color: AppTheme.secondaryColor,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          ConsignorsScreen(business: widget.selectedBusiness),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s10),
-              const Expanded(child: SizedBox()),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.s12),
           _buildDebtConsignmentSummary(widget.selectedBusiness.businessId),
           const SizedBox(height: AppSpacing.s12),
           Text('Transaksi Terbaru', style: AppTheme.heading3),

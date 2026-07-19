@@ -192,22 +192,6 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.s24),
-
-            // === Manajemen Sesi ===
-            Text('Manajemen Sesi', style: AppTheme.heading3),
-            const SizedBox(height: AppSpacing.s12),
-            Card(
-              child: ListTile(
-                leading: Icon(Icons.logout_rounded,
-                    color: AppTheme.warningColorTheme(context)),
-                title: const Text('Logout Semua User'),
-                subtitle: const Text(
-                  'Semua user harus login ulang di device masing-masing',
-                ),
-                onTap: () => _showForceLogoutDialog(context, ref),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s24),
           ],
 
           // === Tentang ===
@@ -262,52 +246,6 @@ class SettingsScreen extends ConsumerWidget {
       context,
       'Fitur ini akan tersedia segera',
       isError: false,
-    );
-  }
-
-  void _showForceLogoutDialog(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Logout Semua User?'),
-        content: const Text(
-          'Semua user akan di-logout dan harus login ulang di device masing-masing. '
-          'User yang sedang aktif tidak akan langsung keluar.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                await ref.read(authProvider.notifier).forceLogoutAllUsers();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Semua user akan logout di restart berikutnya'),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal: $e')),
-                  );
-                }
-              }
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: isDark ? AppTheme.darkWarning : AppTheme.warningColor,
-              foregroundColor: isDark ? Colors.black : Colors.white,
-            ),
-            child: const Text('Logout Semua'),
-          ),
-        ],
-      ),
     );
   }
 

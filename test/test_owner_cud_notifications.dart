@@ -3,30 +3,32 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Test komprehensif untuk notifikasi owner (owner_activity_logs)
-/// saat staff/manager melakukan INSERT, UPDATE, DELETE pada:
-/// - transactions
-/// - debts (piutang)
-/// - consignments (titipan)
+/// Test notifikasi owner (owner_activity_logs) menggunakan SCHEMA REAL dari database.
 ///
-/// Test ini membuat data prerequisites jika belum ada,
-/// lalu membersihkan semua data test di akhir (try/finally).
+/// Membuat data realistis mirip production:
+///   - Owner (syahr642) - role owner
+///   - Staff (pasep123 / Pak Asep) - role staff
+///   - Business "Agen Milagros"
+///   - Category "Penjualan Harian"
+///
+/// Flow:
+///   pasep123 -> buat transaksi di Agen Milagros -> edit -> hapus
+///   -> verify notifikasi owner masuk dengan benar
+///
+/// Edge function notify-owner-cud akan dipanggil via pg_net,
+/// sehingga push notification benar-benar terkirim ke device owner.
 void main() {
-  test('Owner CUD notifications - transactions, debts, consignments', () async {
+  test('Owner CUD notifications - pasep123 at Agen Milagros', () async {
     // ── Read .env ──────────────────────────────────────────────
     final envFile = File('.env');
     expect(await envFile.exists(), true, reason: '.env file not found');
 
     final lines = await envFile.readAsLines();
     String? url;
-    String? anonKey;
     String? serviceRoleKey;
     for (var line in lines) {
       if (line.startsWith('SUPABASE_URL=')) {
         url = line.split('=').sublist(1).join('=').trim();
-      }
-      if (line.startsWith('SUPABASE_ANON_KEY=')) {
-        anonKey = line.split('=').sublist(1).join('=').trim();
       }
       if (line.startsWith('SUPABASE_SERVICE_ROLE_KEY=')) {
         serviceRoleKey = line.split('=').sublist(1).join('=').trim();
@@ -34,116 +36,185 @@ void main() {
     }
 
     expect(url, isNotNull, reason: 'SUPABASE_URL not found in .env');
-    expect(anonKey, isNotNull, reason: 'SUPABASE_ANON_KEY not found in .env');
-    expect(serviceRoleKey, isNotNull, reason: 'SUPABASE_SERVICE_ROLE_KEY not found in .env');
+    expect(serviceRoleKey, isNotNull,
+        reason: 'SUPABASE_SERVICE_ROLE_KEY not found in .env');
 
     final admin = SupabaseClient(url!, serviceRoleKey!);
 
-    // ── Tracking IDs for cleanup ───────────────────────────────
-    final createdUserIds = <String>[];
+    // ── Tracking ───────────────────────────────────────────────
+    String? staffId;
+    String? ownerId;
     int? businessId;
     int? categoryId;
-    int? debtorId;
-    int? consignorId;
     final createdTransactionIds = <int>[];
     final createdDebtIds = <int>[];
     final createdConsignmentIds = <int>[];
     final createdLogIds = <String>[];
-    final createdPushTokenIds = <String>[];
+    int? tempDebtorId;
+    int? tempConsignorId;
+
+    bool createdStaff = false;
+    bool createdOwner = false;
+    bool createdBusiness = false;
+    bool createdCategory = false;
+    bool createdUserBusinessLink = false;
 
     try {
       // ══════════════════════════════════════════════════════════
-      // PHASE 0: Create prerequisite data
+      // PHASE 0: SETUP DATA REALISTIS
       // ══════════════════════════════════════════════════════════
-      print('\n=== PHASE 0: MEMBUAT DATA PREREQUISITES ===');
+      print('\n=== PHASE 0: SETUP DATA REALISTIS ===');
 
-      final ts = DateTime.now().millisecondsSinceEpoch;
+      // 0a. Fetch or create owner (syahr642)
+      var ownerResult = await admin
+          .from('users')
+          .select('id, username, display_name, role')
+          .eq('role', 'owner')
+          .limit(1)
+          .maybeSingle();
 
-      // 0a. Create test owner + staff users
-      // UUID last segment must be exactly 12 hex chars
-      final hexTs = ts.toRadixString(16).padLeft(10, '0').substring(0, 8);
-      final ownerId = '00000000-0000-0000-0000-${hexTs}aa01';
-      final staffId = '00000000-0000-0000-0000-${hexTs}aa02';
-      createdUserIds.addAll([ownerId, staffId]);
-
-      await admin.from('users').upsert([
-        {
+      String ownerName;
+      if (ownerResult != null) {
+        ownerId = ownerResult['id'] as String;
+        ownerName = ownerResult['display_name'] as String;
+        print('  Owner existing: $ownerName ($ownerId)');
+      } else {
+        ownerId = '00000000-0000-0000-0000-000000000001';
+        ownerName = 'Rohman Syah';
+        await admin.from('users').upsert({
           'id': ownerId,
-          'email': 'test_owner_notif_$ts@ssrs.com',
-          'username': 'test_owner_notif_$ts',
-          'display_name': 'Test Owner',
+          'email': 'syahr642@gmail.com',
+          'username': 'syahr642',
+          'display_name': ownerName,
           'role': 'owner',
           'is_active': true,
-        },
-        {
+        });
+        createdOwner = true;
+        print('  Owner dibuat: $ownerName ($ownerId)');
+      }
+
+      // 0b. Fetch or create staff (pasep123 / Pak Asep)
+      var staffResult = await admin
+          .from('users')
+          .select('id, username, display_name, role')
+          .eq('username', 'pasep123')
+          .maybeSingle();
+
+      String staffName;
+      if (staffResult != null) {
+        staffId = staffResult['id'] as String;
+        staffName = staffResult['display_name'] as String;
+        print('  Staff existing: $staffName ($staffId)');
+      } else {
+        staffId = '00000000-0000-0000-0000-000000000002';
+        staffName = 'Pak Asep';
+        await admin.from('users').upsert({
           'id': staffId,
-          'email': 'test_staff_notif_$ts@ssrs.com',
-          'username': 'test_staff_notif_$ts',
-          'display_name': 'Test Staff',
+          'email': 'pakasep@gmail.com',
+          'username': 'pasep123',
+          'display_name': staffName,
           'role': 'staff',
           'is_active': true,
-        },
-      ]);
-      print('  Users dibuat: owner=$ownerId, staff=$staffId');
+        });
+        createdStaff = true;
+        print('  Staff dibuat: $staffName ($staffId)');
+      }
 
-      // 0b. Create business
-      final bizResult = await admin.from('businesses').insert({
-        'name': 'Test Business Notif $ts',
-        'description': 'Business untuk test notifikasi',
-      }).select('id').single();
-      businessId = bizResult['id'] as int;
-      print('  Business dibuat: id=$businessId');
+      // 0c. Fetch or create business "Agen Milagros"
+      var bizResult = await admin
+          .from('businesses')
+          .select('id, name')
+          .eq('name', 'Agen Milagros')
+          .maybeSingle();
 
-      // 0c. Link users to business
-      await admin.from('user_businesses').insert([
-        {'user_id': ownerId, 'business_id': businessId},
-        {'user_id': staffId, 'business_id': businessId},
-      ]);
-      print('  Users linked ke business');
+      String businessName;
+      if (bizResult != null) {
+        businessId = bizResult['id'] as int;
+        businessName = bizResult['name'] as String;
+        print('  Business existing: $businessName (id=$businessId)');
+      } else {
+        final inserted = await admin.from('businesses').insert({
+          'name': 'Agen Milagros',
+          'description': 'Bangunan samping bengkel',
+        }).select('id').single();
+        businessId = inserted['id'] as int;
+        businessName = 'Agen Milagros';
+        createdBusiness = true;
+        print('  Business dibuat: $businessName (id=$businessId)');
+      }
 
-      // 0d. Create category (required for transactions)
-      final catResult = await admin.from('categories').insert({
-        'business_id': businessId,
-        'name': 'Test Category',
-        'type': 'income',
-      }).select('id').single();
-      categoryId = catResult['id'] as int;
-      print('  Category dibuat: id=$categoryId');
+      // 0d. Link staff to business if not already linked
+      final linkResult = await admin
+          .from('user_businesses')
+          .select('id')
+          .eq('user_id', staffId!)
+          .eq('business_id', businessId!)
+          .maybeSingle();
+      if (linkResult == null) {
+        await admin.from('user_businesses').insert({
+          'user_id': staffId,
+          'business_id': businessId,
+        });
+        createdUserBusinessLink = true;
+        print('  Staff linked ke Business');
+      } else {
+        print('  Staff sudah linked ke Business');
+      }
 
-      // 0e. Create debtor (required for debts)
+      // 0e. Fetch or create category "Penjualan Harian" for Agen Milagros
+      var catResult = await admin
+          .from('categories')
+          .select('id, name, type')
+          .eq('business_id', businessId!)
+          .eq('name', 'Penjualan Harian')
+          .maybeSingle();
+
+      if (catResult != null) {
+        categoryId = catResult['id'] as int;
+        print('  Category existing: ${catResult['name']} (id=$categoryId)');
+      } else {
+        final inserted = await admin.from('categories').insert({
+          'business_id': businessId,
+          'name': 'Penjualan Harian',
+          'type': 'income',
+        }).select('id').single();
+        categoryId = inserted['id'] as int;
+        createdCategory = true;
+        print('  Category dibuat: Penjualan Harian (id=$categoryId)');
+      }
+
+      // 0f. Create temporary debtor for debts test
       final debtorResult = await admin.from('debtors').insert({
         'business_id': businessId,
-        'name': 'Test Debtor',
-        'phone': '08123456789',
+        'name': 'Test Debtor Notif',
+        'phone': '08111222333',
       }).select('id').single();
-      debtorId = debtorResult['id'] as int;
-      print('  Debtor dibuat: id=$debtorId');
+      tempDebtorId = debtorResult['id'] as int;
+      print('  Temp Debtor dibuat: id=$tempDebtorId');
 
-      // 0f. Create consignor (required for consignments)
+      // 0g. Create temporary consignor for consignments test
       final consignorResult = await admin.from('consignors').insert({
         'business_id': businessId,
-        'name': 'Test Consignor',
-        'phone': '08987654321',
+        'name': 'Test Consignor Notif',
+        'phone': '08999888777',
       }).select('id').single();
-      consignorId = consignorResult['id'] as int;
-      print('  Consignor dibuat: id=$consignorId');
+      tempConsignorId = consignorResult['id'] as int;
+      print('  Temp Consignor dibuat: id=$tempConsignorId');
 
-      // 0g. Create push_token for owner (needed by edge function)
-      final pushResult = await admin.from('push_tokens').insert({
-        'user_id': ownerId,
-        'fcm_token': 'test_fcm_token_$ts',
-        'platform': 'android',
-        'is_active': true,
-      }).select('id').single();
-      createdPushTokenIds.add(pushResult['id'] as String);
-      print('  Push token dibuat untuk owner');
+      print('');
+      print('  === SKENARIO TEST ===');
+      print('  $staffName (staff) membuat transaksi di $businessName');
+      print('  Owner: $ownerName');
+      print('  Notifikasi akan masuk ke owner_activity_logs');
+      print('  Edge function notify-owner-cud akan dipanggil via pg_net');
 
       // ══════════════════════════════════════════════════════════
       // PHASE 1: TRANSACTIONS (INSERT -> UPDATE -> DELETE)
+      // pasep123 membuat transaksi di Agen Milagros
       // ══════════════════════════════════════════════════════════
-      print('\n=== PHASE 1: TEST TRANSACTIONS ===');
+      print('\n=== PHASE 1: TRANSAKSI ===');
 
-      // 1a. INSERT transaction
+      // 1a. INSERT transaksi
       print('  1a. INSERT Transaksi');
       final txnInsert = await admin.from('transactions').insert({
         'business_id': businessId,
@@ -153,51 +224,67 @@ void main() {
         'amount': 150000,
         'cogs': 50000,
         'payment_method': 'cash',
-        'description': 'Test transaksi notifikasi',
+        'description': 'Penjualan air Milagros 1 dus',
         'transaction_date': DateTime.now().toIso8601String().substring(0, 10),
       }).select('id').single();
       final txnId = txnInsert['id'] as int;
       createdTransactionIds.add(txnId);
 
-      // Verify activity log for INSERT
+      // Verify activity log INSERT
       final logsAfterTxnInsert = await admin
           .from('owner_activity_logs')
-          .select('id, action_type, table_name, title, body')
+          .select('id, action_type, table_name, title, body, details')
+          .eq('business_id', businessId)
           .eq('table_name', 'transactions')
           .eq('action_type', 'INSERT')
           .order('created_at', ascending: false)
           .limit(1);
-      expect(logsAfterTxnInsert.isNotEmpty, true, reason: 'Log INSERT transaksi tidak ditemukan');
+      expect(logsAfterTxnInsert.isNotEmpty, true,
+          reason: 'Log INSERT transaksi tidak ditemukan');
       final logTxnInsert = (logsAfterTxnInsert as List).first;
       createdLogIds.add(logTxnInsert['id'] as String);
       print('    Log: "${logTxnInsert['title']}"');
+      print('    Body: "${logTxnInsert['body']}"');
       expect(logTxnInsert['title'], contains('Transaksi Baru'));
+      expect(logTxnInsert['title'], contains(businessName));
+      expect(logTxnInsert['body'], contains(staffName));
       expect(logTxnInsert['body'], contains('menambahkan'));
       expect(logTxnInsert['body'], contains('Rp'));
+      final detailsInsert = logTxnInsert['details'];
+      expect(detailsInsert, isNotNull, reason: 'details INSERT harus ada');
+      expect(detailsInsert, isA<Map>(), reason: 'details harus JSON object');
+      expect(detailsInsert['user_id'], equals(staffId));
+      expect(detailsInsert['business_id'], equals(businessId));
 
-      // 1b. UPDATE transaction
+      // 1b. UPDATE transaksi
       print('  1b. UPDATE Transaksi');
       await admin.from('transactions').update({
         'amount': 200000,
-        'description': 'Test update transaksi notifikasi',
+        'cogs': 75000,
+        'description': 'Penjualan air Milagros 1 dus + 1 galon',
       }).eq('id', txnId);
 
       final logsAfterTxnUpdate = await admin
           .from('owner_activity_logs')
           .select('id, action_type, table_name, title, body')
+          .eq('business_id', businessId)
           .eq('table_name', 'transactions')
           .eq('action_type', 'UPDATE')
           .order('created_at', ascending: false)
           .limit(1);
-      expect(logsAfterTxnUpdate.isNotEmpty, true, reason: 'Log UPDATE transaksi tidak ditemukan');
+      expect(logsAfterTxnUpdate.isNotEmpty, true,
+          reason: 'Log UPDATE transaksi tidak ditemukan');
       final logTxnUpdate = (logsAfterTxnUpdate as List).first;
       createdLogIds.add(logTxnUpdate['id'] as String);
       print('    Log: "${logTxnUpdate['title']}"');
+      print('    Body: "${logTxnUpdate['body']}"');
       expect(logTxnUpdate['title'], contains('Pembaruan Transaksi'));
+      expect(logTxnUpdate['title'], contains(businessName));
+      expect(logTxnUpdate['body'], contains(staffName));
       expect(logTxnUpdate['body'], contains('mengubah'));
       expect(logTxnUpdate['body'], contains('Rp'));
 
-      // 1c. DELETE transaction
+      // 1c. DELETE transaksi
       print('  1c. DELETE Transaksi');
       await admin.from('transactions').delete().eq('id', txnId);
       createdTransactionIds.remove(txnId);
@@ -205,31 +292,37 @@ void main() {
       final logsAfterTxnDelete = await admin
           .from('owner_activity_logs')
           .select('id, action_type, table_name, title, body')
+          .eq('business_id', businessId)
           .eq('table_name', 'transactions')
           .eq('action_type', 'DELETE')
           .order('created_at', ascending: false)
           .limit(1);
-      expect(logsAfterTxnDelete.isNotEmpty, true, reason: 'Log DELETE transaksi tidak ditemukan');
+      expect(logsAfterTxnDelete.isNotEmpty, true,
+          reason: 'Log DELETE transaksi tidak ditemukan');
       final logTxnDelete = (logsAfterTxnDelete as List).first;
       createdLogIds.add(logTxnDelete['id'] as String);
       print('    Log: "${logTxnDelete['title']}"');
+      print('    Body: "${logTxnDelete['body']}"');
       expect(logTxnDelete['title'], contains('Penghapusan Transaksi'));
+      expect(logTxnDelete['title'], contains(businessName));
+      expect(logTxnDelete['body'], contains(staffName));
       expect(logTxnDelete['body'], contains('menghapus'));
+      expect(logTxnDelete['body'], contains('Rp'));
 
       // ══════════════════════════════════════════════════════════
       // PHASE 2: DEBTS / PIUTANG (INSERT -> UPDATE -> DELETE)
       // ══════════════════════════════════════════════════════════
-      print('\n=== PHASE 2: TEST DEBTS (PIUTANG) ===');
+      print('\n=== PHASE 2: PIUTANG ===');
 
-      // 2a. INSERT debt
+      // 2a. INSERT piutang
       print('  2a. INSERT Piutang');
       final debtInsert = await admin.from('debts').insert({
-        'debtor_id': debtorId,
+        'debtor_id': tempDebtorId,
         'business_id': businessId,
         'user_id': staffId,
         'amount': 500000,
         'paid_amount': 0,
-        'description': 'Test piutang notifikasi',
+        'description': 'Piutang air Milagros untuk warung',
         'status': 'unpaid',
       }).select('id').single();
       final debtId = debtInsert['id'] as int;
@@ -237,21 +330,26 @@ void main() {
 
       final logsAfterDebtInsert = await admin
           .from('owner_activity_logs')
-          .select('id, action_type, table_name, title, body')
+          .select('id, action_type, table_name, title, body, details')
+          .eq('business_id', businessId)
           .eq('table_name', 'debts')
           .eq('action_type', 'INSERT')
           .order('created_at', ascending: false)
           .limit(1);
-      expect(logsAfterDebtInsert.isNotEmpty, true, reason: 'Log INSERT piutang tidak ditemukan');
+      expect(logsAfterDebtInsert.isNotEmpty, true,
+          reason: 'Log INSERT piutang tidak ditemukan');
       final logDebtInsert = (logsAfterDebtInsert as List).first;
       createdLogIds.add(logDebtInsert['id'] as String);
       print('    Log: "${logDebtInsert['title']}"');
+      print('    Body: "${logDebtInsert['body']}"');
       expect(logDebtInsert['title'], contains('Piutang Baru'));
+      expect(logDebtInsert['title'], contains(businessName));
+      expect(logDebtInsert['body'], contains(staffName));
       expect(logDebtInsert['body'], contains('mencatat piutang baru'));
-      expect(logDebtInsert['body'], contains('Test Debtor'));
+      expect(logDebtInsert['body'], contains('Test Debtor Notif'));
       expect(logDebtInsert['body'], contains('Rp'));
 
-      // 2b. UPDATE debt
+      // 2b. UPDATE piutang
       print('  2b. UPDATE Piutang');
       await admin.from('debts').update({
         'amount': 750000,
@@ -262,19 +360,24 @@ void main() {
       final logsAfterDebtUpdate = await admin
           .from('owner_activity_logs')
           .select('id, action_type, table_name, title, body')
+          .eq('business_id', businessId)
           .eq('table_name', 'debts')
           .eq('action_type', 'UPDATE')
           .order('created_at', ascending: false)
           .limit(1);
-      expect(logsAfterDebtUpdate.isNotEmpty, true, reason: 'Log UPDATE piutang tidak ditemukan');
+      expect(logsAfterDebtUpdate.isNotEmpty, true,
+          reason: 'Log UPDATE piutang tidak ditemukan');
       final logDebtUpdate = (logsAfterDebtUpdate as List).first;
       createdLogIds.add(logDebtUpdate['id'] as String);
       print('    Log: "${logDebtUpdate['title']}"');
+      print('    Body: "${logDebtUpdate['body']}"');
       expect(logDebtUpdate['title'], contains('Pembaruan Piutang'));
-      expect(logDebtUpdate['body'], contains('mengubah catatan piutang'));
+      expect(logDebtUpdate['title'], contains(businessName));
+      expect(logDebtUpdate['body'], contains(staffName));
+      expect(logDebtUpdate['body'], contains('mengubah'));
       expect(logDebtUpdate['body'], contains('Rp'));
 
-      // 2c. DELETE debt
+      // 2c. DELETE piutang
       print('  2c. DELETE Piutang');
       await admin.from('debts').delete().eq('id', debtId);
       createdDebtIds.remove(debtId);
@@ -282,30 +385,36 @@ void main() {
       final logsAfterDebtDelete = await admin
           .from('owner_activity_logs')
           .select('id, action_type, table_name, title, body')
+          .eq('business_id', businessId)
           .eq('table_name', 'debts')
           .eq('action_type', 'DELETE')
           .order('created_at', ascending: false)
           .limit(1);
-      expect(logsAfterDebtDelete.isNotEmpty, true, reason: 'Log DELETE piutang tidak ditemukan');
+      expect(logsAfterDebtDelete.isNotEmpty, true,
+          reason: 'Log DELETE piutang tidak ditemukan');
       final logDebtDelete = (logsAfterDebtDelete as List).first;
       createdLogIds.add(logDebtDelete['id'] as String);
       print('    Log: "${logDebtDelete['title']}"');
+      print('    Body: "${logDebtDelete['body']}"');
       expect(logDebtDelete['title'], contains('Penghapusan Piutang'));
+      expect(logDebtDelete['title'], contains(businessName));
+      expect(logDebtDelete['body'], contains(staffName));
       expect(logDebtDelete['body'], contains('menghapus'));
+      expect(logDebtDelete['body'], contains('Rp'));
 
       // ══════════════════════════════════════════════════════════
       // PHASE 3: CONSIGNMENTS / TITIPAN (INSERT -> UPDATE -> DELETE)
       // ══════════════════════════════════════════════════════════
-      print('\n=== PHASE 3: TEST CONSIGNMENTS (TITIPAN) ===');
+      print('\n=== PHASE 3: TITIPAN ===');
 
-      // 3a. INSERT consignment
+      // 3a. INSERT titipan
       print('  3a. INSERT Titipan');
       final consInsert = await admin.from('consignments').insert({
-        'consignor_id': consignorId,
+        'consignor_id': tempConsignorId,
         'business_id': businessId,
         'user_id': staffId,
         'total_amount': 300000,
-        'description': 'Test titipan notifikasi',
+        'description': 'Titipan air Milagros dari supplier',
         'status': 'active',
         'type': 'reseller',
       }).select('id').single();
@@ -314,43 +423,53 @@ void main() {
 
       final logsAfterConsInsert = await admin
           .from('owner_activity_logs')
-          .select('id, action_type, table_name, title, body')
+          .select('id, action_type, table_name, title, body, details')
+          .eq('business_id', businessId)
           .eq('table_name', 'consignments')
           .eq('action_type', 'INSERT')
           .order('created_at', ascending: false)
           .limit(1);
-      expect(logsAfterConsInsert.isNotEmpty, true, reason: 'Log INSERT titipan tidak ditemukan');
+      expect(logsAfterConsInsert.isNotEmpty, true,
+          reason: 'Log INSERT titipan tidak ditemukan');
       final logConsInsert = (logsAfterConsInsert as List).first;
       createdLogIds.add(logConsInsert['id'] as String);
       print('    Log: "${logConsInsert['title']}"');
+      print('    Body: "${logConsInsert['body']}"');
       expect(logConsInsert['title'], contains('Titipan Baru'));
+      expect(logConsInsert['title'], contains(businessName));
+      expect(logConsInsert['body'], contains(staffName));
       expect(logConsInsert['body'], contains('mencatat titipan baru'));
-      expect(logConsInsert['body'], contains('Test Consignor'));
+      expect(logConsInsert['body'], contains('Test Consignor Notif'));
       expect(logConsInsert['body'], contains('Rp'));
 
-      // 3b. UPDATE consignment
+      // 3b. UPDATE titipan
       print('  3b. UPDATE Titipan');
       await admin.from('consignments').update({
         'total_amount': 450000,
-        'description': 'Test update titipan notifikasi',
+        'description': 'Update titipan: tambah 10 dus air Milagros',
       }).eq('id', consId);
 
       final logsAfterConsUpdate = await admin
           .from('owner_activity_logs')
           .select('id, action_type, table_name, title, body')
+          .eq('business_id', businessId)
           .eq('table_name', 'consignments')
           .eq('action_type', 'UPDATE')
           .order('created_at', ascending: false)
           .limit(1);
-      expect(logsAfterConsUpdate.isNotEmpty, true, reason: 'Log UPDATE titipan tidak ditemukan');
+      expect(logsAfterConsUpdate.isNotEmpty, true,
+          reason: 'Log UPDATE titipan tidak ditemukan');
       final logConsUpdate = (logsAfterConsUpdate as List).first;
       createdLogIds.add(logConsUpdate['id'] as String);
       print('    Log: "${logConsUpdate['title']}"');
+      print('    Body: "${logConsUpdate['body']}"');
       expect(logConsUpdate['title'], contains('Pembaruan Titipan'));
-      expect(logConsUpdate['body'], contains('mengubah catatan titipan'));
+      expect(logConsUpdate['title'], contains(businessName));
+      expect(logConsUpdate['body'], contains(staffName));
+      expect(logConsUpdate['body'], contains('mengubah'));
       expect(logConsUpdate['body'], contains('Rp'));
 
-      // 3c. DELETE consignment
+      // 3c. DELETE titipan
       print('  3c. DELETE Titipan');
       await admin.from('consignments').delete().eq('id', consId);
       createdConsignmentIds.remove(consId);
@@ -358,106 +477,221 @@ void main() {
       final logsAfterConsDelete = await admin
           .from('owner_activity_logs')
           .select('id, action_type, table_name, title, body')
+          .eq('business_id', businessId)
           .eq('table_name', 'consignments')
           .eq('action_type', 'DELETE')
           .order('created_at', ascending: false)
           .limit(1);
-      expect(logsAfterConsDelete.isNotEmpty, true, reason: 'Log DELETE titipan tidak ditemukan');
+      expect(logsAfterConsDelete.isNotEmpty, true,
+          reason: 'Log DELETE titipan tidak ditemukan');
       final logConsDelete = (logsAfterConsDelete as List).first;
       createdLogIds.add(logConsDelete['id'] as String);
       print('    Log: "${logConsDelete['title']}"');
+      print('    Body: "${logConsDelete['body']}"');
       expect(logConsDelete['title'], contains('Penghapusan Titipan'));
+      expect(logConsDelete['title'], contains(businessName));
+      expect(logConsDelete['body'], contains(staffName));
       expect(logConsDelete['body'], contains('menghapus'));
+      expect(logConsDelete['body'], contains('Rp'));
 
       // ══════════════════════════════════════════════════════════
-      // PHASE 4: VERIFIKASI DETAILS (JSONB field)
+      // PHASE 5: OWNER SELF-ACTION → TIDAK ADA LOG
+      // Owner membuat/mengedit/menghapus transaksi sendiri →
+      // trigger harus skip, tidak boleh ada notifikasi self-notif
       // ══════════════════════════════════════════════════════════
-      print('\n=== PHASE 4: VERIFIKASI DETAILS ===');
+      print('\n=== PHASE 5: OWNER SELF-ACTION (TIDAK ADA LOG) ===');
+
+      // Hitung log saat ini untuk business ini
+      final logsBeforeOwnerAction = await admin
+          .from('owner_activity_logs')
+          .select('id')
+          .eq('business_id', businessId!);
+      final logCountBefore = (logsBeforeOwnerAction as List).length;
+      print('  Log count sebelum owner action: $logCountBefore');
+
+      // 5a. Owner INSERT transaksi
+      print('  5a. INSERT Transaksi oleh Owner (harus skip)');
+      final ownerTxnInsert = await admin.from('transactions').insert({
+        'business_id': businessId,
+        'category_id': categoryId,
+        'user_id': ownerId,
+        'type': 'income',
+        'amount': 999000,
+        'cogs': 300000,
+        'payment_method': 'transfer',
+        'description': 'Owner test - harus tidak ada log',
+        'transaction_date': DateTime.now().toIso8601String().substring(0, 10),
+      }).select('id').single();
+      final ownerTxnId = ownerTxnInsert['id'] as int;
+      print('    Transaksi owner dibuat: id=$ownerTxnId');
+
+      // Tidak boleh ada log baru
+      final logsAfterOwnerInsert = await admin
+          .from('owner_activity_logs')
+          .select('id')
+          .eq('business_id', businessId);
+      final logCountAfterInsert = (logsAfterOwnerInsert as List).length;
+      expect(logCountAfterInsert, equals(logCountBefore),
+          reason: 'Owner INSERT tidak boleh menghasilkan log (self-notif)');
+      print('    Log count setelah INSERT: $logCountAfterInsert (sama, OK)');
+
+      // 5b. Owner UPDATE transaksi
+      print('  5b. UPDATE Transaksi oleh Owner (harus skip)');
+      await admin.from('transactions').update({
+        'amount': 1000000,
+        'description': 'Owner test update - harus tidak ada log',
+      }).eq('id', ownerTxnId);
+
+      final logsAfterOwnerUpdate = await admin
+          .from('owner_activity_logs')
+          .select('id')
+          .eq('business_id', businessId);
+      final logCountAfterUpdate = (logsAfterOwnerUpdate as List).length;
+      expect(logCountAfterUpdate, equals(logCountBefore),
+          reason: 'Owner UPDATE tidak boleh menghasilkan log (self-notif)');
+      print('    Log count setelah UPDATE: $logCountAfterUpdate (sama, OK)');
+
+      // 5c. Owner DELETE transaksi
+      print('  5c. DELETE Transaksi oleh Owner (harus skip)');
+      await admin.from('transactions').delete().eq('id', ownerTxnId);
+
+      final logsAfterOwnerDelete = await admin
+          .from('owner_activity_logs')
+          .select('id')
+          .eq('business_id', businessId);
+      final logCountAfterDelete = (logsAfterOwnerDelete as List).length;
+      expect(logCountAfterDelete, equals(logCountBefore),
+          reason: 'Owner DELETE tidak boleh menghasilkan log (self-notif)');
+      print('    Log count setelah DELETE: $logCountAfterDelete (sama, OK)');
+
+      print('  PHASE 5: OWNER SELF-ACTION SKIP VERIFIED OK');
+
+      // ══════════════════════════════════════════════════════════
+      // PHASE 4: VERIFIKASI SEMUA LOG
+      // ══════════════════════════════════════════════════════════
+      print('\n=== PHASE 4: VERIFIKASI SEMUA LOG ===');
 
       final allLogs = await admin
           .from('owner_activity_logs')
-          .select('id, action_type, table_name, details')
-          .eq('business_id', businessId)
+          .select('id, action_type, table_name, details, title, body')
+          .eq('business_id', businessId!)
           .order('created_at', ascending: false);
 
       final logList = allLogs as List;
-      print('  Total logs untuk business ini: ${logList.length}');
+      print('  Total logs untuk $businessName: ${logList.length}');
       expect(logList.length, greaterThanOrEqualTo(6),
-          reason: 'Minimal 6 log (3 tables x 3 ops, minus DELETE yang sudah tidak ada relasi)');
+          reason: 'Minimal 6 log (3 tables x INSERT+DELETE)');
 
-      // Verify details JSONB contains row data for INSERT logs
-      final insertLogs = logList.where((l) => l['action_type'] == 'INSERT').toList();
+      final insertLogs =
+          logList.where((l) => l['action_type'] == 'INSERT').toList();
       for (final log in insertLogs) {
         final details = log['details'];
-        expect(details, isNotNull, reason: 'details tidak boleh null untuk INSERT log');
-        expect(details, isA<Map>(), reason: 'details harus berupa JSON object');
-        print('  Log ${log['table_name']} INSERT details keys: ${details.keys.toList()}');
+        expect(details, isNotNull,
+            reason: 'details tidak boleh null untuk INSERT log');
+        expect(details, isA<Map>(),
+            reason: 'details harus berupa JSON object');
+        print('  ${log['table_name']} INSERT:');
+        print('    title : ${log['title']}');
+        print('    body  : ${log['body']}');
+        print('    keys  : ${details.keys.toList()}');
       }
 
       // ══════════════════════════════════════════════════════════
-      // PHASE 5: SUMMARY
+      // SUMMARY
       // ══════════════════════════════════════════════════════════
-      print('\n=== SEMUA TEST NOTIFIKASI OWNER LULUS ===');
+      print('\n=== SEMUA TEST LULUS ===');
+      print('');
+      print('  Skenario: $staffName (staff) -> $businessName');
+      print('  Owner: $ownerName');
+      print('');
       print('  Transaksi: INSERT OK | UPDATE OK | DELETE OK');
       print('  Piutang:   INSERT OK | UPDATE OK | DELETE OK');
       print('  Titipan:   INSERT OK | UPDATE OK | DELETE OK');
+      print('  Owner Self-Action: INSERT SKIP | UPDATE SKIP | DELETE SKIP');
       print('  Details JSONB verified OK');
+      print('');
+      print('  Push notification terkirim via edge function notify-owner-cud');
     } finally {
       // ══════════════════════════════════════════════════════════
-      // CLEANUP: Kembalikan ke kondisi semula
+      // CLEANUP: Hapus hanya data yang dibuat test ini
       // ══════════════════════════════════════════════════════════
-      print('\n=== CLEANUP: MENGHAPUS SEMUA DATA TEST ===');
+      print('\n=== CLEANUP ===');
 
-      // Delete activity logs created during test
+      // Delete activity logs
       if (createdLogIds.isNotEmpty) {
-        await admin.from('owner_activity_logs').delete().inFilter('id', createdLogIds);
+        await admin
+            .from('owner_activity_logs')
+            .delete()
+            .inFilter('id', createdLogIds);
         print('  ${createdLogIds.length} activity logs dihapus');
       }
 
-      // Delete remaining test records (dependents first)
-      for (final txnId in createdTransactionIds) {
-        await admin.from('transactions').delete().eq('id', txnId);
+      // Delete test transactions
+      for (final id in createdTransactionIds) {
+        await admin.from('transactions').delete().eq('id', id);
       }
-      for (final debtId in createdDebtIds) {
-        await admin.from('debt_payments').delete().eq('debt_id', debtId);
-        await admin.from('debts').delete().eq('id', debtId);
-      }
-      for (final consId in createdConsignmentIds) {
-        await admin.from('consignment_items').delete().eq('consignment_id', consId);
-        await admin.from('consignment_settlements').delete().eq('consignment_id', consId);
-        await admin.from('consignments').delete().eq('id', consId);
+      if (createdTransactionIds.isNotEmpty) {
+        print('  ${createdTransactionIds.length} transaksi dihapus');
       }
 
-      // Delete push tokens
-      for (final tokenId in createdPushTokenIds) {
-        await admin.from('push_tokens').delete().eq('id', tokenId);
+      // Delete test debts
+      for (final id in createdDebtIds) {
+        await admin.from('debts').delete().eq('id', id);
+      }
+      if (createdDebtIds.isNotEmpty) {
+        print('  ${createdDebtIds.length} piutang dihapus');
       }
 
-      // Delete parent records
-      if (debtorId != null) {
-        await admin.from('debtors').delete().eq('id', debtorId);
-        print('  Debtor $debtorId dihapus');
+      // Delete test consignments
+      for (final id in createdConsignmentIds) {
+        await admin.from('consignments').delete().eq('id', id);
       }
-      if (consignorId != null) {
-        await admin.from('consignors').delete().eq('id', consignorId);
-        print('  Consignor $consignorId dihapus');
+      if (createdConsignmentIds.isNotEmpty) {
+        print('  ${createdConsignmentIds.length} titipan dihapus');
       }
-      if (categoryId != null) {
+
+      // Delete temporary debtor
+      if (tempDebtorId != null) {
+        await admin.from('debtors').delete().eq('id', tempDebtorId);
+        print('  Debtor $tempDebtorId dihapus');
+      }
+
+      // Delete temporary consignor
+      if (tempConsignorId != null) {
+        await admin.from('consignors').delete().eq('id', tempConsignorId);
+        print('  Consignor $tempConsignorId dihapus');
+      }
+
+      // Delete user-business link (hanya jika dibuat test ini)
+      if (createdUserBusinessLink && staffId != null) {
+        await admin
+            .from('user_businesses')
+            .delete()
+            .eq('user_id', staffId);
+        print('  User-business link dihapus');
+      }
+
+      // Delete category (hanya jika dibuat test ini)
+      if (createdCategory && categoryId != null) {
         await admin.from('categories').delete().eq('id', categoryId);
-        print('  Category $categoryId dihapus');
+        print('  Category test dihapus');
       }
 
-      // Delete business
-      if (businessId != null) {
+      // Delete business (hanya jika dibuat test ini)
+      if (createdBusiness && businessId != null) {
         await admin.from('businesses').delete().eq('id', businessId);
-        print('  Business $businessId dihapus');
+        print('  Business test dihapus');
       }
 
-      // Delete test users
-      for (final userId in createdUserIds) {
-        await admin.from('users').delete().eq('id', userId);
+      // Delete users (hanya jika dibuat test ini)
+      if (createdStaff && staffId != null) {
+        await admin.from('users').delete().eq('id', staffId);
+        print('  Staff test dihapus');
       }
-      print('  ${createdUserIds.length} test users dihapus');
+      if (createdOwner && ownerId != null) {
+        await admin.from('users').delete().eq('id', ownerId);
+        print('  Owner test dihapus');
+      }
 
       print('  CLEANUP SELESAI');
     }

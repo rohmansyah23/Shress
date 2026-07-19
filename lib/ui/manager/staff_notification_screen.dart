@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/utils/format_helpers.dart';
+import '../../providers/auth_provider.dart';
 
-class OwnerActivityLogsScreen extends StatefulWidget {
-  const OwnerActivityLogsScreen({super.key});
+class StaffNotificationScreen extends ConsumerStatefulWidget {
+  const StaffNotificationScreen({super.key});
 
   @override
-  State<OwnerActivityLogsScreen> createState() =>
-      _OwnerActivityLogsScreenState();
+  ConsumerState<StaffNotificationScreen> createState() =>
+      _StaffNotificationScreenState();
 }
 
-class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
+class _StaffNotificationScreenState
+    extends ConsumerState<StaffNotificationScreen> {
   final _supabase = Supabase.instance.client;
-  List<Map<String, dynamic>> _logs = [];
+  List<Map<String, dynamic>> _notifications = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -23,17 +26,22 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
 
+  // Sender name cache
+  final Map<String, String> _senderNameCache = {};
+
   @override
   void initState() {
     super.initState();
-    _fetchLogs();
+    _fetchNotifications();
   }
 
-  void _enterSelectionMode(String logId) {
+  // ── Selection ──────────────────────────────────────────────
+
+  void _enterSelectionMode(String id) {
     setState(() {
       _isSelectionMode = true;
       _selectedIds.clear();
-      _selectedIds.add(logId);
+      _selectedIds.add(id);
     });
   }
 
@@ -44,56 +52,111 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
     });
   }
 
-  void _toggleSelection(String logId) {
+  void _toggleSelection(String id) {
     setState(() {
-      if (_selectedIds.contains(logId)) {
-        _selectedIds.remove(logId);
-        if (_selectedIds.isEmpty) {
-          _isSelectionMode = false;
-        }
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+        if (_selectedIds.isEmpty) _isSelectionMode = false;
       } else {
-        _selectedIds.add(logId);
+        _selectedIds.add(id);
       }
     });
   }
 
   void _selectAll() {
     setState(() {
-      if (_selectedIds.length == _logs.length) {
+      if (_selectedIds.length == _notifications.length) {
         _selectedIds.clear();
         _isSelectionMode = false;
       } else {
-        _selectedIds.addAll(_logs.map((l) => l['id'] as String));
+        _selectedIds.addAll(_notifications.map((n) => n['id'] as String));
       }
     });
   }
 
-  Future<void> _fetchLogs() async {
+  // ── Data ───────────────────────────────────────────────────
+
+  Future<void> _fetchNotifications() async {
     try {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
       });
 
+      final user = ref.read(currentUserProvider);
+      if (user == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Sesi tidak valid';
+        });
+        return;
+      }
+
+      final userRole = user.role;
+
+      // Fetch all notifications targeted to this user's role
       final response = await _supabase
-          .from('owner_activity_logs')
-          .select('*, businesses(name)')
+          .from('owner_notifications')
+          .select()
+          .or('target_role.eq.all,target_role.eq.$userRole')
           .order('created_at', ascending: false)
           .limit(100);
 
-      setState(() {
-        _logs = List<Map<String, dynamic>>.from(response);
-        _isLoading = false;
-      });
+      // Client-side filter: check target_user_ids
+      final filtered = (response as List).where((n) {
+        final targetIds = n['target_user_ids'];
+        if (targetIds == null || (targetIds as List).isEmpty) return true;
+        return targetIds.contains(user.userId);
+      }).toList();
+
+      // Resolve sender names
+      final senderIds = filtered
+          .map((n) => n['sender_id'] as String)
+          .toSet()
+          .toList();
+      if (senderIds.isNotEmpty) {
+        await _resolveSenderNames(senderIds);
+      }
+
+      if (mounted) {
+        setState(() {
+          _notifications = List<Map<String, dynamic>>.from(filtered);
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Gagal memuat log aktivitas: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Gagal memuat notifikasi: $e';
+        });
+      }
     }
   }
 
-  // ── Delete Logic ────────────────────────────────────────────
+  Future<void> _resolveSenderNames(List<String> senderIds) async {
+    try {
+      final users = await _supabase
+          .from('users')
+          .select('id, display_name, username')
+          .inFilter('id', senderIds);
+
+      for (final u in users) {
+        final id = u['id'] as String;
+        final name =
+            (u['display_name'] as String?) ??
+            (u['username'] as String?) ??
+            'Pemilik';
+        _senderNameCache[id] = name;
+      }
+    } catch (_) {}
+  }
+
+  String _getSenderName(String senderId) {
+    return _senderNameCache[senderId] ?? 'Pemilik';
+  }
+
+  // ── Delete Logic ───────────────────────────────────────────
 
   Future<void> _deleteSelected() async {
     final count = _selectedIds.length;
@@ -103,8 +166,8 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
         ),
-        title: const Text('Hapus Notifikasi'),
-        content: Text('Yakin ingin menghapus $count notifikasi terpilih?'),
+        title: const Text('Hapus Pesan'),
+        content: Text('Yakin ingin menghapus $count pesan terpilih?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -126,18 +189,18 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
       try {
         final ids = _selectedIds.toList();
         await _supabase
-            .from('owner_activity_logs')
+            .from('owner_notifications')
             .delete()
             .inFilter('id', ids);
         setState(() {
-          _logs.removeWhere((l) => _selectedIds.contains(l['id']));
+          _notifications.removeWhere((n) => _selectedIds.contains(n['id']));
           _selectedIds.clear();
           _isSelectionMode = false;
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$count notifikasi dihapus'),
+              content: Text('$count pesan dihapus'),
               backgroundColor: AppTheme.lossColorTheme(context),
             ),
           );
@@ -155,36 +218,9 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
     }
   }
 
-  // ── Helpers ─────────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────────
 
-  IconData _getLogIcon(String tableName, String actionType) {
-    if (tableName == 'transactions') {
-      return Icons.receipt_long_rounded;
-    } else if (tableName == 'debts') {
-      return Icons.payment_rounded;
-    } else {
-      return Icons.inventory_2_rounded;
-    }
-  }
-
-  Color _getLogIconColor(
-    BuildContext context,
-    String tableName,
-    String actionType,
-  ) {
-    if (actionType == 'DELETE') {
-      return AppTheme.lossColorTheme(context);
-    }
-    if (tableName == 'transactions') {
-      return AppTheme.primaryColorTheme(context);
-    } else if (tableName == 'debts') {
-      return AppTheme.warningColorTheme(context);
-    } else {
-      return AppTheme.consignmentColorTheme(context);
-    }
-  }
-
-  String _formatLogDate(String dateStr) {
+  String _formatDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr).toLocal();
       final now = DateTime.now();
@@ -206,7 +242,7 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
     }
   }
 
-  // ── Build ───────────────────────────────────────────────────
+  // ── Build ──────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -216,14 +252,15 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
           ? _buildError()
-          : _logs.isEmpty
+          : _notifications.isEmpty
           ? _buildEmpty()
           : RefreshIndicator(
-              onRefresh: _fetchLogs,
+              onRefresh: _fetchNotifications,
               child: ListView.builder(
                 padding: const EdgeInsets.all(AppSpacing.s8),
-                itemCount: _logs.length,
-                itemBuilder: (context, index) => _buildLogCard(_logs[index]),
+                itemCount: _notifications.length,
+                itemBuilder: (context, index) =>
+                    _buildNotificationCard(_notifications[index]),
               ),
             ),
       bottomNavigationBar: _isSelectionMode ? _buildSelectionBottomBar() : null,
@@ -232,12 +269,12 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
 
   PreferredSizeWidget _buildNormalAppBar() {
     return AppBar(
-      title: const Text('Kotak Masuk Aktivitas'),
+      title: const Text('Kotak Masuk'),
     );
   }
 
   PreferredSizeWidget _buildSelectionAppBar() {
-    final allSelected = _selectedIds.length == _logs.length;
+    final allSelected = _selectedIds.length == _notifications.length;
     return AppBar(
       leading: IconButton(
         icon: const Icon(Icons.close_rounded),
@@ -293,7 +330,7 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
         child: FilledButton.icon(
           onPressed: _deleteSelected,
           icon: const Icon(Icons.delete_rounded, size: 20),
-          label: Text('Hapus (${_selectedIds.length}) Notifikasi'),
+          label: Text('Hapus (${_selectedIds.length}) Pesan'),
           style: FilledButton.styleFrom(
             backgroundColor: AppTheme.lossColorTheme(context),
             foregroundColor: AppTheme.onDangerColorTheme(context),
@@ -328,7 +365,7 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
             ),
             const SizedBox(height: AppSpacing.s16),
             ElevatedButton(
-              onPressed: _fetchLogs,
+              onPressed: _fetchNotifications,
               child: const Text('Coba Lagi'),
             ),
           ],
@@ -345,7 +382,7 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.notifications_none_rounded,
+              Icons.mail_outline_rounded,
               size: 48,
               color: AppTheme.onSurfaceVariantColorTheme(
                 context,
@@ -353,7 +390,7 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
             ),
             const SizedBox(height: AppSpacing.s16),
             Text(
-              'Belum ada aktivitas tercatat',
+              'Belum ada pesan dari pemilik',
               style: TextStyle(
                 fontSize: 14,
                 color: AppTheme.onSurfaceVariantColorTheme(context),
@@ -365,15 +402,17 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
     );
   }
 
-  Widget _buildLogCard(Map<String, dynamic> log) {
-    final logId = log['id'] as String;
-    final business = log['businesses'] as Map<String, dynamic>?;
-    final businessName = business?['name'] as String? ?? 'Bisnis';
-    final dateStr = log['created_at'] as String;
-    final isSelected = _selectedIds.contains(logId);
+  Widget _buildNotificationCard(Map<String, dynamic> notification) {
+    final id = notification['id'] as String;
+    final senderId = notification['sender_id'] as String;
+    final title = notification['title'] as String? ?? '';
+    final body = notification['body'] as String? ?? '';
+    final dateStr = notification['created_at'] as String;
+    final isSelected = _selectedIds.contains(id);
+    final senderName = _getSenderName(senderId);
 
     return Dismissible(
-      key: ValueKey(logId),
+      key: ValueKey(id),
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) async {
         final confirmed = await showDialog<bool>(
@@ -382,8 +421,8 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
             ),
-            title: const Text('Hapus Notifikasi'),
-            content: const Text('Yakin ingin menghapus notifikasi ini?'),
+            title: const Text('Hapus Pesan'),
+            content: const Text('Yakin ingin menghapus pesan ini?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
@@ -404,15 +443,15 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
       },
       onDismissed: (_) async {
         try {
-          await _supabase.from('owner_activity_logs').delete().eq('id', logId);
+          await _supabase.from('owner_notifications').delete().eq('id', id);
           setState(() {
-            _logs.removeWhere((l) => l['id'] == logId);
-            _selectedIds.remove(logId);
+            _notifications.removeWhere((n) => n['id'] == id);
+            _selectedIds.remove(id);
           });
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Notifikasi dihapus'),
+                content: const Text('Pesan dihapus'),
                 backgroundColor: AppTheme.lossColorTheme(context),
               ),
             );
@@ -444,14 +483,10 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
       ),
       child: GestureDetector(
       onLongPress: () {
-        if (!_isSelectionMode) {
-          _enterSelectionMode(logId);
-        }
+        if (!_isSelectionMode) _enterSelectionMode(id);
       },
       onTap: () {
-        if (_isSelectionMode) {
-          _toggleSelection(logId);
-        }
+        if (_isSelectionMode) _toggleSelection(id);
       },
       child: Card(
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
@@ -491,21 +526,15 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: _getLogIconColor(
+                    color: AppTheme.primaryColorTheme(
                       context,
-                      log['table_name'],
-                      log['action_type'],
                     ).withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    _getLogIcon(log['table_name'], log['action_type']),
+                    Icons.campaign_rounded,
                     size: 18,
-                    color: _getLogIconColor(
-                      context,
-                      log['table_name'],
-                      log['action_type'],
-                    ),
+                    color: AppTheme.primaryColorTheme(context),
                   ),
                 ),
               const SizedBox(width: AppSpacing.s12),
@@ -518,7 +547,7 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            log['title'] as String? ?? '',
+                            title,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
@@ -530,7 +559,7 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
                         ),
                         const SizedBox(width: AppSpacing.s8),
                         Text(
-                          _formatLogDate(dateStr),
+                          _formatDate(dateStr),
                           style: TextStyle(
                             fontSize: 10,
                             color: AppTheme.onSurfaceVariantColorTheme(context),
@@ -540,15 +569,17 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      log['body'] as String? ?? '',
+                      body,
                       style: TextStyle(
                         fontSize: 12,
                         color: AppTheme.onSurfaceColorTheme(context),
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      businessName,
+                      'Dari: $senderName',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,

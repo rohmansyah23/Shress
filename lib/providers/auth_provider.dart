@@ -146,11 +146,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return _authRepo.getAllUsers();
   }
 
-  /// Force logout semua user (owner only)
-  Future<void> forceLogoutAllUsers() async {
-    await _authRepo.forceLogoutAllUsers();
-  }
-
   /// Force logout satu user (owner only)
   Future<void> forceLogoutUser(String userId) async {
     await _authRepo.forceLogoutUser(userId);

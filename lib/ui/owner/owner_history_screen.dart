@@ -262,6 +262,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
     );
     if (result == true) {
       _currentNotifier().refresh();
+      if (mounted) triggerTransactionRefresh(ref);
     }
   }
 

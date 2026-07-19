@@ -13,6 +13,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
+import '../../core/utils/format_helpers.dart';
 
 class EditTransactionPage extends StatefulWidget {
   final TransactionModel transaction;
@@ -33,12 +34,14 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
   final _amountController = TextEditingController();
   final _cogsController = TextEditingController();
   final _descController = TextEditingController();
+  final _dateTextController = TextEditingController();
   bool _isSaving = false;
   bool _isFormattingAmount = false;
   bool _isFormattingCogs = false;
 
   List<CategoryModel> _categories = [];
   CategoryModel? _selectedCategory;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -46,6 +49,17 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     _amountController.text = _formatRupiah(widget.transaction.amount.toInt());
     _cogsController.text = _formatRupiah(widget.transaction.cogs.toInt());
     _descController.text = widget.transaction.description ?? '';
+
+    final dateParts = widget.transaction.transactionDate.split('-');
+    if (dateParts.length == 3) {
+      _selectedDate = DateTime(
+        int.parse(dateParts[0]),
+        int.parse(dateParts[1]),
+        int.parse(dateParts[2]),
+      );
+    }
+    _dateTextController.text = _formatDate(_selectedDate);
+
     _amountController.addListener(_onAmountChanged);
     _cogsController.addListener(_onCogsChanged);
     _loadCategories();
@@ -58,6 +72,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     _amountController.dispose();
     _cogsController.dispose();
     _descController.dispose();
+    _dateTextController.dispose();
     super.dispose();
   }
 
@@ -145,6 +160,33 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     return result.toString();
   }
 
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      helpText: 'Pilih Tanggal Transaksi',
+      cancelText: 'Batal',
+      confirmText: 'Pilih',
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+        _dateTextController.text = _formatDate(picked);
+      });
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return FormatHelpers.displayDate(
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}');
+  }
+
+  String _formatDateIso(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategory == null) {
@@ -167,6 +209,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
       description: _descController.text.trim().isEmpty
           ? null
           : _descController.text.trim(),
+      transactionDate: _formatDateIso(_selectedDate),
     );
 
     if (!mounted) return;
@@ -283,6 +326,21 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                     setState(() => _selectedCategory = value),
                 validator: (value) =>
                     value == null ? 'Pilih kategori' : null,
+              ),
+
+              const SizedBox(height: AppSpacing.s20),
+
+              Text('Tanggal Transaksi',
+                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              const SizedBox(height: AppSpacing.s8),
+              TextFormField(
+                controller: _dateTextController,
+                readOnly: true,
+                onTap: _pickDate,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.calendar_today_outlined),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
+                ),
               ),
 
               const SizedBox(height: AppSpacing.s20),

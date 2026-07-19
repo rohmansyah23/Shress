@@ -87,6 +87,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
         return RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(allBusinessesProvider);
+            ref.invalidate(recentTransactionsProvider);
             for (final id in allIds) {
               ref.invalidate(businessSummaryProvider(id));
             }

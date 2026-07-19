@@ -44,7 +44,7 @@ A production-grade, offline-aware Flutter application that empowers business own
 | 🗄️ **Database** | PostgreSQL |
 | 🔐 **Auth** | Custom (RPC-based) |
 | 🌐 **Language** | Indonesian (`id_ID`) |
-| 📦 **Version** | 1.0.0 |
+| 📦 **Version** | 1.1.0 |
 
 </td>
 <td width="50%" valign="top">
@@ -71,15 +71,8 @@ A production-grade, offline-aware Flutter application that empowers business own
 ## 📸 Preview
 
 <div align="center">
-  <p><em>App screenshots and demo coming soon.</em></p>
-  <img src="https://via.placeholder.com/300x600/1A237E/FFFFFF?text=Dashboard" alt="Dashboard Screen" width="200" style="border-radius: 12px; margin: 4px;" />
-  <img src="https://via.placeholder.com/300x600/0D47A1/FFFFFF?text=Transactions" alt="Transactions Screen" width="200" style="border-radius: 12px; margin: 4px;" />
-  <img src="https://via.placeholder.com/300x600/1565C0/FFFFFF?text=Reports" alt="Reports Screen" width="200" style="border-radius: 12px; margin: 4px;" />
-  <img src="https://via.placeholder.com/300x600/1E88E5/FFFFFF?text=Dark+Mode" alt="Dark Mode Screen" width="200" style="border-radius: 12px; margin: 4px;" />
+  <p><em>Screenshots coming soon.</em></p>
 </div>
-
-> [!TIP]
-> Replace the placeholder images above with actual screenshots inside the `docs/images/` folder.
 
 ---
 
@@ -155,6 +148,7 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 
 #### 📱 Push Notifications
 * **Firebase Cloud Messaging (FCM)**: Owner-to-staff push notifications via Supabase Edge Functions.
+* **Activity Logs**: Auto-generated CUD logs for transactions, debts, and consignments with swipe-to-delete.
 * **Token Lifecycle**: Auto-registration on login, deactivation on logout.
 * **Foreground Handling**: Push notifications displayed as local notifications when app is open.
 
@@ -173,6 +167,8 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 #### 🎨 Modern Design & UX
 * **Lag-Free Theme Toggling**: De-coupled local widget selection animations from global theme rebuilds for 60fps transitions.
 * **Unified Chip System**: Harmonized padding, border-radius, font-size, and theme-aware colors across all filters and preset chips.
+* **Swipe-to-Delete**: Gmail-style swipe gestures for dismissing notifications and activity logs.
+* **Dark Mode Optimized**: High-contrast white text on all destructive action buttons in dark theme.
 
 </td>
 </tr>
@@ -347,6 +343,8 @@ lib/
 | 📈 **P&L Reports** | Periodically calculated P&L statements with charts. | Owner, Manager |
 | 👥 **Staff Management** | Invite, update, or revoke access roles for employees. | Owner |
 | 📤 **Send Notification** | Compose and push notifications to staff via FCM. | Owner |
+| 📋 **Activity Logs** | View CUD activity feed with swipe-to-delete and multi-select. | Owner |
+| 📬 **Staff Inbox** | Receive owner-to-staff messages with swipe-to-delete. | Manager, Staff |
 | ⚙️ **Settings** | Toggle Theme Mode and schedule notification reminders. | All |
 
 ---
@@ -388,9 +386,9 @@ You can test roles out of the box using our seeded demo credentials:
 
 | Account Role | Username | Password |
 | :--- | :--- | :--- |
-| 👔 **Owner Account** | `owner` | `password123` |
-| 📊 **Manager Account**| `manager` | `password123` |
-| 👤 **Staff Account** | `staff` | `password123` |
+| 👔 **Owner Account** | `syahr642` | *(set by owner)* |
+| 📊 **Manager Account**| `manager` | *(set by manager)* |
+| 👤 **Staff Account** | `pasep` | *(set by staff)* |
 
 ---
 
@@ -574,7 +572,7 @@ flutter build web --release --base-href="/sheress/"
 
 ```bash
 # Deploy the owner push notification function
-supabase functions deploy send-owner-notification
+supabase functions deploy notify-owner-cud
 ```
 
 ---
@@ -594,6 +592,9 @@ supabase functions deploy send-owner-notification
 - [x] Owner-to-staff push messaging via Edge Functions
 - [x] Adaptive amount text for auto-sizing monetary display
 - [x] Lag-free theme transitions and unified custom chip styles
+- [x] Activity logs with CUD tracking and swipe-to-delete
+- [x] Owner-to-staff inbox with role-based filtering
+- [x] Dark mode optimized button contrast
 - [ ] PDF report export and sharing features
 - [ ] Multi-Language support (Localization for id_ID and en_US)
 - [ ] Biometric login (FaceID / Fingerprint)

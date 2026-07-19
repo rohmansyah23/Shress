@@ -13,6 +13,7 @@ import '../transaction/transaction_history_screen.dart';
 import '../reports/manager_report_screen.dart';
 import '../profile/profile_screen.dart';
 import 'manager_dashboard_screen.dart';
+import 'staff_notification_screen.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
@@ -56,8 +57,10 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     if (user == null) return;
 
     try {
-      final businesses = await SupabaseService.instance
-          .getAccessibleBusinesses(user.userId, user.role);
+      final businesses = await SupabaseService.instance.getAccessibleBusinesses(
+        user.userId,
+        user.role,
+      );
 
       if (!mounted) return;
 
@@ -79,7 +82,9 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.radiusXL)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.radiusXL),
+        ),
       ),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.s20),
@@ -93,10 +98,7 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
                 children: [
                   const Icon(Icons.swap_horiz_rounded, size: AppIconSize.s20),
                   const SizedBox(width: AppSpacing.s8),
-                  Text(
-                    'Ganti Bisnis',
-                    style: AppTheme.title,
-                  ),
+                  Text('Ganti Bisnis', style: AppTheme.title),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
@@ -108,71 +110,79 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
             const SizedBox(height: AppSpacing.s12),
             const Divider(height: 1),
             const SizedBox(height: AppSpacing.s8),
-            ..._businesses.map((b) => ListTile(
-                  leading: Builder(
-                    builder: (context) {
-                      final isDark = Theme.of(context).brightness == Brightness.dark;
-                      final bgColor = isDark ? AppTheme.accent : AppTheme.primary;
-                      return Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                          gradient: LinearGradient(
-                            colors: [
-                              isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08),
-                              bgColor,
-                              bgColor.withValues(alpha: 0.85),
-                            ],
-                            stops: const [0.0, 0.1, 1.0],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          boxShadow: isDark
-                              ? [
-                                  BoxShadow(
-                                    color: bgColor.withValues(alpha: 0.25),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withValues(alpha: 0.05),
-                                    blurRadius: 2,
-                                    spreadRadius: -1,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ]
-                              : [
-                                  BoxShadow(
-                                    color: bgColor.withValues(alpha: 0.18),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+            ..._businesses.map(
+              (b) => ListTile(
+                leading: Builder(
+                  builder: (context) {
+                    final isDark =
+                        Theme.of(context).brightness == Brightness.dark;
+                    final bgColor = isDark ? AppTheme.accent : AppTheme.primary;
+                    return Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(
+                          AppRadius.radiusSmall,
                         ),
-                        child: const Icon(
-                          Icons.store_rounded,
-                          color: Colors.white,
-                          size: AppIconSize.s22,
+                        gradient: LinearGradient(
+                          colors: [
+                            isDark
+                                ? Colors.black.withValues(alpha: 0.15)
+                                : Colors.black.withValues(alpha: 0.08),
+                            bgColor,
+                            bgColor.withValues(alpha: 0.85),
+                          ],
+                          stops: const [0.0, 0.1, 1.0],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      );
-                    }
-                  ),
-                  title: Text(
-                    b.name,
-                    style: AppTheme.subtitle,
-                  ),
-                  subtitle: b.description != null && b.description!.isNotEmpty
-                      ? Text(b.description!, maxLines: 1, overflow: TextOverflow.ellipsis)
-                      : null,
-                  trailing: _selectedBusiness?.businessId == b.businessId
-                      ? Icon(Icons.check_circle_rounded, color: AppTheme.accent)
-                      : const Icon(Icons.chevron_right_rounded),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _switchBusiness(b);
+                        boxShadow: isDark
+                            ? [
+                                BoxShadow(
+                                  color: bgColor.withValues(alpha: 0.25),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                                BoxShadow(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  blurRadius: 2,
+                                  spreadRadius: -1,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ]
+                            : [
+                                BoxShadow(
+                                  color: bgColor.withValues(alpha: 0.18),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                      ),
+                      child: const Icon(
+                        Icons.store_rounded,
+                        color: Colors.white,
+                        size: AppIconSize.s22,
+                      ),
+                    );
                   },
-                )),
+                ),
+                title: Text(b.name, style: AppTheme.subtitle),
+                subtitle: b.description != null && b.description!.isNotEmpty
+                    ? Text(
+                        b.description!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : null,
+                trailing: _selectedBusiness?.businessId == b.businessId
+                    ? Icon(Icons.check_circle_rounded, color: AppTheme.accent)
+                    : const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _switchBusiness(b);
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -217,7 +227,9 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     final pages = <Widget>[
       _selectedBusiness != null
           ? ManagerDashboardScreen(
-              key: ValueKey('manager_dashboard_${_selectedBusiness!.businessId}'),
+              key: ValueKey(
+                'manager_dashboard_${_selectedBusiness!.businessId}',
+              ),
               selectedBusiness: _selectedBusiness!,
               businesses: _businesses,
               showAppBar: false,
@@ -225,14 +237,20 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
               onShowQris: _showQris,
               onNavigateToRiwayat: () => setState(() => _selectedIndex = 1),
             )
-          : _buildEmptyPlaceholder('Pilih usaha untuk memulai', key: const ValueKey('empty_dashboard')),
+          : _buildEmptyPlaceholder(
+              'Pilih usaha untuk memulai',
+              key: const ValueKey('empty_dashboard'),
+            ),
       _selectedBusiness != null
           ? TransactionHistoryScreen(
               key: ValueKey('manager_history_${_selectedBusiness!.businessId}'),
               business: _selectedBusiness!,
               showAppBar: false,
             )
-          : _buildEmptyPlaceholder('Pilih usaha untuk melihat riwayat', key: const ValueKey('empty_history')),
+          : _buildEmptyPlaceholder(
+              'Pilih usaha untuk melihat riwayat',
+              key: const ValueKey('empty_history'),
+            ),
       const SizedBox.shrink(key: ValueKey('manager_empty')),
       _selectedBusiness != null
           ? ManagerReportScreen(
@@ -240,17 +258,32 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
               business: _selectedBusiness!,
               showAppBar: false,
             )
-          : _buildEmptyPlaceholder('Pilih usaha untuk melihat laporan', key: const ValueKey('empty_report')),
-      const ProfileScreen(
-        key: ValueKey('manager_profile'),
-        showAppBar: false,
-      ),
+          : _buildEmptyPlaceholder(
+              'Pilih usaha untuk melihat laporan',
+              key: const ValueKey('empty_report'),
+            ),
+      const ProfileScreen(key: ValueKey('manager_profile'), showAppBar: false),
     ];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(_appBarTitle),
-        actions: null,
+        actions: _selectedIndex == 0
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.notifications_none_rounded),
+                  tooltip: 'Kotak Masuk',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const StaffNotificationScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ]
+            : null,
       ),
       body: PfSlidePageView(
         index: _selectedIndex,
@@ -298,13 +331,17 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.08),
+                color: AppTheme.primaryColorTheme(
+                  context,
+                ).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(AppRadius.radiusXL),
               ),
               child: Icon(
                 Icons.store_rounded,
                 size: AppIconSize.s36,
-                color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.4),
+                color: AppTheme.primaryColorTheme(
+                  context,
+                ).withValues(alpha: 0.4),
               ),
             ),
             const SizedBox(height: AppSpacing.s16),
@@ -319,5 +356,3 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     );
   }
 }
-
-

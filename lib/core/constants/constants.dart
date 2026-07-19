@@ -3,7 +3,7 @@ class AppConstants {
 
   // App Info
   static const String appName = 'Sheress';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.1.0';
 
   // Roles
   static const String roleOwner = 'owner';

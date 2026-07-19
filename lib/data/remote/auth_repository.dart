@@ -230,11 +230,6 @@ class AuthRepository {
     });
   }
 
-  /// Force logout semua user (owner only — invalidasi semua sesi aktif)
-  Future<void> forceLogoutAllUsers() async {
-    await _supabase.rpc('force_logout_all_users');
-  }
-
   /// Force logout satu user (owner only — device hilang / user dipecat)
   Future<void> forceLogoutUser(String userId) async {
     await _supabase.rpc('force_logout_user', params: {

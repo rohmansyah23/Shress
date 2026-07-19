@@ -379,7 +379,7 @@ class AppTheme {
 
   /// On danger/error color (theme-aware)
   static Color onDangerColorTheme(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark ? _darkSurfaceDim : onDanger;
+      Theme.of(context).brightness == Brightness.dark ? Colors.white : onDanger;
 
   /// Surface container low color (theme-aware)
   static Color surfaceContainerLowColorTheme(BuildContext context) =>
