@@ -49,3 +49,6 @@ app.*.map.json
 
 # Database backups (should not be in version control)
 backup-database/
+
+# Dev scripts & local tooling
+a-dev/
