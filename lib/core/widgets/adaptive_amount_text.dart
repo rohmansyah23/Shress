@@ -5,7 +5,7 @@ import '../theme/app_typography.dart';
 /// rupiah amount would overflow the available horizontal space.
 ///
 /// Steps down through: [amountLarge (32)] → [amountMedium (20)] →
-/// [amountSmall (15)] → 14pt until the text fits.
+/// [amountSmall (15)] → 14pt → 12pt → 10pt until the text fits.
 class AdaptiveAmountText extends StatelessWidget {
   final double amount;
   final TextStyle? style;
@@ -60,7 +60,7 @@ class AdaptiveAmountText extends StatelessWidget {
   }
 
   double _findFittingSize(String text, TextStyle baseStyle, double maxWidth) {
-    const List<double> allSizes = [32, 20, 15, 14];
+    const List<double> allSizes = [32, 20, 15, 14, 12, 10];
     final double baseFontSize = baseStyle.fontSize ?? 20;
 
     final List<double> sizes =
@@ -74,7 +74,7 @@ class AdaptiveAmountText extends StatelessWidget {
         text: TextSpan(text: text, style: testStyle),
         maxLines: 1,
         textDirection: TextDirection.ltr,
-      )..layout(minWidth: 0, maxWidth: maxWidth);
+      )..layout(minWidth: 0);
 
       final bool fits = painter.width <= maxWidth;
       painter.dispose();
