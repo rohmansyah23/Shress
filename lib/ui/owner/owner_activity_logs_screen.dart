@@ -545,6 +545,8 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
                         fontSize: 12,
                         color: AppTheme.onSurfaceColorTheme(context),
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(

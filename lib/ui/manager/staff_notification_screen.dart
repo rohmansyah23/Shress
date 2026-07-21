@@ -585,6 +585,8 @@ class _StaffNotificationScreenState
                         fontWeight: FontWeight.w600,
                         color: AppTheme.onSurfaceVariantColorTheme(context),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

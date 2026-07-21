@@ -252,11 +252,12 @@ class _TransactionSectionState extends State<TransactionSection> {
               child: DropdownButtonFormField<String>(
                 initialValue: _typeFilter,
                 isDense: true,
+                isExpanded: true,
                 borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.s12,
-                    vertical: AppSpacing.s8,
+                    horizontal: AppSpacing.s8,
+                    vertical: AppSpacing.s6,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
@@ -287,11 +288,12 @@ class _TransactionSectionState extends State<TransactionSection> {
               child: DropdownButtonFormField<int?>(
                 initialValue: _limit,
                 isDense: true,
+                isExpanded: true,
                 borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.s12,
-                    vertical: AppSpacing.s8,
+                    horizontal: AppSpacing.s8,
+                    vertical: AppSpacing.s6,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadius.radiusSmall),

@@ -354,9 +354,10 @@ class _TransactionHistoryScreenState
                     child: DropdownButtonFormField<DateFilter>(
                       initialValue: _selectedFilter,
                       isDense: true,
+                      isExpanded: true,
                       borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                         ),
@@ -394,9 +395,10 @@ class _TransactionHistoryScreenState
                     child: DropdownButtonFormField<TypeFilter>(
                       initialValue: _selectedType,
                       isDense: true,
+                      isExpanded: true,
                       borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                         ),
@@ -710,10 +712,15 @@ class _TransactionHistoryScreenState
           SizedBox(
             width: 100,
             child: Text(label,
-                style: AppTheme.caption.copyWith(fontSize: 12)),
+                style: AppTheme.caption.copyWith(fontSize: 12),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
           ),
           Expanded(
-            child: Text(value,                    style: AppTheme.subtitle.copyWith(fontSize: 13)),
+            child: Text(value,
+                style: AppTheme.subtitle.copyWith(fontSize: 13),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis),
           ),
         ],
       ),

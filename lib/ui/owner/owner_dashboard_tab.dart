@@ -238,11 +238,12 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: DropdownButtonFormField<TrendFilter>(
                       initialValue: _selectedTrendFilter,
                       isDense: true,
+                      isExpanded: true,
                       borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                       decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s12,
-                          vertical: AppSpacing.s8,
+                          horizontal: AppSpacing.s8,
+                          vertical: AppSpacing.s6,
                         ),
                         isDense: true,
                         labelText: 'Periode Waktu',
@@ -277,11 +278,12 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: DropdownButtonFormField<TrendTypeFilter>(
                       initialValue: _selectedTypeFilter,
                       isDense: true,
+                      isExpanded: true,
                       borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                       decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s12,
-                          vertical: AppSpacing.s8,
+                          horizontal: AppSpacing.s8,
+                          vertical: AppSpacing.s6,
                         ),
                         isDense: true,
                         labelText: 'Tipe Grafik',
@@ -504,6 +506,8 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                                         ? AppTheme.profitColorTheme(context)
                                         : AppTheme.lossColorTheme(context),
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -699,7 +703,14 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                               color: AppTheme.warningColorTheme(context),
                             ),
                             const SizedBox(width: AppSpacing.s8),
-                            Text('Piutang Aktif', style: AppTheme.labelSmall),
+                            Flexible(
+                              child: Text(
+                                'Piutang Aktif',
+                                style: AppTheme.labelSmall,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.s8),
@@ -766,7 +777,14 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                               color: AppTheme.consignmentColorTheme(context),
                             ),
                             const SizedBox(width: AppSpacing.s8),
-                            Text('Titipan Aktif', style: AppTheme.labelSmall),
+                            Flexible(
+                              child: Text(
+                                'Titipan Aktif',
+                                style: AppTheme.labelSmall,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.s8),

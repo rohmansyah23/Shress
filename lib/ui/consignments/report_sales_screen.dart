@@ -226,9 +226,13 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                     style: AppTheme.title.copyWith(fontSize: 16),
                   ),
                 ),
-                Text(
-                  'Dititipkan: ${item.quantity} pcs',
-                  style: AppTheme.caption.copyWith(fontSize: 12),
+                Flexible(
+                  child: Text(
+                    'Dititipkan: ${item.quantity} pcs',
+                    style: AppTheme.caption.copyWith(fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -377,12 +381,19 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
 
   Widget _buildSummaryRow(String label, String value, Color color) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: AppTheme.caption),
-        Text(
-          value,
-          style: AppTheme.amountMedium.copyWith(color: color),
+        Flexible(
+          child: Text(label, style: AppTheme.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+        const SizedBox(width: AppSpacing.s8),
+        Flexible(
+          child: Text(
+            value,
+            style: AppTheme.amountMedium.copyWith(color: color),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+          ),
         ),
       ],
     );

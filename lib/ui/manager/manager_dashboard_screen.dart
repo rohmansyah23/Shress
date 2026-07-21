@@ -252,15 +252,16 @@ class _ManagerDashboardScreenState
                   child: DropdownButtonFormField<TrendFilter>(
                     initialValue: _selectedTrendFilter,
                     isDense: true,
+                    isExpanded: true,
                     borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                     decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
                       isDense: true,
                       labelText: 'Periode Waktu',
                       floatingLabelBehavior: FloatingLabelBehavior.never,
                     ),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: AppTheme.onSurfaceColorTheme(context),
                     ),
                     items: TrendFilter.values
@@ -270,7 +271,7 @@ class _ManagerDashboardScreenState
                             child: Text(
                               _trendFilterLabel(f),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: AppTheme.onSurfaceColorTheme(context),
                               ),
                             ),
@@ -288,15 +289,16 @@ class _ManagerDashboardScreenState
                   child: DropdownButtonFormField<_TrendTypeFilter>(
                     initialValue: _selectedTypeFilter,
                     isDense: true,
+                    isExpanded: true,
                     borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                     decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
                       isDense: true,
                       labelText: 'Tipe Grafik',
                       floatingLabelBehavior: FloatingLabelBehavior.never,
                     ),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: AppTheme.onSurfaceColorTheme(context),
                     ),
                     items: _TrendTypeFilter.values
@@ -306,7 +308,7 @@ class _ManagerDashboardScreenState
                             child: Text(
                               f.label,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: AppTheme.onSurfaceColorTheme(context),
                               ),
                             ),
@@ -604,6 +606,7 @@ class _ManagerDashboardScreenState
                     ],
                     const SizedBox(height: AppSpacing.s4),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(

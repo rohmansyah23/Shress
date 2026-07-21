@@ -616,9 +616,13 @@ class _ConsignmentDetailScreenState
               size: AppIconSize.s20,
             ),
             const SizedBox(width: AppSpacing.s8),
-            Text(
-              _statusLabel(_consignment.status),
-              style: AppTheme.subtitle.copyWith(fontSize: 14, color: color),
+            Flexible(
+              child: Text(
+                _statusLabel(_consignment.status),
+                style: AppTheme.subtitle.copyWith(fontSize: 14, color: color),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             const SizedBox(width: AppSpacing.s8),
             Container(
@@ -657,10 +661,14 @@ class _ConsignmentDetailScreenState
                 ),
               ),
             ],
-            const Spacer(),
-            Text(
-              FormatHelpers.displayDate(_consignment.consignmentDate),
-              style: AppTheme.caption.copyWith(color: color, fontWeight: FontWeight.w600),
+            const SizedBox(width: AppSpacing.s8),
+            Flexible(
+              child: Text(
+                FormatHelpers.displayDate(_consignment.consignmentDate),
+                style: AppTheme.caption.copyWith(color: color, fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -921,12 +929,19 @@ class _ConsignmentDetailScreenState
 
   Widget _buildSummaryRow(String label, String value, Color color) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: AppTheme.caption),
-        Text(
-          value,
-          style: AppTheme.amountMedium.copyWith(color: color),
+        Flexible(
+          child: Text(label, style: AppTheme.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+        const SizedBox(width: AppSpacing.s8),
+        Flexible(
+          child: Text(
+            value,
+            style: AppTheme.amountMedium.copyWith(color: color),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+          ),
         ),
       ],
     );
@@ -1004,25 +1019,22 @@ class _ConsignmentDetailScreenState
                   AppTheme.subtitle.copyWith(fontSize: 14),
             ),
             const SizedBox(height: AppSpacing.s4),
-            Row(
+            Wrap(
+              spacing: AppSpacing.s4,
+              runSpacing: AppSpacing.s4,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 _buildQtyChip(
                     'Dititipkan', item.quantity, AppTheme.primaryColorTheme(context)),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.s4),
-                  child: Icon(Icons.arrow_forward_rounded,
-                      size: AppIconSize.s14, color: AppTheme.secondaryText),
-                ),
+                Icon(Icons.arrow_forward_rounded,
+                    size: AppIconSize.s14, color: AppTheme.secondaryText),
                 _buildQtyChip(
                   'Terjual',
                   item.quantitySold,
                   AppTheme.profitColorTheme(context),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.s4),
-                  child: Icon(Icons.arrow_forward_rounded,
-                      size: AppIconSize.s14, color: AppTheme.secondaryText),
-                ),
+                Icon(Icons.arrow_forward_rounded,
+                    size: AppIconSize.s14, color: AppTheme.secondaryText),
                 _buildQtyChip(
                   'Kembali',
                   item.quantityReturned,
@@ -1032,19 +1044,24 @@ class _ConsignmentDetailScreenState
             ),
             if (item.sellingPrice != null) ...[
               const SizedBox(height: AppSpacing.s8),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '${item.quantitySold} × ${FormatHelpers.rupiah(item.sellingPrice!)} pendapatan',
                     style:
                         AppTheme.caption.copyWith(fontSize: 11),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: AppSpacing.s12),
+                  const SizedBox(height: AppSpacing.s4),
                   Text(
                     '${item.quantitySold} × ${FormatHelpers.rupiah(item.agreedPrice)} ke pihak penitip',
                     style: AppTheme.caption.copyWith(
                         fontSize: 11,
                         color: AppTheme.lossColorTheme(context)),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -1229,7 +1246,8 @@ class _ConsignmentDetailScreenState
             child: Text(
               FormatHelpers.rupiah(settlement.amount),
               style: AppTheme.amountMedium.copyWith(color: AppTheme.profitColorTheme(context)),
-              overflow: TextOverflow.visible,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
         ],
@@ -1292,9 +1310,13 @@ class _ConsignmentDetailScreenState
         children: [
           Icon(icon, size: AppIconSize.s16, color: color),
           const SizedBox(width: AppSpacing.s8),
-          Text(
-            '$label #$transactionId',
-            style: AppTheme.caption.copyWith(fontWeight: FontWeight.w500, color: color),
+          Flexible(
+            child: Text(
+              '$label #$transactionId',
+              style: AppTheme.caption.copyWith(fontWeight: FontWeight.w500, color: color),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),

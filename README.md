@@ -44,7 +44,7 @@ A production-grade, offline-aware Flutter application that empowers business own
 | 🗄️ **Database** | PostgreSQL |
 | 🔐 **Auth** | Custom (RPC-based) |
 | 🌐 **Language** | Indonesian (`id_ID`) |
-| 📦 **Version** | 1.1.0 |
+| 📦 **Version** | 1.2.0 |
 
 </td>
 <td width="50%" valign="top">
@@ -60,7 +60,7 @@ A production-grade, offline-aware Flutter application that empowers business own
 | 📶 **Offline Status**| Network Connectivity Overlay |
 | 🏪 **Multi-Tenancy** | Role-Based Access Control (RBAC) |
 | 🐛 **Monitoring** | Sentry Crash Reporting |
-| 🔤 **Adaptive Text** | Auto-sizing monetary display |
+| 🔤 **Adaptive Text** | Font size setting (Small/Medium/Large) |
 
 </td>
 </tr>
@@ -152,9 +152,10 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 * **Token Lifecycle**: Auto-registration on login, deactivation on logout.
 * **Foreground Handling**: Push notifications displayed as local notifications when app is open.
 
-#### 🔤 Adaptive Amount Text
-* **Auto-Sizing**: Monetary values automatically shrink to fit available width.
-* **Step-Down Sizes**: 32pt → 20pt → 15pt → 14pt cascade for long numbers.
+#### 🔤 Adaptive Amount Text & Font Size
+* **Composable Scaling**: App font size setting (Small/Medium/Large) multiplies with system accessibility scaling.
+* **Overflow-Safe**: Monetary values use `nowrap` + ellipsis instead of auto-shrinking — no layout surprises.
+* **User Preference**: Persisted via SharedPreferences, toggled from Settings.
 
 #### 💳 QRIS Integration
 * **Dynamic Code Display**: Instant access to payment QR codes for customers.
@@ -285,6 +286,7 @@ lib/
 │   ├── notification_provider.dart
 │   ├── paginated_list_provider.dart
 │   ├── query_cache_provider.dart
+│   ├── font_size_provider.dart               #     Font size setting (S/M/L) + composable scaling
 │   ├── theme_provider.dart
 │   ├── transaction_list_provider.dart
 │   └── transaction_provider.dart
@@ -590,7 +592,8 @@ supabase functions deploy notify-owner-cud
 - [x] Sentry SDK monitoring integration
 - [x] Push Notifications using Firebase Cloud Messaging (FCM)
 - [x] Owner-to-staff push messaging via Edge Functions
-- [x] Adaptive amount text for auto-sizing monetary display
+- [x] Adaptive amount text for monetary display with overflow-safe rendering
+- [x] User-selectable font size (Small / Medium / Large) with system scale composition
 - [x] Lag-free theme transitions and unified custom chip styles
 - [x] Activity logs with CUD tracking and swipe-to-delete
 - [x] Owner-to-staff inbox with role-based filtering

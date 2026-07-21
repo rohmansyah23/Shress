@@ -454,13 +454,14 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                     child: DropdownButtonFormField<OwnerDateFilter>(
                       initialValue: _selectedFilter,
                       isDense: true,
+                      isExpanded: true,
                       borderRadius: BorderRadius.circular(
                         AppRadius.radiusSmall,
                       ),
                       decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s12,
-                          vertical: AppSpacing.s8,
+                          horizontal: AppSpacing.s8,
+                          vertical: AppSpacing.s6,
                         ),
                         isDense: true,
                       ),
@@ -498,13 +499,14 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                     child: DropdownButtonFormField<OwnerTypeFilter>(
                       initialValue: _selectedType,
                       isDense: true,
+                      isExpanded: true,
                       borderRadius: BorderRadius.circular(
                         AppRadius.radiusSmall,
                       ),
                       decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s12,
-                          vertical: AppSpacing.s8,
+                          horizontal: AppSpacing.s8,
+                          vertical: AppSpacing.s6,
                         ),
                         isDense: true,
                       ),
@@ -746,6 +748,8 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                                             0xFFD2D2D2,
                                                           ),
                                                   ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               );
                                             },
@@ -961,12 +965,14 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
         children: [
           SizedBox(
             width: 100,
-            child: Text(label, style: AppTheme.caption.copyWith(fontSize: 12)),
+            child: Text(label, style: AppTheme.caption.copyWith(fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
           ),
           Expanded(
             child: Text(
               value,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

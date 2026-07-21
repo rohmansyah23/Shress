@@ -563,9 +563,10 @@ class _OwnerBusinessesTabState extends ConsumerState<OwnerBusinessesTab> {
     return DropdownButtonFormField<BusinessSortOption>(
       initialValue: _sortOption,
       isDense: true,
+      isExpanded: true,
       borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
         ),

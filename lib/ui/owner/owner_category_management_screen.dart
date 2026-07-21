@@ -387,21 +387,29 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
                                         const SizedBox(height: 2),
                                         Row(
                                           children: [
-                                            Text(
-                                              b.name,
-                                              style: AppTheme.caption.copyWith(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppTheme.onSurfaceVariantColorTheme(context),
+                                            Flexible(
+                                              child: Text(
+                                                b.name,
+                                                style: AppTheme.caption.copyWith(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppTheme.onSurfaceVariantColorTheme(context),
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                             const Text(' • '),
-                                            Text(
-                                              isIncome ? 'Pemasukan' : 'Pengeluaran',
-                                              style: AppTheme.caption.copyWith(
-                                                color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 11,
+                                            Flexible(
+                                              child: Text(
+                                                isIncome ? 'Pemasukan' : 'Pengeluaran',
+                                                style: AppTheme.caption.copyWith(
+                                                  color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 11,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                           ],

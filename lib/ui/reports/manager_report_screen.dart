@@ -540,17 +540,22 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                       const SizedBox(height: AppSpacing.s20),
                       Row(
                         children: [
-                          Text('Per Kategori',
-                              style: AppTheme.subtitle.copyWith(fontSize: 15)),
-                          const Spacer(),
+                          Flexible(
+                            child: Text('Per Kategori',
+                                style: AppTheme.subtitle.copyWith(fontSize: 15),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                          const SizedBox(width: AppSpacing.s8),
                           SizedBox(
-                            width: 150,
+                            width: 140,
                             child: DropdownButtonFormField<String>(
                               initialValue: _categoryTypeFilter,
                               isDense: true,
+                              isExpanded: true,
                               borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                               decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                                 ),
@@ -558,7 +563,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                                 filled: true,
                               ),
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 11,
                                 color: AppTheme.onSurfaceColorTheme(context),
                               ),
                               dropdownColor: AppTheme.surfaceColorTheme(context),

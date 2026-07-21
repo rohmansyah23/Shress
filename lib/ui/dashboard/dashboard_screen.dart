@@ -194,11 +194,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         child: DropdownButtonFormField<TrendFilter>(
                           initialValue: _selectedTrendFilter,
                           isDense: true,
+                          isExpanded: true,
                           borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.s12,
-                              vertical: AppSpacing.s8,
+                              horizontal: AppSpacing.s8,
+                              vertical: AppSpacing.s6,
                             ),
                             isDense: true,
                             labelText: 'Periode Waktu',
@@ -231,11 +232,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         child: DropdownButtonFormField<DashboardTrendTypeFilter>(
                           initialValue: _selectedTypeFilter,
                           isDense: true,
+                          isExpanded: true,
                           borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.s12,
-                              vertical: AppSpacing.s8,
+                              horizontal: AppSpacing.s8,
+                              vertical: AppSpacing.s6,
                             ),
                             isDense: true,
                             labelText: 'Tipe Grafik',

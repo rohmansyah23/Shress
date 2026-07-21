@@ -399,11 +399,16 @@ class SummaryCard extends StatelessWidget {
                   )
                 else
                   Flexible(
-                    child: Text(title, style: AppTheme.labelSmall),
+                    child: Text(
+                      title,
+                      style: AppTheme.labelSmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 if (trailing != null) ...[
                   const SizedBox(width: AppTheme.s4),
-                  trailing!,
+                  Flexible(child: trailing!),
                 ],
               ],
             ),
@@ -526,11 +531,15 @@ class TransactionCard extends StatelessWidget {
                       child: Text(
                         title,
                         style: AppTheme.caption.copyWith(fontSize: 10),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   Text(
                     subtitle,
                     style: AppTheme.caption.copyWith(fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: AppTheme.s4),
                   Text(
@@ -539,6 +548,8 @@ class TransactionCard extends StatelessWidget {
                       fontSize: 15,
                       color: color,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -588,7 +599,7 @@ class PfStatRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 100,
-            child: Text(label, style: AppTheme.caption.copyWith(fontSize: 12)),
+            child: Text(label, style: AppTheme.caption.copyWith(fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
           ),
           Expanded(
             child: Text(
@@ -597,6 +608,8 @@ class PfStatRow extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: valueColor,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -788,7 +801,14 @@ class PfBalanceCard extends StatelessWidget {
               children: [
                 Icon(icon, size: 18, color: color),
                 const SizedBox(width: AppTheme.s8),
-                Text(title, style: AppTheme.labelSmall),
+                Flexible(
+                  child: Text(
+                    title,
+                    style: AppTheme.labelSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: AppTheme.s8),
@@ -1039,8 +1059,8 @@ class _PfNavItem extends StatelessWidget {
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: isSelected ? 40 : 24,
-              height: isSelected ? 40 : 24,
+              width: isSelected ? 36 : 20,
+              height: isSelected ? 36 : 20,
               decoration: BoxDecoration(
                 color: isSelected
                     ? activeColor.withValues(alpha: 0.1)
@@ -1053,7 +1073,7 @@ class _PfNavItem extends StatelessWidget {
                 size: 22,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               style: AppTheme.labelSmall.copyWith(
@@ -1061,6 +1081,8 @@ class _PfNavItem extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 color: isSelected ? activeColor : inactiveColor,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               child: Text(label),
             ),
           ],
@@ -1103,8 +1125,8 @@ class _PfCenterActionButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 gradient: LinearGradient(
@@ -1150,6 +1172,8 @@ class _PfCenterActionButton extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTheme.labelSmall.copyWith(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
