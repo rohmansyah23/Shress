@@ -4,6 +4,7 @@ import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/category_model.dart';
 import '../../data/local/models/transaction_model.dart';
@@ -311,11 +312,9 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
               Text('Kategori',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppSpacing.s8),
-              DropdownButtonFormField<CategoryModel>(
+              AppDropdown<CategoryModel>(
                 initialValue: _selectedCategory,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.category_outlined),
-                ),
+                prefixIcon: const Icon(Icons.category_outlined),
                 items: _categories.map((cat) {
                   return DropdownMenuItem(
                     value: cat,

@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
 import '../../data/local/models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
+import '../../core/widgets/app_text_field.dart';
 
 import '../../core/theme/app_icon_size.dart';
 
@@ -197,12 +199,10 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             Text('Nama Tampilan (Display Name)',
                 style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppSpacing.s8),
-            TextFormField(
+            AppTextFormField(
               controller: _displayNameCtrl,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.badge_outlined),
-                hintText: 'Nama lengkap user',
-              ),
+              hintText: 'Nama lengkap user',
+              prefixIcon: const Icon(Icons.badge_outlined),
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Nama tampilan harus diisi' : null,
             ),
@@ -211,12 +211,10 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             Text('Nama Pengguna (Username)',
                 style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppSpacing.s8),
-            TextFormField(
+            AppTextFormField(
               controller: _usernameCtrl,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person_outline),
-                hintText: 'Username untuk login',
-              ),
+              hintText: 'Username untuk login',
+              prefixIcon: const Icon(Icons.person_outline),
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Username harus diisi' : null,
             ),
@@ -226,13 +224,11 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               Text('Email',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppSpacing.s8),
-              TextFormField(
+              AppTextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.email_outlined),
-                  hintText: 'user@contoh.com',
-                ),
+                hintText: 'user@contoh.com',
+                prefixIcon: const Icon(Icons.email_outlined),
                 validator: (v) =>
                     v?.trim().isEmpty == true ? 'Email harus diisi' : null,
               ),
@@ -243,13 +239,11 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               Text('Password',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppSpacing.s8),
-              TextFormField(
+              AppTextFormField(
                 controller: _pwdCtrl,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.lock_outlined),
-                  hintText: 'Minimal 6 karakter',
-                ),
+                hintText: 'Minimal 6 karakter',
+                prefixIcon: const Icon(Icons.lock_outlined),
                 validator: (v) {
                   if (v?.trim().isEmpty == true) {
                     return 'Password harus diisi';
@@ -267,39 +261,33 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               Text('Email Baru (opsional)',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppSpacing.s8),
-              TextFormField(
+              AppTextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.email_outlined),
-                  hintText: 'Kosongkan jika tidak diubah',
-                ),
+                hintText: 'Kosongkan jika tidak diubah',
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
               const SizedBox(height: AppSpacing.s20),
 
               Text('Password Baru (opsional)',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppSpacing.s8),
-              TextFormField(
+              AppTextFormField(
                 controller: _pwdCtrl,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.lock_outlined),
-                  hintText: 'Kosongkan jika tidak diubah',
-                ),
+                hintText: 'Kosongkan jika tidak diubah',
+                prefixIcon: const Icon(Icons.lock_outlined),
               ),
               const SizedBox(height: AppSpacing.s20),
 
               Text('Konfirmasi Password Baru',
                   style: AppTheme.subtitle.copyWith(fontSize: 14)),
               const SizedBox(height: AppSpacing.s8),
-              TextFormField(
+              AppTextFormField(
                 controller: _confirmPwdCtrl,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.lock_outlined),
-                  hintText: 'Ulangi password baru',
-                ),
+                hintText: 'Ulangi password baru',
+                prefixIcon: const Icon(Icons.lock_outlined),
                 validator: (v) {
                   if (_pwdCtrl.text.isNotEmpty &&
                       v != _pwdCtrl.text) {
@@ -314,17 +302,15 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             Text('Role',
                 style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppSpacing.s8),
-            DropdownButtonFormField<String>(
+            AppDropdown<String>(
               initialValue: _selectedRole,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.badge_outlined),
-              ),
+              prefixIcon: const Icon(Icons.badge_outlined),
               items: [
                 if (_selectedRole == 'owner')
-                  const DropdownMenuItem(value: 'owner', child: Text('👑 Owner')),
-                const DropdownMenuItem(value: 'staff', child: Text('👤 Staff')),
+                  const DropdownMenuItem(value: 'owner', child: Text('Owner')),
+                const DropdownMenuItem(value: 'staff', child: Text('Staff')),
                 const DropdownMenuItem(
-                    value: 'manager', child: Text('📋 Manager')),
+                    value: 'manager', child: Text('Manager')),
               ],
               onChanged: _selectedRole == 'owner'
                   ? null

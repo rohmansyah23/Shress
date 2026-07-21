@@ -17,6 +17,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
+import '../../core/widgets/app_text_field.dart';
 
 class ConsignorDetailScreen extends ConsumerStatefulWidget {
   final ConsignorModel consignor;
@@ -443,9 +444,9 @@ class _ConsignorDetailScreenState
                 ),
               ),
               const SizedBox(height: AppSpacing.s12),
-              TextField(
+              AppTextField(
                 controller: descCtrl,
-                decoration: const InputDecoration(labelText: 'Keterangan / Catatan'),
+                labelText: 'Keterangan / Catatan',
                 maxLines: 2,
               ),
             ],

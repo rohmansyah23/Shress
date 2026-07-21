@@ -9,6 +9,7 @@ import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/summary_card.dart' as summary_card;
+import '../../core/widgets/app_text_field.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/debtor_model.dart';
 import '../../providers/debtor_provider.dart';
@@ -309,39 +310,26 @@ class _OwnerDebtorsScreenState extends ConsumerState<OwnerDebtorsScreen> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.s16, 0, AppSpacing.s16, AppSpacing.s8),
-      child: TextField(
+      child: AppTextField(
         controller: _searchController,
+        hintText: 'Cari nama penghutang...',
+        prefixIcon: const Icon(Icons.search_rounded),
+        suffixIcon: _searchQuery.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear_rounded),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _searchQuery = '';
+                  });
+                },
+              )
+            : null,
         onChanged: (val) {
           setState(() {
             _searchQuery = val;
           });
         },
-        decoration: InputDecoration(
-          hintText: 'Cari nama penghutang...',
-          prefixIcon: const Icon(Icons.search_rounded),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear_rounded),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {
-                      _searchQuery = '';
-                    });
-                  },
-                )
-              : null,
-          contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
-          filled: true,
-          fillColor: AppTheme.surfaceColorTheme(context),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
-            borderSide: BorderSide(color: AppTheme.outlineColorTheme(context)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
-            borderSide: BorderSide(color: AppTheme.outlineColorTheme(context).withValues(alpha: 0.5)),
-          ),
-        ),
       ),
     );
   }

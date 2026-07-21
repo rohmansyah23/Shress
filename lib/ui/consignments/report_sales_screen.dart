@@ -254,6 +254,7 @@ class _ReportSalesScreenState extends ConsumerState<ReportSalesScreen> {
                         decoration: InputDecoration(
                           suffixText: 'pcs',
                           isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           errorText: hasError
                               ? 'Maks ${item.quantity} pcs'
                               : null,

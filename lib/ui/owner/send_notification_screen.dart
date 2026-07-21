@@ -6,6 +6,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_icon_size.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_text_field.dart';
 import '../../providers/auth_provider.dart';
 
 /// Template pesan cepat yang bisa dipilih owner.
@@ -240,13 +241,11 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
             // Title field
             Text('Judul *', style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppSpacing.s8),
-            TextFormField(
+            AppTextFormField(
               controller: _titleController,
+              prefixIcon: const Icon(Icons.title),
+              hintText: 'Contoh: Pengingat Upload Laporan',
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.title),
-                hintText: 'Contoh: Pengingat Upload Laporan',
-              ),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Judul wajib diisi';
                 return null;
@@ -285,7 +284,7 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
             ),
             const SizedBox(height: AppSpacing.s8),
             SizedBox(
-              height: 38,
+              height: 36,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
@@ -310,14 +309,12 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
             // Body field
             Text('Pesan *', style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppSpacing.s8),
-            TextFormField(
+            AppTextFormField(
               controller: _bodyController,
+              prefixIcon: const Icon(Icons.message_outlined),
+              hintText: 'Contoh: Jangan lupa input transaksi hari ini',
               textInputAction: TextInputAction.newline,
               maxLines: 3,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.message_outlined),
-                hintText: 'Contoh: Jangan lupa input transaksi hari ini',
-              ),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Pesan wajib diisi';
                 return null;

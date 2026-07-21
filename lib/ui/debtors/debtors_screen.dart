@@ -5,6 +5,7 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
+import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/summary_card.dart' as summary_card;
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/debtor_model.dart';
@@ -191,20 +192,20 @@ class DebtorsScreen extends ConsumerWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            AppTextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: 'Nama'),
+              labelText: 'Nama',
             ),
             const SizedBox(height: AppSpacing.s12),
-            TextField(
+            AppTextField(
               controller: phoneController,
-              decoration: const InputDecoration(labelText: 'Telepon'),
+              labelText: 'Telepon',
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: AppSpacing.s12),
-            TextField(
+            AppTextField(
               controller: notesController,
-              decoration: const InputDecoration(labelText: 'Catatan'),
+              labelText: 'Catatan',
               maxLines: 2,
             ),
           ],

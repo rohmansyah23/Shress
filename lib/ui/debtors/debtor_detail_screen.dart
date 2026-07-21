@@ -6,6 +6,7 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
+import '../../core/widgets/app_text_field.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/debt_model.dart';
 import '../../data/local/models/debt_payment_model.dart';
@@ -125,25 +126,25 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   labelText: 'Jumlah (Rp)',
                   prefixText: 'Rp ',
-                  prefixIcon: Icon(Icons.monetization_on_outlined),
+                  prefixIcon: const Icon(Icons.monetization_on_outlined),
                 ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              TextField(
+              AppTextField(
                 controller: descController,
-                decoration: const InputDecoration(labelText: 'Deskripsi'),
+                labelText: 'Deskripsi',
               ),
               const SizedBox(height: AppSpacing.s16),
-              TextField(
+              AppTextField(
                 controller: dueDateController,
                 readOnly: true,
-                decoration: const InputDecoration(
-                  labelText: 'Jatuh Tempo',
-                  suffixIcon: Icon(Icons.calendar_today_outlined),
-                ),
+                labelText: 'Jatuh Tempo',
+                suffixIcon: const Icon(Icons.calendar_today_outlined),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: ctx,
@@ -713,16 +714,18 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   labelText: 'Jumlah (Rp)',
                   prefixText: 'Rp ',
-                  prefixIcon: Icon(Icons.monetization_on_outlined),
+                  prefixIcon: const Icon(Icons.monetization_on_outlined),
                 ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              TextField(
+              AppTextField(
                 controller: notesController,
-                decoration: const InputDecoration(labelText: 'Catatan'),
+                labelText: 'Catatan',
               ),
             ],
           ),
@@ -1140,8 +1143,10 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                           controller: amountController,
                           keyboardType: TextInputType.number,
                           autofocus: true,
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.monetization_on_outlined),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            prefixIcon: const Icon(Icons.monetization_on_outlined),
                             hintText: '0',
                             prefixText: 'Rp ',
                           ),
@@ -1163,7 +1168,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                         const SizedBox(height: AppSpacing.s20),
                         _FormLabel('Tanggal Pembayaran'),
                         const SizedBox(height: AppSpacing.s8),
-                        TextFormField(
+                        AppTextFormField(
                           controller: dateController,
                           readOnly: true,
                           onTap: () async {
@@ -1180,20 +1185,16 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                               });
                             }
                           },
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.calendar_today_outlined),
-                            suffixIcon: Icon(Icons.arrow_drop_down),
-                          ),
+                          prefixIcon: const Icon(Icons.calendar_today_outlined),
+                          suffixIcon: const Icon(Icons.arrow_drop_down),
                         ),
                         const SizedBox(height: AppSpacing.s20),
                         _FormLabel('Catatan (opsional)'),
                         const SizedBox(height: AppSpacing.s8),
-                        TextFormField(
+                        AppTextFormField(
                           controller: notesController,
                           maxLines: 2,
-                          decoration: const InputDecoration(
-                            hintText: 'Catatan pembayaran...',
-                          ),
+                          hintText: 'Catatan pembayaran...',
                         ),
                         const SizedBox(height: AppSpacing.s28),
                         SizedBox(

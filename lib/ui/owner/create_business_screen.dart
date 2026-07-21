@@ -12,6 +12,7 @@ import '../../core/widgets/error_widgets.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
+import '../../core/widgets/app_text_field.dart';
 
 import '../../core/theme/app_icon_size.dart';
 
@@ -243,13 +244,11 @@ class _CreateBusinessScreenState
             Text('Nama Bisnis*',
                 style: AppTheme.subtitle.copyWith(fontSize: 14)),
             const SizedBox(height: AppSpacing.s8),
-            TextFormField(
+            AppTextFormField(
               controller: _nameController,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.store_outlined),
-                hintText: 'Contoh: Warung Makmur',
-              ),
+              hintText: 'Contoh: Warung Makmur',
+              prefixIcon: const Icon(Icons.store_outlined),
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Nama bisnis harus diisi' : null,
             ),
@@ -266,6 +265,8 @@ class _CreateBusinessScreenState
                 prefixIcon: Icon(Icons.description_outlined),
                 hintText: 'Jenis usaha, alamat, atau informasi lainnya',
                 alignLabelWithHint: true,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
             ),
             const SizedBox(height: AppSpacing.s24),
@@ -319,13 +320,11 @@ class _CreateBusinessScreenState
               const SizedBox(height: AppSpacing.s12),
 
               if (_useUrl)
-                TextField(
+                AppTextField(
                   controller: _urlController,
-                  decoration: const InputDecoration(
-                    labelText: 'URL Gambar QRIS',
-                    hintText: 'https://...',
-                    prefixIcon: Icon(Icons.link_rounded),
-                  ),
+                  labelText: 'URL Gambar QRIS',
+                  hintText: 'https://...',
+                  prefixIcon: const Icon(Icons.link_rounded),
                   keyboardType: TextInputType.url,
                 )
               else ...[

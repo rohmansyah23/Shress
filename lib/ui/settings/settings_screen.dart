@@ -18,6 +18,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
+import '../../core/widgets/app_text_field.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -471,22 +472,18 @@ class SettingsScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextField(
+              AppTextField(
                 controller: newPwdCtrl,
+                labelText: 'Password Baru',
+                prefixIcon: const Icon(Icons.lock_outlined),
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password Baru',
-                  prefixIcon: Icon(Icons.lock_outlined),
-                ),
               ),
               const SizedBox(height: AppSpacing.s12),
-              TextField(
+              AppTextField(
                 controller: confirmPwdCtrl,
+                labelText: 'Konfirmasi Password Baru',
+                prefixIcon: const Icon(Icons.lock_outline),
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Konfirmasi Password Baru',
-                  prefixIcon: Icon(Icons.lock_outline),
-                ),
               ),
             ],
           ),

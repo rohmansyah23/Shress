@@ -8,6 +8,8 @@ import 'dart:async';
 import 'dart:io';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
+import '../../core/widgets/app_text_field.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -351,23 +353,9 @@ class _TransactionHistoryScreenState
                 children: [
                   // ignore: deprecated_member_use
                   Expanded(
-                    child: DropdownButtonFormField<DateFilter>(
+                    child: AppDropdown<DateFilter>(
                       initialValue: _selectedFilter,
-                      isDense: true,
-                      isExpanded: true,
-                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                        ),
-                        isDense: true,
-                        filled: true,
-                      ),
-                      style: AppTheme.labelSmall.copyWith(
-                        color: AppTheme.onSurfaceColorTheme(context),
-                      ),
-                      dropdownColor: AppTheme.surfaceColorTheme(context),
+                      labelText: 'Periode',
                       items: DateFilter.values.map((f) =>
                         DropdownMenuItem(
                           value: f,
@@ -392,23 +380,9 @@ class _TransactionHistoryScreenState
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   Expanded(
-                    child: DropdownButtonFormField<TypeFilter>(
+                    child: AppDropdown<TypeFilter>(
                       initialValue: _selectedType,
-                      isDense: true,
-                      isExpanded: true,
-                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                        ),
-                        isDense: true,
-                        filled: true,
-                      ),
-                      style: AppTheme.labelSmall.copyWith(
-                        color: AppTheme.onSurfaceColorTheme(context),
-                      ),
-                      dropdownColor: AppTheme.surfaceColorTheme(context),
+                      labelText: 'Tipe',
                       items: TypeFilter.values.map((f) =>
                         DropdownMenuItem(
                           value: f,
@@ -430,7 +404,7 @@ class _TransactionHistoryScreenState
                   if (canExport) ...[
                     const SizedBox(width: AppSpacing.s8),
                     Container(
-                      height: 40,
+                      height: 38,
                       decoration: BoxDecoration(
                         border: Border.all(color: Theme.of(context).colorScheme.outline),
                         borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
@@ -455,26 +429,20 @@ class _TransactionHistoryScreenState
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppSpacing.s12, AppSpacing.s8, AppSpacing.s12, AppSpacing.s4),
-              child: TextField(
+              child: AppTextField(
                 controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Cari transaksi...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: AppIconSize.s20),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: AppIconSize.s18),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                            _applyFilter();
-                          },
-                        )
-                      : null,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.s12, vertical: AppSpacing.s10),
-                ),
-                style: AppTheme.caption.copyWith(fontSize: 14),
+                hintText: 'Cari transaksi...',
+                prefixIcon: const Icon(Icons.search_rounded, size: AppIconSize.s20),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: AppIconSize.s18),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                          _applyFilter();
+                        },
+                      )
+                    : null,
                 onChanged: _onSearchChanged,
               ),
             ),

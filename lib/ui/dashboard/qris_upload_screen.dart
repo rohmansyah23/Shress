@@ -13,6 +13,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
+import '../../core/widgets/app_text_field.dart';
 
 class QrisUploadScreen extends StatefulWidget {
   final BusinessModel business;
@@ -250,13 +251,11 @@ class _QrisUploadScreenState extends State<QrisUploadScreen> {
           const SizedBox(height: AppSpacing.s20),
 
           if (_useUrl)
-            TextField(
+            AppTextField(
               controller: _urlController,
-              decoration: const InputDecoration(
-                labelText: 'URL Gambar QRIS',
-                hintText: 'https://...',
-                prefixIcon: Icon(Icons.link_rounded),
-              ),
+              labelText: 'URL Gambar QRIS',
+              hintText: 'https://...',
+              prefixIcon: const Icon(Icons.link_rounded),
               keyboardType: TextInputType.url,
             )
           else ...[

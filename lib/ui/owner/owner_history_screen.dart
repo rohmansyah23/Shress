@@ -8,6 +8,8 @@ import 'dart:async';
 import 'dart:io';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
+import '../../core/widgets/app_text_field.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -451,24 +453,8 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: DropdownButtonFormField<OwnerDateFilter>(
+                    child: AppDropdown<OwnerDateFilter>(
                       initialValue: _selectedFilter,
-                      isDense: true,
-                      isExpanded: true,
-                      borderRadius: BorderRadius.circular(
-                        AppRadius.radiusSmall,
-                      ),
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s8,
-                          vertical: AppSpacing.s6,
-                        ),
-                        isDense: true,
-                      ),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.onSurfaceColorTheme(context),
-                      ),
                       items: OwnerDateFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -496,24 +482,8 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   Expanded(
-                    child: DropdownButtonFormField<OwnerTypeFilter>(
+                    child: AppDropdown<OwnerTypeFilter>(
                       initialValue: _selectedType,
-                      isDense: true,
-                      isExpanded: true,
-                      borderRadius: BorderRadius.circular(
-                        AppRadius.radiusSmall,
-                      ),
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s8,
-                          vertical: AppSpacing.s6,
-                        ),
-                        isDense: true,
-                      ),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.onSurfaceColorTheme(context),
-                      ),
                       items: OwnerTypeFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -538,7 +508,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                   if (canExport) ...[
                     const SizedBox(width: AppSpacing.s8),
                     Container(
-                      height: 40,
+                      height: 38,
                       decoration: BoxDecoration(
                         border: Border.all(color: Theme.of(context).colorScheme.outline),
                         borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
@@ -567,34 +537,26 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                 AppSpacing.s12,
                 0,
               ),
-              child: TextField(
+              child: AppTextField(
                 controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Cari transaksi...',
-                  prefixIcon: const Icon(
-                    Icons.search_rounded,
-                    size: AppIconSize.s20,
-                  ),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(
-                            Icons.clear_rounded,
-                            size: AppIconSize.s18,
-                          ),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                            _applyFilter();
-                          },
-                        )
-                      : null,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.s12,
-                    vertical: AppSpacing.s12,
-                  ),
+                hintText: 'Cari transaksi...',
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  size: AppIconSize.s20,
                 ),
-                style: AppTheme.caption.copyWith(fontSize: 14),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.clear_rounded,
+                          size: AppIconSize.s18,
+                        ),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                          _applyFilter();
+                        },
+                      )
+                    : null,
                 onChanged: _onSearchChanged,
               ),
             ),

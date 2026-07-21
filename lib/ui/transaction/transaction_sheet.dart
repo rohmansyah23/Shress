@@ -6,6 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/category_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -427,11 +428,9 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                   children: [
                     _FormLabel('Kategori'),
                     const SizedBox(height: AppSpacing.s8),
-                    DropdownButtonFormField<CategoryModel>(
+                    AppDropdown<CategoryModel>(
                       initialValue: _selectedCategory,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.category_outlined),
-                      ),
+                      prefixIcon: const Icon(Icons.category_outlined),
                       items: _categories.map((cat) {
                         return DropdownMenuItem(
                           value: cat,
@@ -530,11 +529,9 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
 
                     _FormLabel('Metode Pembayaran'),
                     const SizedBox(height: AppSpacing.s8),
-                    DropdownButtonFormField<String>(
+                    AppDropdown<String>(
                       initialValue: _paymentMethod,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.payment_outlined),
-                      ),
+                      prefixIcon: const Icon(Icons.payment_outlined),
                       items: [
                         const DropdownMenuItem(
                           value: AppConstants.paymentCash,

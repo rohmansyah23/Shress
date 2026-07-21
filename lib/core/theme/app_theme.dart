@@ -594,6 +594,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
+        isDense: true,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
           borderSide: const BorderSide(color: outlineVariant, width: 1),
@@ -616,7 +617,7 @@ class AppTheme {
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.s16,
-          vertical: AppSpacing.s16,
+          vertical: AppSpacing.s10,
         ),
         labelStyle: bodyText.copyWith(color: textSecondary),
         hintStyle: caption.copyWith(color: textTertiary),
@@ -1195,6 +1196,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: _darkSurface,
+        isDense: true,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
           borderSide: const BorderSide(color: _darkOutlineVariant, width: 1),
@@ -1217,7 +1219,7 @@ class AppTheme {
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.s16,
-          vertical: AppSpacing.s16,
+          vertical: AppSpacing.s10,
         ),
         labelStyle: bodyText.copyWith(color: darkTextSecondary),
         hintStyle: caption.copyWith(color: _darkTextDisabled),

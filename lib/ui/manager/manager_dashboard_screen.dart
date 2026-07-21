@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/finance_bar_chart.dart';
 import '../../data/local/models/business_model.dart';
@@ -249,21 +250,9 @@ class _ManagerDashboardScreenState
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<TrendFilter>(
+                  child: AppDropdown<TrendFilter>(
                     initialValue: _selectedTrendFilter,
-                    isDense: true,
-                    isExpanded: true,
-                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
-                      isDense: true,
-                      labelText: 'Periode Waktu',
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                    ),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.onSurfaceColorTheme(context),
-                    ),
+                    labelText: 'Periode Waktu',
                     items: TrendFilter.values
                         .map(
                           (f) => DropdownMenuItem(
@@ -286,21 +275,9 @@ class _ManagerDashboardScreenState
                 ),
                 const SizedBox(width: AppSpacing.s8),
                 Expanded(
-                  child: DropdownButtonFormField<_TrendTypeFilter>(
+                  child: AppDropdown<_TrendTypeFilter>(
                     initialValue: _selectedTypeFilter,
-                    isDense: true,
-                    isExpanded: true,
-                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
-                      isDense: true,
-                      labelText: 'Tipe Grafik',
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                    ),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.onSurfaceColorTheme(context),
-                    ),
+                    labelText: 'Tipe Grafik',
                     items: _TrendTypeFilter.values
                         .map(
                           (f) => DropdownMenuItem(

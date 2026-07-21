@@ -7,6 +7,8 @@ import '../../core/theme/app_icon_size.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
+import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -64,20 +66,16 @@ class _OwnerBusinessesTabState extends ConsumerState<OwnerBusinessesTab> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            AppTextField(
               controller: nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Nama Bisnis',
-                hintText: 'Masukkan nama bisnis',
-              ),
+              labelText: 'Nama Bisnis',
+              hintText: 'Masukkan nama bisnis',
             ),
             const SizedBox(height: AppSpacing.s12),
-            TextField(
+            AppTextField(
               controller: descCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Deskripsi',
-                hintText: 'Masukkan deskripsi',
-              ),
+              labelText: 'Deskripsi',
+              hintText: 'Masukkan deskripsi',
               maxLines: 2,
             ),
           ],
@@ -154,12 +152,9 @@ class _OwnerBusinessesTabState extends ConsumerState<OwnerBusinessesTab> {
                 style: const TextStyle(fontSize: 13),
               ),
               const SizedBox(height: AppSpacing.s8),
-              TextField(
+              AppTextField(
                 controller: confirmController,
-                decoration: const InputDecoration(
-                  hintText: 'Nama bisnis',
-                  contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
-                ),
+                hintText: 'Nama bisnis',
                 onChanged: (val) {
                   setStateDialog(() {
                     isMatch = val.trim() == business.name;
@@ -523,61 +518,32 @@ class _OwnerBusinessesTabState extends ConsumerState<OwnerBusinessesTab> {
   }
 
   Widget _buildSearchBar() {
-    return TextField(
+    return AppTextField(
       controller: _searchController,
+      hintText: 'Cari nama bisnis...',
+      prefixIcon: const Icon(Icons.search_rounded),
+      suffixIcon: _searchQuery.isNotEmpty
+          ? IconButton(
+              icon: const Icon(Icons.clear_rounded),
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+            )
+          : null,
       onChanged: (val) {
         setState(() {
           _searchQuery = val;
         });
       },
-      decoration: InputDecoration(
-        hintText: 'Cari nama bisnis...',
-        prefixIcon: const Icon(Icons.search_rounded),
-        suffixIcon: _searchQuery.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.clear_rounded),
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() {
-                    _searchQuery = '';
-                  });
-                },
-              )
-            : null,
-        contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
-        filled: true,
-        fillColor: AppTheme.surfaceColorTheme(context),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
-          borderSide: BorderSide(color: AppTheme.outlineColorTheme(context)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
-          borderSide: BorderSide(color: AppTheme.outlineColorTheme(context).withValues(alpha: 0.5)),
-        ),
-      ),
     );
   }
 
   Widget _buildSortDropdown() {
-    return DropdownButtonFormField<BusinessSortOption>(
+    return AppDropdown<BusinessSortOption>(
       initialValue: _sortOption,
-      isDense: true,
-      isExpanded: true,
-      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-      decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-        ),
-        isDense: true,
-        filled: true,
-      ),
-      style: TextStyle(
-        fontSize: 13,
-        color: AppTheme.onSurfaceColorTheme(context),
-      ),
-      dropdownColor: AppTheme.surfaceColorTheme(context),
       items: BusinessSortOption.values.map((option) {
         return DropdownMenuItem<BusinessSortOption>(
           value: option,
@@ -590,12 +556,9 @@ class _OwnerBusinessesTabState extends ConsumerState<OwnerBusinessesTab> {
           ),
         );
       }).toList(),
-      onChanged: (newValue) {
-        if (newValue != null) {
-          setState(() {
-            _sortOption = newValue;
-          });
-        }
+      onChanged: (value) {
+        if (value == null) return;
+        setState(() => _sortOption = value);
       },
     );
   }

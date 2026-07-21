@@ -12,6 +12,7 @@ import '../settings/settings_screen.dart';
 import '../widgetbook/widgetbook_screen.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
+import '../../core/widgets/app_text_field.dart';
 
 
 
@@ -240,13 +241,11 @@ class ProfileScreen extends ConsumerWidget {
           title: const Text('Ubah Nama Tampilan'),
           content: SizedBox(
             width: double.maxFinite,
-            child: TextField(
+            child: AppTextField(
               controller: nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Nama Tampilan',
-                prefixIcon: Icon(Icons.badge_outlined),
-                hintText: 'Nama lengkap Anda',
-              ),
+              labelText: 'Nama Tampilan',
+              prefixIcon: const Icon(Icons.badge_outlined),
+              hintText: 'Nama lengkap Anda',
             ),
           ),
           actions: [

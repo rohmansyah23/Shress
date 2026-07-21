@@ -12,6 +12,7 @@ import '../../providers/auth_provider.dart';
 import 'user_form_screen.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
+import '../../core/widgets/app_text_field.dart';
 
 import '../../core/theme/app_icon_size.dart';
 
@@ -204,21 +205,19 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s16),
-            child: TextField(
+            child: AppTextField(
               controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Cari user...',
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-              ),
+              hintText: 'Cari user...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                    )
+                  : null,
               onChanged: (value) =>
                   setState(() => _searchQuery = value.toLowerCase()),
             ),
@@ -445,28 +444,26 @@ class _UserCard extends ConsumerWidget {
                   Text('Role:',
                       style: AppTheme.caption.copyWith(fontSize: 12)),
                   const SizedBox(width: AppSpacing.s8),
-                  SizedBox(
-                    height: 32,
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: user.role,
-                        icon: const Icon(Icons.swap_horiz_rounded, size: AppIconSize.s18),
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: _roleColor(context, user.role)),
-                        items: const [
-                          DropdownMenuItem(
-                              value: 'manager',
-                              child: Text('Manager')),
-                          DropdownMenuItem(
-                              value: 'staff',
-                              child: Text('Staff')),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) onRoleChanged(value);
-                        },
-                      ),
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: user.role,
+                      isDense: true,
+                      icon: const Icon(Icons.swap_horiz_rounded, size: AppIconSize.s18),
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _roleColor(context, user.role)),
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'manager',
+                            child: Text('Manager')),
+                        DropdownMenuItem(
+                            value: 'staff',
+                            child: Text('Staff')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) onRoleChanged(value);
+                      },
                     ),
                   ),
                 ],

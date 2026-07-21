@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../utils/format_helpers.dart';
+import 'app_dropdown.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';
 
@@ -249,27 +250,9 @@ class _TransactionSectionState extends State<TransactionSection> {
         Row(
           children: [
             Expanded(
-              child: DropdownButtonFormField<String>(
+              child: AppDropdown<String>(
                 initialValue: _typeFilter,
-                isDense: true,
-                isExpanded: true,
-                borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.s8,
-                    vertical: AppSpacing.s6,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                  ),
-                  isDense: true,
-                  filled: true,
-                ),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppTheme.onSurfaceColorTheme(context),
-                ),
-                dropdownColor: AppTheme.surfaceColorTheme(context),
+                labelText: 'Tipe',
                 items: const [
                   DropdownMenuItem(value: 'all', child: Text('Semua')),
                   DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
@@ -285,27 +268,9 @@ class _TransactionSectionState extends State<TransactionSection> {
             ),
             const SizedBox(width: AppSpacing.s12),
             Flexible(
-              child: DropdownButtonFormField<int?>(
+              child: AppDropdown<int?>(
                 initialValue: _limit,
-                isDense: true,
-                isExpanded: true,
-                borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.s8,
-                    vertical: AppSpacing.s6,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                  ),
-                  isDense: true,
-                  filled: true,
-                ),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppTheme.onSurfaceColorTheme(context),
-                ),
-                dropdownColor: AppTheme.surfaceColorTheme(context),
+                labelText: 'Limit',
                 items: const [
                   DropdownMenuItem(value: 10, child: Text('10')),
                   DropdownMenuItem(value: 25, child: Text('25')),

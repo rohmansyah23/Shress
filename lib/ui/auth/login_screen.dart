@@ -10,6 +10,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
+import '../../core/widgets/app_text_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -184,16 +185,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       ],
 
                       // Email/Username
-                      TextFormField(
+                      AppTextFormField(
                         controller: _identifierController,
+                        labelText: 'Email / Username',
+                        prefixIcon: const Icon(Icons.person_outlined),
                         keyboardType: TextInputType.text,
                         textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.none,
                         autocorrect: false,
-                        decoration: const InputDecoration(
-                          labelText: 'Email / Username',
-                          prefixIcon: Icon(Icons.person_outlined),
-                        ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Email atau username tidak boleh kosong';
@@ -204,25 +203,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       const SizedBox(height: AppSpacing.s16),
 
                       // Password
-                      TextFormField(
+                      AppTextFormField(
                         controller: _passwordController,
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outlined),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                        ),
                         obscureText: _obscurePassword,
                         textInputAction: TextInputAction.done,
                         onFieldSubmitted: (_) => _handleLogin(),
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock_outlined),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword,
-                            ),
-                          ),
-                        ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Password tidak boleh kosong';

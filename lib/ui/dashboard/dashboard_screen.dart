@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/finance_bar_chart.dart';
 import '../../core/network/connectivity_service.dart';
@@ -12,7 +13,6 @@ import '../../providers/business_providers.dart';
 import '../transaction/transaction_sheet.dart';
 import '../transaction/transaction_history_screen.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_radius.dart';
 
 enum DashboardTrendTypeFilter {
   netProfit('Laba/Rugi Bersih'),
@@ -191,23 +191,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: DropdownButtonFormField<TrendFilter>(
+                        child: AppDropdown<TrendFilter>(
                           initialValue: _selectedTrendFilter,
-                          isDense: true,
-                          isExpanded: true,
-                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.s8,
-                              vertical: AppSpacing.s6,
-                            ),
-                            isDense: true,
-                            labelText: 'Periode Waktu',
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                          ),
-                          style: AppTheme.labelSmall.copyWith(
-                            color: AppTheme.onSurfaceColorTheme(context),
-                          ),
+                          labelText: 'Periode Waktu',
                           items: TrendFilter.values
                               .map(
                                 (f) => DropdownMenuItem(
@@ -229,23 +215,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       const SizedBox(width: AppSpacing.s8),
                       Expanded(
-                        child: DropdownButtonFormField<DashboardTrendTypeFilter>(
+                        child: AppDropdown<DashboardTrendTypeFilter>(
                           initialValue: _selectedTypeFilter,
-                          isDense: true,
-                          isExpanded: true,
-                          borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: AppSpacing.s8,
-                              vertical: AppSpacing.s6,
-                            ),
-                            isDense: true,
-                            labelText: 'Tipe Grafik',
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                          ),
-                          style: AppTheme.labelSmall.copyWith(
-                            color: AppTheme.onSurfaceColorTheme(context),
-                          ),
+                          labelText: 'Tipe Grafik',
                           items: DashboardTrendTypeFilter.values
                               .map(
                                 (f) => DropdownMenuItem(

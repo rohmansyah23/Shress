@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
 import '../../core/widgets/report_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/local/models/business_model.dart';
@@ -539,6 +540,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                     if (!isStaff) ...[
                       const SizedBox(height: AppSpacing.s20),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Flexible(
                             child: Text('Per Kategori',
@@ -547,26 +549,10 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                                 overflow: TextOverflow.ellipsis),
                           ),
                           const SizedBox(width: AppSpacing.s8),
-                          SizedBox(
-                            width: 140,
-                            child: DropdownButtonFormField<String>(
+                          Flexible(
+                            child: AppDropdown<String>(
                               initialValue: _categoryTypeFilter,
-                              isDense: true,
-                              isExpanded: true,
-                              borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s6),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                                ),
-                                isDense: true,
-                                filled: true,
-                              ),
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppTheme.onSurfaceColorTheme(context),
-                              ),
-                              dropdownColor: AppTheme.surfaceColorTheme(context),
+                              labelText: 'Tipe',
                               items: const [
                                 DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
                                 DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),

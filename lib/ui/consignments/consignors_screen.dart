@@ -18,6 +18,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
+import '../../core/widgets/app_text_field.dart';
 
 class ConsignorsScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
@@ -371,20 +372,20 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            AppTextField(
               controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'Nama'),
+              labelText: 'Nama',
             ),
             const SizedBox(height: AppSpacing.s12),
-            TextField(
+            AppTextField(
               controller: phoneCtrl,
-              decoration: const InputDecoration(labelText: 'Telepon'),
+              labelText: 'Telepon',
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: AppSpacing.s12),
-            TextField(
+            AppTextField(
               controller: notesCtrl,
-              decoration: const InputDecoration(labelText: 'Catatan'),
+              labelText: 'Catatan',
               maxLines: 2,
             ),
           ],

@@ -5,6 +5,8 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
+import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/finance_bar_chart.dart';
 import '../../data/local/models/business_model.dart';
@@ -235,24 +237,9 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               Row(
                 children: [
                   Expanded(
-                    child: DropdownButtonFormField<TrendFilter>(
+                    child: AppDropdown<TrendFilter>(
                       initialValue: _selectedTrendFilter,
-                      isDense: true,
-                      isExpanded: true,
-                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s8,
-                          vertical: AppSpacing.s6,
-                        ),
-                        isDense: true,
-                        labelText: 'Periode Waktu',
-                        floatingLabelBehavior: FloatingLabelBehavior.never,
-                      ),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.onSurfaceColorTheme(context),
-                      ),
+                      labelText: 'Periode Waktu',
                       items: TrendFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -275,24 +262,9 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   Expanded(
-                    child: DropdownButtonFormField<TrendTypeFilter>(
+                    child: AppDropdown<TrendTypeFilter>(
                       initialValue: _selectedTypeFilter,
-                      isDense: true,
-                      isExpanded: true,
-                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.s8,
-                          vertical: AppSpacing.s6,
-                        ),
-                        isDense: true,
-                        labelText: 'Tipe Grafik',
-                        floatingLabelBehavior: FloatingLabelBehavior.never,
-                      ),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.onSurfaceColorTheme(context),
-                      ),
+                      labelText: 'Tipe Grafik',
                       items: TrendTypeFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -719,11 +691,17 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                           style: AppTheme.amountMedium.copyWith(
                             color: AppTheme.warningColorTheme(context),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: AppSpacing.s4),
                         Text(
                           '$activeCount hutang aktif',
-                          style: AppTheme.caption,
+                          style: AppTheme.labelSmall.copyWith(
+                            color: AppTheme.onSurfaceVariantColorTheme(context),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -793,11 +771,17 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                           style: AppTheme.amountMedium.copyWith(
                             color: AppTheme.consignmentColorTheme(context),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: AppSpacing.s4),
                         Text(
                           '$activeCount titipan aktif',
-                          style: AppTheme.caption,
+                          style: AppTheme.labelSmall.copyWith(
+                            color: AppTheme.onSurfaceVariantColorTheme(context),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -898,32 +882,21 @@ class _BusinessSelectorSheetContentState
         // Search Bar
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
-          child: TextField(
+          child: AppTextField(
             controller: _searchController,
-            style: TextStyle(
-              fontSize: 13,
-              color: AppTheme.onSurfaceColorTheme(context),
-            ),
-            decoration: InputDecoration(
-              hintText: 'Cari nama bisnis...',
-              prefixIcon: const Icon(Icons.search_rounded, size: 20),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, size: 18),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {
-                          _searchQuery = '';
-                        });
-                      },
-                    )
-                  : null,
-              contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.s8),
-              isDense: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
-              ),
-            ),
+            hintText: 'Cari nama bisnis...',
+            prefixIcon: const Icon(Icons.search_rounded, size: 20),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear_rounded, size: 18),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {
+                        _searchQuery = '';
+                      });
+                    },
+                  )
+                : null,
             onChanged: (val) {
               setState(() {
                 _searchQuery = val;
@@ -950,7 +923,7 @@ class _BusinessSelectorSheetContentState
             ),
           ),
           SizedBox(
-            height: 38,
+            height: 36,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12),

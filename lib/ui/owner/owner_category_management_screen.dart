@@ -5,6 +5,8 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
+import '../../core/widgets/app_dropdown.dart';
+import '../../core/widgets/app_text_field.dart';
 import '../../data/local/models/category_model.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -125,16 +127,15 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
               decoration: const InputDecoration(labelText: 'Nama Kategori'),
             ),
             const SizedBox(height: AppSpacing.s12),
-            DropdownButtonFormField<String>(
+            AppDropdown<String>(
               initialValue: type,
-              borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+              labelText: 'Tipe',
               dropdownColor: AppTheme.surfaceColorTheme(context),
               items: const [
                 DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
                 DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
               ],
               onChanged: (v) => type = v ?? AppConstants.typeExpense,
-              decoration: const InputDecoration(labelText: 'Tipe'),
             ),
           ],
         ),
@@ -185,16 +186,15 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
               decoration: const InputDecoration(labelText: 'Nama Kategori'),
             ),
             const SizedBox(height: AppSpacing.s12),
-            DropdownButtonFormField<String>(
+            AppDropdown<String>(
               initialValue: type,
-              borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+              labelText: 'Tipe',
               dropdownColor: AppTheme.surfaceColorTheme(context),
               items: const [
                 DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
                 DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
               ],
               onChanged: (v) => type = v ?? AppConstants.typeExpense,
-              decoration: const InputDecoration(labelText: 'Tipe'),
             ),
           ],
         ),
@@ -295,32 +295,19 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
           _buildFilterChips(),
           Padding(
             padding: const EdgeInsets.fromLTRB(AppSpacing.s16, 0, AppSpacing.s16, AppSpacing.s16),
-            child: TextField(
+            child: AppTextField(
               controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Cari kategori...',
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-                contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
-                filled: true,
-                fillColor: AppTheme.surfaceColorTheme(context),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
-                  borderSide: BorderSide(color: AppTheme.outlineColorTheme(context)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
-                  borderSide: BorderSide(color: AppTheme.outlineColorTheme(context).withValues(alpha: 0.5)),
-                ),
-              ),
+              hintText: 'Cari kategori...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                    )
+                  : null,
               onChanged: (value) =>
                   setState(() => _searchQuery = value.toLowerCase()),
             ),
