@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -7,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -58,7 +57,7 @@ serve(async (req: Request) => {
     if (targetError || !targetUsers || targetUsers.length === 0) {
       return new Response(
         JSON.stringify({ error: "No target users found", sent: 0 }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -66,15 +65,14 @@ serve(async (req: Request) => {
 
     const { data: tokens, error: tokenError } = await supabase
       .from("push_tokens")
-      .select("fcm_token, user_id, is_active")
-      .in("user_id", targetUserIds);
+      .select("fcm_token, user_id")
+      .in("user_id", targetUserIds)
+      .eq("is_active", true);
 
-    const activeTokens = tokens?.filter((t: { is_active: boolean }) => t.is_active) ?? [];
-
-    if (tokenError || activeTokens.length === 0) {
+    if (tokenError || !tokens || tokens.length === 0) {
       return new Response(
         JSON.stringify({ error: "No push tokens found", sent: 0 }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -93,7 +91,7 @@ serve(async (req: Request) => {
     let sentCount = 0;
     const errors: string[] = [];
 
-    for (const tokenRecord of activeTokens) {
+    for (const tokenRecord of tokens) {
       try {
         const message = {
           token: tokenRecord.fcm_token,
@@ -152,7 +150,7 @@ serve(async (req: Request) => {
       JSON.stringify({
         success: true,
         sent: sentCount,
-        total_tokens: activeTokens.length,
+        total_tokens: tokens.length,
         errors: errors.length > 0 ? errors : undefined,
       }),
       {
