@@ -12,6 +12,7 @@ import '../../core/widgets/error_widgets.dart';
 import '../../core/services/backup_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/font_size_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
@@ -25,6 +26,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final fontSize = ref.watch(fontSizeProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -117,6 +119,39 @@ class SettingsScreen extends ConsumerWidget {
                         : (themeMode == ThemeMode.dark
                             ? 'Tampilan gelap aktif'
                             : 'Tampilan terang aktif'),
+                    style: AppTheme.caption,
+                  ),
+                  const SizedBox(height: AppSpacing.s20),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.text_fields_rounded,
+                        color: AppTheme.primaryColorTheme(context),
+                        size: AppIconSize.s20,
+                      ),
+                      const SizedBox(width: AppSpacing.s8),
+                      Text(
+                        'Ukuran Teks',
+                        style: AppTheme.subtitle.copyWith(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.s12),
+                  _FontSizeSegmentedButton(
+                    currentSize: fontSize,
+                    onSelectionChanged: (selectedSize) {
+                      ref
+                          .read(fontSizeProvider.notifier)
+                          .setFontSize(selectedSize);
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.s8),
+                  Text(
+                    fontSize == FontSize.small
+                        ? 'Ukuran teks kecil aktif'
+                        : (fontSize == FontSize.large
+                            ? 'Ukuran teks besar aktif'
+                            : 'Ukuran teks sedang aktif'),
                     style: AppTheme.caption,
                   ),
                 ],
@@ -525,7 +560,192 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
   }
+}
 
+class _FontSizeSegmentedButton extends StatefulWidget {
+  final FontSize currentSize;
+  final ValueChanged<FontSize> onSelectionChanged;
+
+  const _FontSizeSegmentedButton({
+    required this.currentSize,
+    required this.onSelectionChanged,
+  });
+
+  @override
+  State<_FontSizeSegmentedButton> createState() =>
+      _FontSizeSegmentedButtonState();
+}
+
+class _FontSizeSegmentedButtonState extends State<_FontSizeSegmentedButton> {
+  late FontSize _localSize;
+
+  @override
+  void initState() {
+    super.initState();
+    _localSize = widget.currentSize;
+  }
+
+  @override
+  void didUpdateWidget(covariant _FontSizeSegmentedButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentSize != widget.currentSize) {
+      _localSize = widget.currentSize;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        final segmentsWidth = totalWidth - 2;
+        final selectedWidth = segmentsWidth * 0.50;
+        final unselectedWidth = segmentsWidth * 0.25;
+
+        return Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: isDark ? Colors.grey[900] : Colors.grey[100],
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+          foregroundDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            border: Border.all(
+              color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+              width: 1,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              child: SizedBox(
+                width: totalWidth,
+                child: Row(
+                  children: [
+                    _buildSegment(
+                      context,
+                      size: FontSize.small,
+                      label: 'Kecil',
+                      width: _localSize == FontSize.small
+                          ? selectedWidth
+                          : unselectedWidth,
+                      isSelected: _localSize == FontSize.small,
+                    ),
+                    _buildDivider(isDark),
+                    _buildSegment(
+                      context,
+                      size: FontSize.medium,
+                      label: 'Sedang',
+                      width: _localSize == FontSize.medium
+                          ? selectedWidth
+                          : unselectedWidth,
+                      isSelected: _localSize == FontSize.medium,
+                    ),
+                    _buildDivider(isDark),
+                    _buildSegment(
+                      context,
+                      size: FontSize.large,
+                      label: 'Besar',
+                      width: _localSize == FontSize.large
+                          ? selectedWidth
+                          : unselectedWidth,
+                      isSelected: _localSize == FontSize.large,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDivider(bool isDark) {
+    return Container(
+      width: 1,
+      height: double.infinity,
+      color: isDark ? Colors.grey[800] : Colors.grey[300],
+    );
+  }
+
+  Widget _buildSegment(
+    BuildContext context, {
+    required FontSize size,
+    required String label,
+    required double width,
+    required bool isSelected,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final selectedBgColor = AppTheme.primaryColorTheme(context);
+    final selectedFgColor = Colors.white;
+    final unselectedFgColor =
+        isDark ? Colors.white70 : AppTheme.primaryColorTheme(context);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      width: width,
+      height: double.infinity,
+      color: isSelected ? selectedBgColor : Colors.transparent,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (size == _localSize) return;
+            setState(() {
+              _localSize = size;
+            });
+            Future.delayed(const Duration(milliseconds: 250), () {
+              if (mounted) {
+                widget.onSelectionChanged(size);
+              }
+            });
+          },
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.text_fields_rounded,
+                    size: 20,
+                    color: isSelected ? selectedFgColor : unselectedFgColor,
+                  ),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    child: isSelected
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: AppSpacing.s8),
+                              Text(
+                                label,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: selectedFgColor,
+                                ),
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 

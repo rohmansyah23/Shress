@@ -18,6 +18,7 @@ import 'core/services/notification_service.dart';
 import 'core/services/fcm_service.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
+import 'providers/font_size_provider.dart';
 import 'providers/theme_provider.dart';
 import 'ui/splash/splash_screen.dart';
 
@@ -141,6 +142,7 @@ class _SheressAppState extends ConsumerState<SheressApp> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
+    final fontSize = ref.watch(fontSizeProvider);
 
     return MaterialApp(
       title: AppConstants.appName,
@@ -149,6 +151,16 @@ class _SheressAppState extends ConsumerState<SheressApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      builder: (context, child) {
+        final systemScaler = MediaQuery.textScalerOf(context);
+        final composedScaler = fontSize == FontSize.medium
+            ? systemScaler
+            : ref.read(fontSizeProvider.notifier).getTextScaler(systemScaler);
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: composedScaler),
+          child: child!,
+        );
+      },
       home: Stack(
         children: [
           const SplashScreen(),
