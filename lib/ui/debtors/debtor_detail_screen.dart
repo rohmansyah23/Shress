@@ -6,7 +6,7 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../core/widgets/app_text_field.dart';
+
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/debt_model.dart';
 import '../../data/local/models/debt_payment_model.dart';
@@ -126,25 +126,27 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: const InputDecoration(
                   labelText: 'Jumlah (Rp)',
                   prefixText: 'Rp ',
-                  prefixIcon: const Icon(Icons.monetization_on_outlined),
+                  prefixIcon: Icon(Icons.monetization_on_outlined),
                 ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              AppTextField(
+              TextField(
                 controller: descController,
-                labelText: 'Deskripsi',
+                decoration: const InputDecoration(
+                  labelText: 'Deskripsi',
+                ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              AppTextField(
+              TextField(
                 controller: dueDateController,
                 readOnly: true,
-                labelText: 'Jatuh Tempo',
-                suffixIcon: const Icon(Icons.calendar_today_outlined),
+                decoration: const InputDecoration(
+                  labelText: 'Jatuh Tempo',
+                  suffixIcon: Icon(Icons.calendar_today_outlined),
+                ),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: ctx,
@@ -215,13 +217,11 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Batal'),
           ),
-          FilledButton(
+          PfButton(
+            label: 'Hapus',
+            variant: PfButtonVariant.danger,
+            isExpanded: false,
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: AppTheme.onDangerColorTheme(context),
-            ),
-            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -714,18 +714,18 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: const InputDecoration(
                   labelText: 'Jumlah (Rp)',
                   prefixText: 'Rp ',
-                  prefixIcon: const Icon(Icons.monetization_on_outlined),
+                  prefixIcon: Icon(Icons.monetization_on_outlined),
                 ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              AppTextField(
+              TextField(
                 controller: notesController,
-                labelText: 'Catatan',
+                decoration: const InputDecoration(
+                  labelText: 'Catatan',
+                ),
               ),
             ],
           ),
@@ -781,13 +781,11 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Batal'),
           ),
-          FilledButton(
+          PfButton(
+            label: 'Hapus',
+            variant: PfButtonVariant.danger,
+            isExpanded: false,
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: AppTheme.onDangerColorTheme(context),
-            ),
-            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -1143,10 +1141,8 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                           controller: amountController,
                           keyboardType: TextInputType.number,
                           autofocus: true,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            prefixIcon: const Icon(Icons.monetization_on_outlined),
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.monetization_on_outlined),
                             hintText: '0',
                             prefixText: 'Rp ',
                           ),
@@ -1168,7 +1164,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                         const SizedBox(height: AppSpacing.s20),
                         _FormLabel('Tanggal Pembayaran'),
                         const SizedBox(height: AppSpacing.s8),
-                        AppTextFormField(
+                        TextFormField(
                           controller: dateController,
                           readOnly: true,
                           onTap: () async {
@@ -1185,16 +1181,20 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
                               });
                             }
                           },
-                          prefixIcon: const Icon(Icons.calendar_today_outlined),
-                          suffixIcon: const Icon(Icons.arrow_drop_down),
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.calendar_today_outlined),
+                            suffixIcon: Icon(Icons.arrow_drop_down),
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.s20),
                         _FormLabel('Catatan (opsional)'),
                         const SizedBox(height: AppSpacing.s8),
-                        AppTextFormField(
+                        TextFormField(
                           controller: notesController,
                           maxLines: 2,
-                          hintText: 'Catatan pembayaran...',
+                          decoration: const InputDecoration(
+                            hintText: 'Catatan pembayaran...',
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.s28),
                         SizedBox(

@@ -209,9 +209,7 @@ class _QrisDisplayScreenState extends ConsumerState<QrisDisplayScreen> {
         Text(
           isOwner ? 'QRIS Pembayaran Belum Diunggah' : 'QRIS Pembayaran Belum Tersedia',
           style: AppTheme.heading2.copyWith(
-            color: Theme.of(context).brightness == Brightness.light
-                ? const Color(0xFF1E293B) // Premium Slate/Navy
-                : Colors.white,
+            color: AppTheme.primaryColorTheme(context),
             fontWeight: FontWeight.bold,
           ),
           textAlign: TextAlign.center,

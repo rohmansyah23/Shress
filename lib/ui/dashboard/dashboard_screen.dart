@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
+
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/finance_bar_chart.dart';
 import '../../core/network/connectivity_service.dart';
@@ -191,16 +191,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: AppDropdown<TrendFilter>(
+                        child: DropdownButtonFormField<TrendFilter>(
                           initialValue: _selectedTrendFilter,
-                          labelText: 'Periode Waktu',
+                          isDense: true,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: AppTheme.onSurfaceColorTheme(context),
+                          ),
+                          iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                          dropdownColor: AppTheme.surfaceColorTheme(context),
                           items: TrendFilter.values
                               .map(
                                 (f) => DropdownMenuItem(
                                   value: f,
                                   child: Text(
                                     _trendFilterLabel(f),
-                                    style: AppTheme.labelSmall.copyWith(
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w400,
                                       color: AppTheme.onSurfaceColorTheme(context),
                                     ),
                                   ),
@@ -215,16 +228,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       const SizedBox(width: AppSpacing.s8),
                       Expanded(
-                        child: AppDropdown<DashboardTrendTypeFilter>(
+                        child: DropdownButtonFormField<DashboardTrendTypeFilter>(
                           initialValue: _selectedTypeFilter,
-                          labelText: 'Tipe Grafik',
+                          isDense: true,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: AppTheme.onSurfaceColorTheme(context),
+                          ),
+                          iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                          dropdownColor: AppTheme.surfaceColorTheme(context),
                           items: DashboardTrendTypeFilter.values
                               .map(
                                 (f) => DropdownMenuItem(
                                   value: f,
                                   child: Text(
                                     f.label,
-                                    style: AppTheme.labelSmall.copyWith(
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w400,
                                       color: AppTheme.onSurfaceColorTheme(context),
                                     ),
                                   ),

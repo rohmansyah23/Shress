@@ -64,9 +64,7 @@ class SummaryCard extends StatelessWidget {
                   child: Text(
                     title,
                     style: AppTheme.heading3.copyWith(
-                      color: Theme.of(context).brightness == Brightness.light
-                          ? const Color(0xFF1E293B) // Premium Slate/Navy
-                          : Colors.white,
+                      color: AppTheme.primaryColorTheme(context),
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,

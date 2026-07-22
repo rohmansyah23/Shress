@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../data/local/models/business_model.dart';
@@ -12,7 +13,7 @@ import '../../providers/auth_provider.dart';
 import 'user_form_screen.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
-import '../../core/widgets/app_text_field.dart';
+
 
 import '../../core/theme/app_icon_size.dart';
 
@@ -140,13 +141,11 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Batal'),
           ),
-          FilledButton(
+          PfButton(
+            label: 'Hapus',
+            variant: PfButtonVariant.danger,
+            isExpanded: false,
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: AppTheme.onDangerColorTheme(context),
-            ),
-            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -205,21 +204,24 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(AppSpacing.s16, AppSpacing.s16, AppSpacing.s16, AppSpacing.s16),
-            child: AppTextField(
+            child: TextField(
               controller: _searchController,
-              hintText: 'Cari user...',
-              prefixIcon: const Icon(Icons.search_rounded),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                    )
-                  : null,
               onChanged: (value) =>
                   setState(() => _searchQuery = value.toLowerCase()),
+              decoration: InputDecoration(
+                hintText: 'Cari user...',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
             ),
           ),
           Expanded(
@@ -376,7 +378,11 @@ class _UserCard extends ConsumerWidget {
                         user.displayName?.isNotEmpty == true
                             ? user.displayName!
                             : user.username,
-                        style: AppTheme.heading3,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.onSurfaceColorTheme(context),
+                        ),
                       ),
                       if (user.displayName?.isNotEmpty == true)
                         Text(

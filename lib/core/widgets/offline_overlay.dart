@@ -230,10 +230,9 @@ class _RetryButton extends StatelessWidget {
     return FilledButton.icon(
       icon: const Icon(Icons.refresh_rounded, size: AppIconSize.s20),
       label: const Text('Coba Lagi'),
-      onPressed: onRetry,
-      style: FilledButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+      onPressed: onRetry,        style: FilledButton.styleFrom(
+        backgroundColor: AppTheme.surfaceColorTheme(context),
+        foregroundColor: AppTheme.onSurfaceColorTheme(context),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s32, vertical: AppSpacing.s16),
       ),
     );

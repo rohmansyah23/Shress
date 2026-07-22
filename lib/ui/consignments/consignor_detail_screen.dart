@@ -17,7 +17,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
-import '../../core/widgets/app_text_field.dart';
+
 
 class ConsignorDetailScreen extends ConsumerStatefulWidget {
   final ConsignorModel consignor;
@@ -444,9 +444,11 @@ class _ConsignorDetailScreenState
                 ),
               ),
               const SizedBox(height: AppSpacing.s12),
-              AppTextField(
+              TextField(
                 controller: descCtrl,
-                labelText: 'Keterangan / Catatan',
+                decoration: const InputDecoration(
+                  labelText: 'Keterangan / Catatan',
+                ),
                 maxLines: 2,
               ),
             ],
@@ -503,13 +505,11 @@ class _ConsignorDetailScreenState
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Batal'),
           ),
-          FilledButton(
+          PfButton(
+            label: 'Hapus',
+            variant: PfButtonVariant.danger,
+            isExpanded: false,
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: AppTheme.onDangerColorTheme(context),
-            ),
-            child: const Text('Hapus'),
           ),
         ],
       ),

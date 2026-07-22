@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shared_widgets.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/utils/format_helpers.dart';
@@ -110,13 +111,11 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Batal'),
           ),
-          FilledButton(
+          PfButton(
+            label: 'Hapus',
+            variant: PfButtonVariant.danger,
+            isExpanded: false,
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: AppTheme.onDangerColorTheme(context),
-            ),
-            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -288,22 +287,11 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
         top: AppSpacing.s12,
         bottom: MediaQuery.of(context).padding.bottom + AppSpacing.s12,
       ),
-      child: SizedBox(
-        width: double.infinity,
-        child: FilledButton.icon(
-          onPressed: _deleteSelected,
-          icon: const Icon(Icons.delete_rounded, size: 20),
-          label: Text('Hapus (${_selectedIds.length}) Notifikasi'),
-          style: FilledButton.styleFrom(
-            backgroundColor: AppTheme.lossColorTheme(context),
-            foregroundColor: AppTheme.onDangerColorTheme(context),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            textStyle: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-        ),
+      child: PfButton(
+        label: 'Hapus (${_selectedIds.length}) Notifikasi',
+        icon: Icons.delete_rounded,
+        variant: PfButtonVariant.danger,
+        onPressed: _deleteSelected,
       ),
     );
   }
@@ -538,7 +526,7 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.s4),
                     Text(
                       log['body'] as String? ?? '',
                       style: TextStyle(
@@ -548,7 +536,7 @@ class _OwnerActivityLogsScreenState extends State<OwnerActivityLogsScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.s4),
                     Text(
                       businessName,
                       style: TextStyle(

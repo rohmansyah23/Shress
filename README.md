@@ -44,7 +44,7 @@ A production-grade, offline-aware Flutter application that empowers business own
 | 🗄️ **Database** | PostgreSQL |
 | 🔐 **Auth** | Custom (RPC-based) |
 | 🌐 **Language** | Indonesian (`id_ID`) |
-| 📦 **Version** | 1.2.0 |
+| 📦 **Version** | 1.3.0 |
 
 </td>
 <td width="50%" valign="top">
@@ -53,7 +53,7 @@ A production-grade, offline-aware Flutter application that empowers business own
 | Category | Value |
 | :--- | :--- |
 | 🎨 **UI Framework** | Material 3 Design System |
-| 🌙 **Theming** | Dynamic Dark & Light Mode |
+| 🌙 **Theming** | Dynamic Dark & Light Mode (Harmonized 2-Theme System) |
 | 📊 **Charts** | fl_chart (Interactive Visualizations) |
 | 💳 **Payments** | Dynamic QRIS Integration |
 | 🔔 **Notifications** | Local Reminders + FCM Push |
@@ -165,9 +165,12 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 * **Debtor Directory**: Detailed tracking of outstanding reseller balances.
 * **Consignment Register**: Track inventory, sales, and consignor payouts dynamically.
 
-#### 🎨 Modern Design & UX
+#### 🎨 Modern Design & Harmonized UX
+* **Visual Hierarchy & Contrast**: Distinct typography and color contrast separation between Title/Label (`w600` / `AppTheme.onSurfaceColorTheme`) and Subtitle/Description (`w400` / `AppTheme.onSurfaceVariantColorTheme`).
+* **Proportional Inputs**: Harmonized font sizes (`15px` / `AppTheme.bodyText`) and compact padding (`14px x 10px`) across Dropdowns, TextFields, and Password inputs.
+* **Unified Chip System**: Standardized `12px` font size, `20px` pill radius, `14px x 8px` padding, and non-clipping horizontal scroll layout across notification presets and transaction filters.
+* **Refactored Business Selector Sheet**: `42px` business avatar icons, `15px` titles, `13px` subtitle descriptions, and responsive dark/light mode colors.
 * **Lag-Free Theme Toggling**: De-coupled local widget selection animations from global theme rebuilds for 60fps transitions.
-* **Unified Chip System**: Harmonized padding, border-radius, font-size, and theme-aware colors across all filters and preset chips.
 * **Swipe-to-Delete**: Gmail-style swipe gestures for dismissing notifications and activity logs.
 * **Dark Mode Optimized**: High-contrast white text on all destructive action buttons in dark theme.
 

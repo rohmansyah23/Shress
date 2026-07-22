@@ -394,6 +394,7 @@ class AppTheme {
   static TextStyle get title => AppTypography.titleLarge;
   static TextStyle get subtitle => AppTypography.titleMedium;
   static TextStyle get bodyText => AppTypography.bodyLarge;
+  static TextStyle get bodyMedium => AppTypography.bodyMedium;
   static TextStyle get caption => AppTypography.bodySmall;
   static TextStyle get buttonText => AppTypography.labelLarge;
   static TextStyle get amountLarge => AppTypography.amountLarge;
@@ -655,10 +656,10 @@ class AppTheme {
           if (states.contains(WidgetState.selected)) {
             return caption.copyWith(
               fontWeight: FontWeight.w600,
-              fontSize: 11,
+              fontSize: 12,
             );
           }
-          return caption.copyWith(fontSize: 11);
+          return caption.copyWith(fontSize: 12);
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -677,9 +678,9 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: caption.copyWith(
           fontWeight: FontWeight.w600,
-          fontSize: 11,
+          fontSize: 12,
         ),
-        unselectedLabelStyle: caption.copyWith(fontSize: 11),
+        unselectedLabelStyle: caption.copyWith(fontSize: 12),
       ),
 
       // ─── Icon Theme ──────────────────────────────────────────
@@ -1251,11 +1252,11 @@ class AppTheme {
           if (states.contains(WidgetState.selected)) {
             return caption.copyWith(
               fontWeight: FontWeight.w600,
-              fontSize: 11,
+              fontSize: 12,
               color: darkPrimary,
             );
           }
-          return caption.copyWith(fontSize: 11, color: darkTextSecondary);
+          return caption.copyWith(fontSize: 12, color: darkTextSecondary);
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -1274,9 +1275,9 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: caption.copyWith(
           fontWeight: FontWeight.w600,
-          fontSize: 11,
+          fontSize: 12,
         ),
-        unselectedLabelStyle: caption.copyWith(fontSize: 11),
+        unselectedLabelStyle: caption.copyWith(fontSize: 12),
       ),
 
       // ─── Icon Theme ──────────────────────────────────────────

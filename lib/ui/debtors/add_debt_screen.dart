@@ -6,7 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_text_field.dart';
+
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/debtor_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -214,9 +214,11 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s20, vertical: AppSpacing.s8),
-                    child: AppTextField(
-                      hintText: 'Cari nama penghutang...',
-                      prefixIcon: const Icon(Icons.search_rounded),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        hintText: 'Cari nama penghutang...',
+                        prefixIcon: Icon(Icons.search_rounded),
+                      ),
                       onChanged: (val) {
                         setSheetState(() {
                           searchQuery = val;
@@ -446,10 +448,12 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                 const SizedBox(height: AppSpacing.s16),
                 _FormLabel('Nama Penghutang *'),
                 const SizedBox(height: AppSpacing.s8),
-                AppTextFormField(
+                TextFormField(
                   controller: _nameController,
-                  prefixIcon: const Icon(Icons.person_outline_rounded),
-                  hintText: 'Nama penghutang baru',
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.person_outline_rounded),
+                    hintText: 'Nama penghutang baru',
+                  ),
                   validator: (value) {
                     if (_hasSelectedDebtor) return null;
                     if (value == null || value.trim().isEmpty) {
@@ -461,19 +465,23 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                 const SizedBox(height: AppSpacing.s20),
                 _FormLabel('Nomor Telepon (opsional)'),
                 const SizedBox(height: AppSpacing.s8),
-                AppTextFormField(
+                TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  prefixIcon: const Icon(Icons.phone_outlined),
-                  hintText: '08xxxxxxxxxx',
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.phone_outlined),
+                    hintText: '08xxxxxxxxxx',
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.s20),
                 _FormLabel('Catatan (opsional)'),
                 const SizedBox(height: AppSpacing.s8),
-                AppTextFormField(
+                TextFormField(
                   controller: _notesController,
                   maxLines: 2,
-                  hintText: 'Catatan tentang penghutang...',
+                  decoration: const InputDecoration(
+                    hintText: 'Catatan tentang penghutang...',
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.s24),
                 const Divider(),
@@ -489,10 +497,8 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                 ],
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  prefixIcon: const Icon(Icons.monetization_on_outlined),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.monetization_on_outlined),
                   hintText: '0',
                   prefixText: 'Rp ',
                 ),
@@ -511,20 +517,24 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
               const SizedBox(height: AppSpacing.s20),
               _FormLabel('Deskripsi (opsional)'),
               const SizedBox(height: AppSpacing.s8),
-              AppTextFormField(
+              TextFormField(
                 controller: _descriptionController,
                 maxLines: 2,
-                hintText: 'Deskripsi hutang...',
+                decoration: const InputDecoration(
+                  hintText: 'Deskripsi hutang...',
+                ),
               ),
               const SizedBox(height: AppSpacing.s20),
               _FormLabel('Tanggal Hutang'),
               const SizedBox(height: AppSpacing.s8),
-              AppTextFormField(
+              TextFormField(
                 controller: _debtDateController,
                 readOnly: true,
                 onTap: _pickDebtDate,
-                prefixIcon: const Icon(Icons.calendar_today_outlined),
-                suffixIcon: const Icon(Icons.arrow_drop_down),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.calendar_today_outlined),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
+                ),
               ),
               const SizedBox(height: AppSpacing.s20),
               Row(
@@ -545,13 +555,15 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
                 ],
               ),
               const SizedBox(height: AppSpacing.s8),
-              AppTextFormField(
+              TextFormField(
                 controller: _dueDateController,
                 readOnly: true,
                 onTap: _pickDueDate,
-                prefixIcon: const Icon(Icons.event_outlined),
-                suffixIcon: const Icon(Icons.arrow_drop_down),
-                hintText: 'Pilih jatuh tempo (opsional)',
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.event_outlined),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
+                  hintText: 'Pilih jatuh tempo (opsional)',
+                ),
               ),
               const SizedBox(height: AppSpacing.s32),
               SizedBox(

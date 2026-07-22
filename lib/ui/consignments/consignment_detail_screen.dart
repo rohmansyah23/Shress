@@ -17,7 +17,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
-import '../../core/widgets/app_text_field.dart';
+
 
 class ConsignmentDetailScreen extends ConsumerStatefulWidget {
   final ConsignmentModel consignment;
@@ -357,8 +357,6 @@ class _ConsignmentDetailScreenState
                 decoration: const InputDecoration(
                   labelText: 'Jumlah Bayar',
                   prefixText: 'Rp ',
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
               ),
               const SizedBox(height: AppSpacing.s12),
@@ -387,9 +385,11 @@ class _ConsignmentDetailScreenState
                 ),
               ),
               const SizedBox(height: AppSpacing.s12),
-              AppTextField(
+              TextField(
                 controller: notesCtrl,
-                labelText: 'Catatan (opsional)',
+                decoration: const InputDecoration(
+                  labelText: 'Catatan (opsional)',
+                ),
                 maxLines: 2,
               ),
             ],

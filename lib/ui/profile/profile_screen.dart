@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shared_widgets.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/error_widgets.dart';
@@ -12,7 +13,7 @@ import '../settings/settings_screen.dart';
 import '../widgetbook/widgetbook_screen.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
-import '../../core/widgets/app_text_field.dart';
+
 
 
 
@@ -162,16 +163,44 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
-                title: const Text('Ubah Nama Tampilan'),
-                subtitle: const Text('Ganti nama panggilan/lengkap Anda'),
+                title: Text(
+                  'Ubah Nama Tampilan',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.onSurfaceColorTheme(context),
+                  ),
+                ),
+                subtitle: Text(
+                  'Ganti nama panggilan/lengkap Anda',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: AppTheme.onSurfaceVariantColorTheme(context),
+                  ),
+                ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _showEditDisplayNameDialog(context, ref, user),
               ),
               const Divider(height: 1, indent: 16, endIndent: 16),
               ListTile(
                 leading: const Icon(Icons.settings_outlined),
-                title: const Text('Pengaturan'),
-                subtitle: const Text('Tema, notifikasi, keamanan akun'),
+                title: Text(
+                  'Pengaturan',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.onSurfaceColorTheme(context),
+                  ),
+                ),
+                subtitle: Text(
+                  'Tema, notifikasi, keamanan akun',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: AppTheme.onSurfaceVariantColorTheme(context),
+                  ),
+                ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () {
                   Navigator.of(context).push(
@@ -186,8 +215,22 @@ class ProfileScreen extends ConsumerWidget {
                 ListTile(
                   leading: Icon(Icons.widgets_outlined,
                       color: AppTheme.infoColorTheme(context)),
-                  title: const Text('WidgetBook'),
-                  subtitle: const Text('Dokumentasi komponen design system'),
+                  title: Text(
+                    'WidgetBook',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Dokumentasi komponen design system',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
+                  ),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () {
                     Navigator.of(context).push(
@@ -235,68 +278,119 @@ class ProfileScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
+        builder: (ctx, setDialogState) => Dialog(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
-          title: const Text('Ubah Nama Tampilan'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: AppTextField(
-              controller: nameCtrl,
-              labelText: 'Nama Tampilan',
-              prefixIcon: const Icon(Icons.badge_outlined),
-              hintText: 'Nama lengkap Anda',
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.s20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Ubah Nama Tampilan',
+                    style: AppTheme.title.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: AppSpacing.s4),
+                  Text(
+                    'Masukkan nama tampilan baru Anda',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s16),
+                  TextFormField(
+                    controller: nameCtrl,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: const InputDecoration(
+                      labelText: 'Nama Tampilan',
+                      labelStyle: TextStyle(fontSize: 14),
+                      floatingLabelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      prefixIcon: Icon(Icons.badge_outlined, size: 20),
+                      hintText: 'Nama lengkap Anda',
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 46,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppRadius.md),
+                              ),
+                            ),
+                            onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+                            child: const Text('Batal', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.s12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 46,
+                          child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppRadius.md),
+                              ),
+                            ),
+                            onPressed: isSubmitting
+                                ? null
+                                : () async {
+                                    if (nameCtrl.text.trim().isEmpty) {
+                                      ErrorSnackbar.showMessage(
+                                        ctx,
+                                        'Nama tampilan tidak boleh kosong',
+                                      );
+                                      return;
+                                    }
+                                    setDialogState(() => isSubmitting = true);
+                                    try {
+                                      await ref
+                                          .read(authProvider.notifier)
+                                          .updateUserDisplayName(
+                                              user.userId, nameCtrl.text.trim());
+                                      if (!ctx.mounted) return;
+                                      Navigator.pop(ctx);
+                                      ErrorSnackbar.showMessage(
+                                        context,
+                                        'Nama tampilan berhasil diubah',
+                                        isError: false,
+                                      );
+                                    } catch (e) {
+                                      setDialogState(() => isSubmitting = false);
+                                      ErrorSnackbar.show(
+                                        ctx,
+                                        ErrorHandler.classify(e),
+                                      );
+                                    }
+                                  },
+                            child: isSubmitting
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Simpan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: isSubmitting
-                  ? null
-                  : () async {
-                      if (nameCtrl.text.trim().isEmpty) {
-                        ErrorSnackbar.showMessage(
-                          ctx,
-                          'Nama tampilan tidak boleh kosong',
-                        );
-                        return;
-                      }
-                      setDialogState(() => isSubmitting = true);
-                      try {
-                        await ref
-                            .read(authProvider.notifier)
-                            .updateUserDisplayName(
-                                user.userId, nameCtrl.text.trim());
-                        if (!ctx.mounted) return;
-                        Navigator.pop(ctx);
-                        ErrorSnackbar.showMessage(
-                          context,
-                          'Nama tampilan berhasil diubah',
-                          isError: false,
-                        );
-                      } catch (e) {
-                        setDialogState(() => isSubmitting = false);
-                        ErrorSnackbar.show(
-                          ctx,
-                          ErrorHandler.classify(e),
-                        );
-                      }
-                    },
-              child: isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('Simpan'),
-            ),
-          ],
         ),
       ),
     );
@@ -315,7 +409,10 @@ class ProfileScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Batal'),
           ),
-          FilledButton(
+          PfButton(
+            label: 'Keluar',
+            variant: PfButtonVariant.danger,
+            isExpanded: false,
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(authProvider.notifier).logout();
@@ -326,11 +423,6 @@ class ProfileScreen extends ConsumerWidget {
                 );
               }
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: AppTheme.onDangerColorTheme(context),
-            ),
-            child: const Text('Keluar'),
           ),
         ],
       ),
@@ -380,7 +472,7 @@ class _InfoRow extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: AppSpacing.s2),
               Text(
                 value,
                 style: AppTheme.subtitle.copyWith(

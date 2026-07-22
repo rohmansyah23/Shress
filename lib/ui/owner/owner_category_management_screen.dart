@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shared_widgets.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
-import '../../core/widgets/app_text_field.dart';
+
+
 import '../../data/local/models/category_model.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -124,16 +125,46 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
           children: [
             TextField(
               controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'Nama Kategori'),
+              style: AppTheme.bodyText.copyWith(
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Nama Kategori',
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
             ),
             const SizedBox(height: AppSpacing.s12),
-            AppDropdown<String>(
+            DropdownButtonFormField<String>(
               initialValue: type,
-              labelText: 'Tipe',
+              isDense: true,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+              style: AppTheme.bodyText.copyWith(
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+              iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
               dropdownColor: AppTheme.surfaceColorTheme(context),
-              items: const [
-                DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
-                DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
+              items: [
+                DropdownMenuItem(
+                  value: 'income',
+                  child: Text(
+                    'Pemasukan',
+                    style: AppTheme.bodyText.copyWith(
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'expense',
+                  child: Text(
+                    'Pengeluaran',
+                    style: AppTheme.bodyText.copyWith(
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                ),
               ],
               onChanged: (v) => type = v ?? AppConstants.typeExpense,
             ),
@@ -183,16 +214,46 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
           children: [
             TextField(
               controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'Nama Kategori'),
+              style: AppTheme.bodyText.copyWith(
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Nama Kategori',
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
             ),
             const SizedBox(height: AppSpacing.s12),
-            AppDropdown<String>(
+            DropdownButtonFormField<String>(
               initialValue: type,
-              labelText: 'Tipe',
+              isDense: true,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+              style: AppTheme.bodyText.copyWith(
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+              iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
               dropdownColor: AppTheme.surfaceColorTheme(context),
-              items: const [
-                DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
-                DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
+              items: [
+                DropdownMenuItem(
+                  value: 'income',
+                  child: Text(
+                    'Pemasukan',
+                    style: AppTheme.bodyText.copyWith(
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'expense',
+                  child: Text(
+                    'Pengeluaran',
+                    style: AppTheme.bodyText.copyWith(
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                ),
               ],
               onChanged: (v) => type = v ?? AppConstants.typeExpense,
             ),
@@ -240,11 +301,10 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Batal'),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: AppTheme.onDangerColorTheme(context),
-            ),
+          PfButton(
+            label: 'Hapus',
+            variant: PfButtonVariant.danger,
+            isExpanded: false,
             onPressed: () async {
               try {
                 await SupabaseService.instance.deleteCategory(c.categoryId);
@@ -256,7 +316,6 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
                 ErrorSnackbar.show(context, ErrorHandler.classify(e));
               }
             },
-            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -295,21 +354,23 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
           _buildFilterChips(),
           Padding(
             padding: const EdgeInsets.fromLTRB(AppSpacing.s16, 0, AppSpacing.s16, AppSpacing.s16),
-            child: AppTextField(
+            child: TextField(
               controller: _searchController,
-              hintText: 'Cari kategori...',
-              prefixIcon: const Icon(Icons.search_rounded),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                    )
-                  : null,
               onChanged: (value) =>
-                  setState(() => _searchQuery = value.toLowerCase()),
+                  setState(() => _searchQuery = value.toLowerCase()),                decoration: InputDecoration(
+                hintText: 'Cari kategori...',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
             ),
           ),
           Expanded(
@@ -370,8 +431,15 @@ class _OwnerCategoryManagementScreenState extends State<OwnerCategoryManagementS
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(c.name, style: AppTheme.heading3),
-                                        const SizedBox(height: 2),
+                                         Text(
+                                           c.name,
+                                           style: TextStyle(
+                                             fontSize: 15,
+                                             fontWeight: FontWeight.w600,
+                                             color: AppTheme.onSurfaceColorTheme(context),
+                                           ),
+                                         ),
+                                        const SizedBox(height: AppSpacing.s2),
                                         Row(
                                           children: [
                                             Flexible(

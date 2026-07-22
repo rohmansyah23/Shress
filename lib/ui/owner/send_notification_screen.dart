@@ -6,7 +6,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_icon_size.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_text_field.dart';
+
 import '../../providers/auth_provider.dart';
 
 /// Template pesan cepat yang bisa dipilih owner.
@@ -239,12 +239,21 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
             const SizedBox(height: AppSpacing.s24),
 
             // Title field
-            Text('Judul *', style: AppTheme.subtitle.copyWith(fontSize: 14)),
+            Text(
+              'Judul *',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
             const SizedBox(height: AppSpacing.s8),
-            AppTextFormField(
+            TextFormField(
               controller: _titleController,
-              prefixIcon: const Icon(Icons.title),
-              hintText: 'Contoh: Pengingat Upload Laporan',
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.title),
+                hintText: 'Contoh: Pengingat Upload Laporan',
+              ),
               textInputAction: TextInputAction.next,
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Judul wajib diisi';
@@ -283,36 +292,42 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
               ],
             ),
             const SizedBox(height: AppSpacing.s8),
-            SizedBox(
-              height: 36,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
-                itemCount: _NotificationPreset.presets.length,
-                separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s8),
-                itemBuilder: (context, index) {
-                  final preset = _NotificationPreset.presets[index];
-                  final isSelected = _selectedPresetIndex == index;
-                  return _PresetChip(
-                    icon: preset.icon,
-                    label: preset.title,
-                    isSelected: isSelected,
-                    onTap: () => _applyPreset(index),
-                  );
-                },
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  for (int index = 0; index < _NotificationPreset.presets.length; index++) ...[
+                    if (index > 0) const SizedBox(width: AppSpacing.s8),
+                    _PresetChip(
+                      icon: _NotificationPreset.presets[index].icon,
+                      label: _NotificationPreset.presets[index].title,
+                      isSelected: _selectedPresetIndex == index,
+                      onTap: () => _applyPreset(index),
+                    ),
+                  ],
+                ],
               ),
             ),
 
             const SizedBox(height: AppSpacing.s20),
 
             // Body field
-            Text('Pesan *', style: AppTheme.subtitle.copyWith(fontSize: 14)),
+            Text(
+              'Pesan *',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
             const SizedBox(height: AppSpacing.s8),
-            AppTextFormField(
+            TextFormField(
               controller: _bodyController,
-              prefixIcon: const Icon(Icons.message_outlined),
-              hintText: 'Contoh: Jangan lupa input transaksi hari ini',
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.message_outlined),
+                hintText: 'Contoh: Jangan lupa input transaksi hari ini',
+              ),
               textInputAction: TextInputAction.newline,
               maxLines: 3,
               validator: (v) {
@@ -326,7 +341,14 @@ class _SendNotificationScreenState extends ConsumerState<SendNotificationScreen>
             const SizedBox(height: AppSpacing.s16),
 
             // Target selection
-            Text('Penerima', style: AppTheme.heading3),
+            Text(
+              'Penerima *',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
             const SizedBox(height: AppSpacing.s12),
 
             // Target mode: All staff

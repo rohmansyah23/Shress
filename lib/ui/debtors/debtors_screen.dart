@@ -5,7 +5,7 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../core/widgets/app_text_field.dart';
+
 import '../../core/widgets/summary_card.dart' as summary_card;
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/debtor_model.dart';
@@ -192,20 +192,26 @@ class DebtorsScreen extends ConsumerWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppTextField(
+            TextField(
               controller: nameController,
-              labelText: 'Nama',
+              decoration: const InputDecoration(
+                labelText: 'Nama',
+              ),
             ),
             const SizedBox(height: AppSpacing.s12),
-            AppTextField(
+            TextField(
               controller: phoneController,
-              labelText: 'Telepon',
+              decoration: const InputDecoration(
+                labelText: 'Telepon',
+              ),
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: AppSpacing.s12),
-            AppTextField(
+            TextField(
               controller: notesController,
-              labelText: 'Catatan',
+              decoration: const InputDecoration(
+                labelText: 'Catatan',
+              ),
               maxLines: 2,
             ),
           ],
@@ -269,13 +275,11 @@ class DebtorsScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Batal'),
           ),
-          FilledButton(
+          PfButton(
+            label: 'Hapus',
+            variant: PfButtonVariant.danger,
+            isExpanded: false,
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: AppTheme.onDangerColorTheme(context),
-            ),
-            child: const Text('Hapus'),
           ),
         ],
       ),

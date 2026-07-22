@@ -4,7 +4,7 @@ import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
+
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/category_model.dart';
 import '../../data/local/models/transaction_model.dart';
@@ -309,16 +309,37 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
               ),
               const SizedBox(height: AppSpacing.s24),
 
-              Text('Kategori',
-                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              Text(
+                'Kategori',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s8),
-              AppDropdown<CategoryModel>(
+              DropdownButtonFormField<CategoryModel>(
                 initialValue: _selectedCategory,
-                prefixIcon: const Icon(Icons.category_outlined),
+                isDense: true,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  prefixIcon: Icon(Icons.category_outlined),
+                ),
+                style: AppTheme.bodyText.copyWith(
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+                iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                dropdownColor: AppTheme.surfaceColorTheme(context),
                 items: _categories.map((cat) {
                   return DropdownMenuItem(
                     value: cat,
-                    child: Text(cat.name),
+                    child: Text(
+                      cat.name,
+                      style: AppTheme.bodyText.copyWith(
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                    ),
                   );
                 }).toList(),
                 onChanged: (value) =>
@@ -329,8 +350,14 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
               const SizedBox(height: AppSpacing.s20),
 
-              Text('Tanggal Transaksi',
-                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              Text(
+                'Tanggal Transaksi',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _dateTextController,
@@ -344,8 +371,14 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
               const SizedBox(height: AppSpacing.s20),
 
-              Text('Jumlah (Rp)',
-                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              Text(
+                'Jumlah (Rp)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _amountController,
@@ -371,8 +404,14 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
               if (isIncome) ...[
                 const SizedBox(height: AppSpacing.s20),
-                Text('HPP (Harga Pokok Penjualan)',
-                    style: AppTheme.subtitle.copyWith(fontSize: 14)),
+                Text(
+                  'HPP (Harga Pokok Penjualan)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.onSurfaceColorTheme(context),
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.s8),
                 TextFormField(
                   controller: _cogsController,
@@ -387,8 +426,14 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
               ],
 
               const SizedBox(height: AppSpacing.s20),
-              Text('Deskripsi (opsional)',
-                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              Text(
+                'Deskripsi (opsional)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _descController,

@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
 import '../../core/services/export_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shared_widgets.dart';
 import '../../core/utils/error_handler.dart';
 import 'dart:async';
 import 'dart:io';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
-import '../../core/widgets/app_text_field.dart';
+
+
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -284,13 +285,11 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Batal'),
           ),
-          FilledButton(
+          PfButton(
+            label: 'Hapus',
+            variant: PfButtonVariant.danger,
+            isExpanded: false,
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.lossColorTheme(context),
-              foregroundColor: AppTheme.onDangerColorTheme(context),
-            ),
-            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -453,8 +452,20 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: AppDropdown<OwnerDateFilter>(
+                    child: DropdownButtonFormField<OwnerDateFilter>(
                       initialValue: _selectedFilter,
+                      isDense: true,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                      iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                      dropdownColor: AppTheme.surfaceColorTheme(context),
                       items: OwnerDateFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -462,7 +473,8 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                               child: Text(
                                 f.label,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
                                   color: AppTheme.onSurfaceColorTheme(context),
                                 ),
                               ),
@@ -482,8 +494,20 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   Expanded(
-                    child: AppDropdown<OwnerTypeFilter>(
+                    child: DropdownButtonFormField<OwnerTypeFilter>(
                       initialValue: _selectedType,
+                      isDense: true,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                      iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                      dropdownColor: AppTheme.surfaceColorTheme(context),
                       items: OwnerTypeFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -491,7 +515,8 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                               child: Text(
                                 f.label,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
                                   color: AppTheme.onSurfaceColorTheme(context),
                                 ),
                               ),
@@ -508,14 +533,14 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                   if (canExport) ...[
                     const SizedBox(width: AppSpacing.s8),
                     Container(
-                      height: 38,
+                      height: AppSpacing.s40,
                       decoration: BoxDecoration(
                         border: Border.all(color: Theme.of(context).colorScheme.outline),
                         borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
                         color: Theme.of(context).inputDecorationTheme.fillColor,
                       ),
                       child: PopupMenuButton<String>(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
                         icon: const Icon(Icons.file_download_rounded, size: 20),
                         tooltip: 'Export',
                         onSelected: (value) => _exportTransactions(value),
@@ -537,27 +562,30 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                 AppSpacing.s12,
                 0,
               ),
-              child: AppTextField(
+              child: TextField(
                 controller: _searchController,
-                hintText: 'Cari transaksi...',
-                prefixIcon: const Icon(
-                  Icons.search_rounded,
-                  size: AppIconSize.s20,
-                ),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(
-                          Icons.clear_rounded,
-                          size: AppIconSize.s18,
-                        ),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                          _applyFilter();
-                        },
-                      )
-                    : null,
                 onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: 'Cari transaksi...',
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    size: AppIconSize.s20,
+                  ),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(
+                            Icons.clear_rounded,
+                            size: AppIconSize.s18,
+                          ),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                            _applyFilter();
+                          },
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.s8),
@@ -662,11 +690,6 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                         children: [
                                           Builder(
                                             builder: (context) {
-                                              final isLight =
-                                                  Theme.of(
-                                                    context,
-                                                  ).brightness ==
-                                                  Brightness.light;
                                               return Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
@@ -677,17 +700,10 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                                 decoration: BoxDecoration(
                                                   color: Colors.transparent,
                                                   border: Border.all(
-                                                    color: isLight
-                                                        ? const Color(
-                                                            0xFFD1D5DB,
-                                                          ).withValues(
-                                                            alpha: 1.0,
-                                                          )
-                                                        : const Color(
-                                                            0xFF4B5563,
-                                                          ).withValues(
-                                                            alpha: 0.5,
-                                                          ),
+                                                    color: AppTheme
+                                                        .outlineVariantColorTheme(
+                                                      context,
+                                                    ),
                                                     width: 1,
                                                   ),
                                                   borderRadius:
@@ -702,13 +718,10 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                                                   style: TextStyle(
                                                     fontSize: 9,
                                                     fontWeight: FontWeight.w600,
-                                                    color: isLight
-                                                        ? const Color(
-                                                            0xFF3D404D,
-                                                          )
-                                                        : const Color(
-                                                            0xFFD2D2D2,
-                                                          ),
+                                                    color: AppTheme
+                                                        .onSurfaceColorTheme(
+                                                      context,
+                                                    ),
                                                   ),
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,

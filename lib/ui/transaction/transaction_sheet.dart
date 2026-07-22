@@ -6,7 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
+
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/category_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -428,13 +428,28 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                   children: [
                     _FormLabel('Kategori'),
                     const SizedBox(height: AppSpacing.s8),
-                    AppDropdown<CategoryModel>(
+                    DropdownButtonFormField<CategoryModel>(
                       initialValue: _selectedCategory,
-                      prefixIcon: const Icon(Icons.category_outlined),
+                      isDense: true,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        prefixIcon: Icon(Icons.category_outlined),
+                      ),
+                      style: AppTheme.bodyText.copyWith(
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                      iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                      dropdownColor: AppTheme.surfaceColorTheme(context),
                       items: _categories.map((cat) {
                         return DropdownMenuItem(
                           value: cat,
-                          child: Text(cat.name),
+                          child: Text(
+                            cat.name,
+                            style: AppTheme.bodyText.copyWith(
+                              color: AppTheme.onSurfaceColorTheme(context),
+                            ),
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) =>
@@ -465,8 +480,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                     _FormLabel(
                       'Jumlah (Rp)',
                       subtitle: _selectedType == AppConstants.typeIncome
-                          ? 'Pendapatan'
-                          : 'Pengeluaran',
+                          ? 'Wajib diisi'
+                          : 'Wajib diisi',
                     ),
                     const SizedBox(height: AppSpacing.s8),
                     TextFormField(
@@ -493,18 +508,18 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       },
                     ),
 
-                    // COGS (Income only)
+                    // COGS (only for income)
                     AnimatedSize(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      child: _isIncome
+                      duration: const Duration(milliseconds: 200),
+                      child: _selectedType == AppConstants.typeIncome
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: AppSpacing.s20),
                                 _FormLabel(
                                   'HPP (Harga Pokok Penjualan)',
-                                  subtitle: 'Modal barang yang terjual',
+                                  subtitle:
+                                      'Opsional - modal/harga beli barang',
                                 ),
                                 const SizedBox(height: AppSpacing.s8),
                                 TextFormField(
@@ -529,47 +544,57 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
 
                     _FormLabel('Metode Pembayaran'),
                     const SizedBox(height: AppSpacing.s8),
-                    AppDropdown<String>(
+                    DropdownButtonFormField<String>(
                       initialValue: _paymentMethod,
-                      prefixIcon: const Icon(Icons.payment_outlined),
+                      isDense: true,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        prefixIcon: Icon(Icons.payment_outlined),
+                      ),
+                      style: AppTheme.bodyText.copyWith(
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                      iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                      dropdownColor: AppTheme.surfaceColorTheme(context),
                       items: [
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: AppConstants.paymentCash,
                           child: Row(
                             children: [
-                              Icon(Icons.money_rounded, size: AppIconSize.s18),
-                              SizedBox(width: AppSpacing.s8),
-                              Text('Tunai'),
+                              Icon(Icons.money_rounded, size: 20, color: AppTheme.onSurfaceColorTheme(context)),
+                              const SizedBox(width: AppSpacing.s8),
+                              Text('Tunai', style: AppTheme.bodyText.copyWith(color: AppTheme.onSurfaceColorTheme(context))),
                             ],
                           ),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: AppConstants.paymentTransfer,
                           child: Row(
                             children: [
-                              Icon(Icons.account_balance_rounded, size: AppIconSize.s18),
-                              SizedBox(width: AppSpacing.s8),
-                              Text('Transfer Bank'),
+                              Icon(Icons.account_balance_rounded, size: 20, color: AppTheme.onSurfaceColorTheme(context)),
+                              const SizedBox(width: AppSpacing.s8),
+                              Text('Transfer Bank', style: AppTheme.bodyText.copyWith(color: AppTheme.onSurfaceColorTheme(context))),
                             ],
                           ),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: AppConstants.paymentQris,
                           child: Row(
                             children: [
-                              Icon(Icons.qr_code_rounded, size: AppIconSize.s18),
-                              SizedBox(width: AppSpacing.s8),
-                              Text('QRIS'),
+                              Icon(Icons.qr_code_rounded, size: 20, color: AppTheme.onSurfaceColorTheme(context)),
+                              const SizedBox(width: AppSpacing.s8),
+                              Text('QRIS', style: AppTheme.bodyText.copyWith(color: AppTheme.onSurfaceColorTheme(context))),
                             ],
                           ),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: 'other',
                           child: Row(
                             children: [
-                              Icon(Icons.more_horiz_rounded, size: AppIconSize.s18),
-                              SizedBox(width: AppSpacing.s8),
-                              Text('Lainnya'),
+                              Icon(Icons.more_horiz_rounded, size: 20, color: AppTheme.onSurfaceColorTheme(context)),
+                              const SizedBox(width: AppSpacing.s8),
+                              Text('Lainnya', style: AppTheme.bodyText.copyWith(color: AppTheme.onSurfaceColorTheme(context))),
                             ],
                           ),
                         ),
@@ -654,12 +679,21 @@ class _FormLabel extends StatelessWidget {
       children: [
         Text(
           label,
-          style: AppTheme.subtitle.copyWith(fontSize: 14),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.onSurfaceColorTheme(context),
+          ),
         ),
-        if (subtitle != null) ...[                    const SizedBox(height: AppSpacing.s2),
+        if (subtitle != null) ...[
+          const SizedBox(height: AppSpacing.s2),
           Text(
             subtitle!,
-            style: AppTheme.caption.copyWith(fontSize: 11),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: AppTheme.onSurfaceVariantColorTheme(context),
+            ),
           ),
         ],
       ],

@@ -5,8 +5,8 @@ import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
-import '../../core/widgets/app_text_field.dart';
+
+
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/finance_bar_chart.dart';
 import '../../data/local/models/business_model.dart';
@@ -237,9 +237,20 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               Row(
                 children: [
                   Expanded(
-                    child: AppDropdown<TrendFilter>(
+                    child: DropdownButtonFormField<TrendFilter>(
                       initialValue: _selectedTrendFilter,
-                      labelText: 'Periode Waktu',
+                      isDense: true,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                      iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                      dropdownColor: AppTheme.surfaceColorTheme(context),
                       items: TrendFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -247,7 +258,8 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                               child: Text(
                                 _trendFilterLabel(f),
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
                                   color: AppTheme.onSurfaceColorTheme(context),
                                 ),
                               ),
@@ -262,9 +274,20 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   Expanded(
-                    child: AppDropdown<TrendTypeFilter>(
+                    child: DropdownButtonFormField<TrendTypeFilter>(
                       initialValue: _selectedTypeFilter,
-                      labelText: 'Tipe Grafik',
+                      isDense: true,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                      iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                      dropdownColor: AppTheme.surfaceColorTheme(context),
                       items: TrendTypeFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -272,7 +295,8 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                               child: Text(
                                 f.label,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
                                   color: AppTheme.onSurfaceColorTheme(context),
                                 ),
                               ),
@@ -450,7 +474,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      const SizedBox(height: 2),
+                                      const SizedBox(height: AppSpacing.s2),
                                       Text(
                                         FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt),
                                         style: AppTheme.caption.copyWith(
@@ -458,7 +482,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                                         ),
                                       ),
                                       if (tx.description?.isNotEmpty == true) ...[
-                                        const SizedBox(height: 2),
+                                        const SizedBox(height: AppSpacing.s2),
                                         Text(
                                           tx.description!,
                                           style: AppTheme.caption,
@@ -863,107 +887,93 @@ class _BusinessSelectorSheetContentState
     return Column(
       children: [
         // Handle bar indicator
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.s12),
         Container(
           width: 36,
           height: 4,
           decoration: BoxDecoration(
-            color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.2),
+            color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.25),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.s16),
         // Title
         Text(
           'Pilih Bisnis untuk Transaksi',
-          style: AppTheme.subtitle.copyWith(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.onSurfaceColorTheme(context),
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.s16),
         // Search Bar
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
-          child: AppTextField(
+          child: TextField(
             controller: _searchController,
-            hintText: 'Cari nama bisnis...',
-            prefixIcon: const Icon(Icons.search_rounded, size: 20),
-            suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, size: 18),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {
-                        _searchQuery = '';
-                      });
-                    },
-                  )
-                : null,
             onChanged: (val) {
               setState(() {
                 _searchQuery = val;
               });
             },
+            style: AppTheme.bodyText.copyWith(
+              color: AppTheme.onSurfaceColorTheme(context),
+            ),
+            decoration: InputDecoration(
+              hintText: 'Cari nama bisnis...',
+              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.s12),
 
         // Recent Businesses (Chips)
         if (recentBusinesses.isNotEmpty && _searchQuery.isEmpty) ...[
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: 4),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Sering Digunakan',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.onSurfaceVariantColorTheme(context),
                 ),
               ),
             ),
           ),
-          SizedBox(
-            height: 36,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12),
-              itemCount: recentBusinesses.length,
-              itemBuilder: (context, index) {
-                final b = recentBusinesses[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: ActionChip(
-                    avatar: Icon(
-                      Icons.history_rounded,
-                      size: 14,
-                      color: AppTheme.primaryColorTheme(context),
-                    ),
-                    label: Text(
-                      b.name,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.onSurfaceColorTheme(context),
-                      ),
-                    ),
-                    backgroundColor: AppTheme.surfaceContainerColorTheme(context),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                      side: BorderSide(
-                        color: AppTheme.outlineColorTheme(context).withValues(alpha: 0.15),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      // Update SharedPreferences recent selections
-                      ref.read(recentSelectedBusinessesProvider.notifier).addBusiness(b.businessId);
-                      TransactionSheet.show(widget.parentContext, b);
-                    },
-                  ),
-                );
-              },
+          const SizedBox(height: AppSpacing.s6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16),
+            child: Row(
+              children: [
+                for (int i = 0; i < recentBusinesses.length; i++) ...[
+                  if (i > 0) const SizedBox(width: AppSpacing.s8),
+                  _buildRecentBusinessChip(recentBusinesses[i]),
+                ],
+              ],
             ),
           ),
-          const Divider(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.s12),
+            child: Divider(height: 1),
+          ),
         ],
 
         // All Businesses List
@@ -977,14 +987,15 @@ class _BusinessSelectorSheetContentState
                       children: [
                         Icon(
                           Icons.store_rounded,
-                          size: 40,
+                          size: 48,
                           color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.3),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.s12),
                         Text(
                           'Bisnis tidak ditemukan',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                             color: AppTheme.onSurfaceVariantColorTheme(context),
                           ),
                         ),
@@ -994,51 +1005,112 @@ class _BusinessSelectorSheetContentState
                 )
               : ListView.separated(
                   controller: widget.scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s4),
                   itemCount: filteredBusinesses.length,
                   separatorBuilder: (_, index) => const Divider(height: 1),
                   itemBuilder: (context, i) {
                     final b = filteredBusinesses[i];
-                    return ListTile(
-                      leading: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
+                    final description = (b.description != null && b.description!.isNotEmpty)
+                        ? b.description!
+                        : 'Tap untuk mencatat transaksi';
+
+                    return Material(
+                      color: Colors.transparent,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
                         ),
-                        child: Icon(
-                          Icons.store_rounded,
-                          size: 16,
-                          color: AppTheme.primaryColorTheme(context),
+                        leading: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.store_rounded,
+                            size: 20,
+                            color: AppTheme.primaryColorTheme(context),
+                          ),
                         ),
+                        title: Text(
+                          b.name,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurfaceColorTheme(context),
+                          ),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            description,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: AppTheme.onSurfaceVariantColorTheme(context),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        trailing: Icon(
+                          Icons.chevron_right_rounded,
+                          size: 20,
+                          color: AppTheme.onSurfaceVariantColorTheme(context),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          ref.read(recentSelectedBusinessesProvider.notifier).addBusiness(b.businessId);
+                          TransactionSheet.show(widget.parentContext, b);
+                        },
                       ),
-                      title: Text(
-                        b.name,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.onSurfaceColorTheme(context),
-                        ),
-                      ),
-                      subtitle: b.description != null && b.description!.isNotEmpty
-                          ? Text(
-                              b.description!,
-                              style: AppTheme.caption.copyWith(fontSize: 11),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          : null,
-                      onTap: () {
-                        Navigator.pop(context);
-                        ref.read(recentSelectedBusinessesProvider.notifier).addBusiness(b.businessId);
-                        TransactionSheet.show(widget.parentContext, b);
-                      },
                     );
                   },
                 ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRecentBusinessChip(BusinessModel b) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pop(context);
+        ref.read(recentSelectedBusinessesProvider.notifier).addBusiness(b.businessId);
+        TransactionSheet.show(widget.parentContext, b);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s14, vertical: AppSpacing.s8),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceContainerColorTheme(context),
+          borderRadius: BorderRadius.circular(AppRadius.s20),
+          border: Border.all(
+            color: AppTheme.outlineVariantColorTheme(context),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.history_rounded,
+              size: 16,
+              color: AppTheme.primaryColorTheme(context),
+            ),
+            const SizedBox(width: AppSpacing.s8),
+            Text(
+              b.name,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/error_widgets.dart';
 import '../../providers/auth_provider.dart';
-import '../../core/widgets/app_text_field.dart';
+import 'widgets/auth_text_field.dart';
+
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -86,10 +87,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        AppTextFormField(
+                        AuthTextField(
                           controller: _emailController,
                           labelText: 'Email',
-                          prefixIcon: const Icon(Icons.email_outlined),
+                          hintText: 'contoh: nama@email.com',
+                          prefixIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.done,
                           onFieldSubmitted: (_) => _handleSendReset(),
@@ -103,11 +105,16 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: AppTheme.s24),
+                        const SizedBox(height: AppTheme.s32),
                         SizedBox(
-                          height: 52,
+                          height: 56,
                           child: FilledButton(
                             onPressed: _isLoading ? null : _handleSendReset,
+                            style: FilledButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
                             child: _isLoading
                                 ? SizedBox(
                                     width: 24,
@@ -122,6 +129,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.3,
                                     ),
                                   ),
                           ),

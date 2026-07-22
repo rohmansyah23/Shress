@@ -29,15 +29,29 @@ class PfButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Resolve variant-specific colors
+    Color? bgOverride;
+    Color? fgOverride;
+
+    switch (variant) {
+      case PfButtonVariant.danger:
+        bgOverride = AppTheme.lossColorTheme(context);
+        fgOverride = AppTheme.onDangerColorTheme(context);
+      case PfButtonVariant.primary:
+      case PfButtonVariant.secondary:
+      case PfButtonVariant.ghost:
+        break;
+    }
+
     final btn = FilledButton.icon(
       onPressed: isLoading ? null : onPressed,
       icon: isLoading
-          ? const SizedBox(
+          ? SizedBox(
               width: 18,
               height: 18,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: Colors.white,
+                color: fgOverride ?? Colors.white,
               ),
             )
           : (icon != null ? Icon(icon, size: 20) : null),
@@ -48,6 +62,8 @@ class PfButton extends StatelessWidget {
           horizontal: AppTheme.s24,
           vertical: AppTheme.s16,
         ),
+        backgroundColor: bgOverride,
+        foregroundColor: fgOverride,
       ),
     );
 
@@ -57,7 +73,7 @@ class PfButton extends StatelessWidget {
   }
 }
 
-enum PfButtonVariant { primary, secondary, ghost }
+enum PfButtonVariant { primary, secondary, ghost, danger }
 
 // ── Modern Card ───────────────────────────────────────────────
 class PfCard extends StatelessWidget {
@@ -1073,11 +1089,11 @@ class _PfNavItem extends StatelessWidget {
                 size: 22,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: AppTheme.s2),
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               style: AppTheme.labelSmall.copyWith(
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 color: isSelected ? activeColor : inactiveColor,
               ),
@@ -1169,13 +1185,13 @@ class _PfCenterActionButton extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppTheme.s4),
             Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTheme.labelSmall.copyWith(
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 color: isSelected ? activeColor : inactiveColor,
               ),

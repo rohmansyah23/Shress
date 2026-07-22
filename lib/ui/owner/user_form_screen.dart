@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
+
 import '../../data/local/models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
-import '../../core/widgets/app_text_field.dart';
+
 
 import '../../core/theme/app_icon_size.dart';
 
@@ -30,6 +30,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
   final _confirmPwdCtrl = TextEditingController();
   String _selectedRole = 'staff';
   bool _isSaving = false;
+  bool _obscurePwd = true;
+  bool _obscureConfirmPwd = true;
 
   bool get _isEdit => widget.user != null;
 
@@ -196,54 +198,97 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
             ),
             const SizedBox(height: AppSpacing.s24),
 
-            Text('Nama Tampilan (Display Name)',
-                style: AppTheme.subtitle.copyWith(fontSize: 14)),
+            Text(
+              'Nama Tampilan (Display Name)',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
             const SizedBox(height: AppSpacing.s8),
-            AppTextFormField(
+            TextFormField(
               controller: _displayNameCtrl,
-              hintText: 'Nama lengkap user',
-              prefixIcon: const Icon(Icons.badge_outlined),
+              style: AppTheme.bodyText.copyWith(
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Nama tampilan harus diisi' : null,
+              decoration: const InputDecoration(
+                hintText: 'Nama lengkap user',
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                prefixIcon: Icon(Icons.badge_outlined),
+              ),
             ),
             const SizedBox(height: AppSpacing.s20),
 
-            Text('Nama Pengguna (Username)',
-                style: AppTheme.subtitle.copyWith(fontSize: 14)),
+            Text(
+              'Nama Pengguna (Username)',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
             const SizedBox(height: AppSpacing.s8),
-            AppTextFormField(
+            TextFormField(
               controller: _usernameCtrl,
-              hintText: 'Username untuk login',
-              prefixIcon: const Icon(Icons.person_outline),
+              style: AppTheme.bodyText.copyWith(
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
               validator: (v) =>
                   v?.trim().isEmpty == true ? 'Username harus diisi' : null,
+              decoration: const InputDecoration(
+                hintText: 'Username untuk login',
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                prefixIcon: Icon(Icons.person_outline),
+              ),
             ),
             const SizedBox(height: AppSpacing.s20),
 
             if (!isEdit) ...[
-              Text('Email',
-                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              Text(
+                'Email',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s8),
-              AppTextFormField(
+              TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
-                hintText: 'user@contoh.com',
-                prefixIcon: const Icon(Icons.email_outlined),
+                style: AppTheme.bodyText.copyWith(
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
                 validator: (v) =>
                     v?.trim().isEmpty == true ? 'Email harus diisi' : null,
+                decoration: const InputDecoration(
+                  hintText: 'user@contoh.com',
+                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
               ),
               const SizedBox(height: AppSpacing.s20),
             ],
 
             if (!isEdit) ...[
-              Text('Password',
-                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              Text(
+                'Password',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s8),
-              AppTextFormField(
+              TextFormField(
                 controller: _pwdCtrl,
-                obscureText: true,
-                hintText: 'Minimal 6 karakter',
-                prefixIcon: const Icon(Icons.lock_outlined),
+                obscureText: _obscurePwd,
+                style: AppTheme.bodyText.copyWith(
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
                 validator: (v) {
                   if (v?.trim().isEmpty == true) {
                     return 'Password harus diisi';
@@ -253,64 +298,173 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   }
                   return null;
                 },
+                decoration: InputDecoration(
+                  hintText: 'Minimal 6 karakter',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  prefixIcon: const Icon(Icons.lock_outlined),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePwd ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      size: 20,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
+                    onPressed: () => setState(() => _obscurePwd = !_obscurePwd),
+                  ),
+                ),
               ),
               const SizedBox(height: AppSpacing.s20),
             ],
 
             if (isEdit) ...[
-              Text('Email Baru (opsional)',
-                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              Text(
+                'Email Baru (opsional)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s8),
-              AppTextFormField(
+              TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
-                hintText: 'Kosongkan jika tidak diubah',
-                prefixIcon: const Icon(Icons.email_outlined),
+                style: AppTheme.bodyText.copyWith(
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+                decoration: const InputDecoration(
+                  hintText: 'Kosongkan jika tidak diubah',
+                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
               ),
               const SizedBox(height: AppSpacing.s20),
 
-              Text('Password Baru (opsional)',
-                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              Text(
+                'Password Baru (opsional)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s8),
-              AppTextFormField(
+              TextFormField(
                 controller: _pwdCtrl,
-                obscureText: true,
-                hintText: 'Kosongkan jika tidak diubah',
-                prefixIcon: const Icon(Icons.lock_outlined),
+                obscureText: _obscurePwd,
+                style: AppTheme.bodyText.copyWith(
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+                validator: (v) {
+                  if (v != null && v.isNotEmpty && v.length < 6) {
+                    return 'Password minimal 6 karakter';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: 'Kosongkan jika tidak diubah',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  prefixIcon: const Icon(Icons.lock_outlined),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePwd ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      size: 20,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
+                    onPressed: () => setState(() => _obscurePwd = !_obscurePwd),
+                  ),
+                ),
               ),
               const SizedBox(height: AppSpacing.s20),
 
-              Text('Konfirmasi Password Baru',
-                  style: AppTheme.subtitle.copyWith(fontSize: 14)),
+              Text(
+                'Konfirmasi Password Baru',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s8),
-              AppTextFormField(
+              TextFormField(
                 controller: _confirmPwdCtrl,
-                obscureText: true,
-                hintText: 'Ulangi password baru',
-                prefixIcon: const Icon(Icons.lock_outlined),
+                obscureText: _obscureConfirmPwd,
+                style: AppTheme.bodyText.copyWith(
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
                 validator: (v) {
-                  if (_pwdCtrl.text.isNotEmpty &&
-                      v != _pwdCtrl.text) {
+                  if (_pwdCtrl.text.isNotEmpty && v != _pwdCtrl.text) {
                     return 'Password tidak cocok';
                   }
                   return null;
                 },
+                decoration: InputDecoration(
+                  hintText: 'Ulangi password baru',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  prefixIcon: const Icon(Icons.lock_clock_outlined),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirmPwd ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      size: 20,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
+                    onPressed: () => setState(() => _obscureConfirmPwd = !_obscureConfirmPwd),
+                  ),
+                ),
               ),
               const SizedBox(height: AppSpacing.s20),
             ],
 
-            Text('Role',
-                style: AppTheme.subtitle.copyWith(fontSize: 14)),
+            Text(
+              'Role',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
             const SizedBox(height: AppSpacing.s8),
-            AppDropdown<String>(
+            DropdownButtonFormField<String>(
               initialValue: _selectedRole,
-              prefixIcon: const Icon(Icons.badge_outlined),
+              isDense: true,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                prefixIcon: Icon(Icons.badge_outlined),
+              ),
+              style: AppTheme.bodyText.copyWith(
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+              iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+              dropdownColor: AppTheme.surfaceColorTheme(context),
               items: [
                 if (_selectedRole == 'owner')
-                  const DropdownMenuItem(value: 'owner', child: Text('Owner')),
-                const DropdownMenuItem(value: 'staff', child: Text('Staff')),
-                const DropdownMenuItem(
-                    value: 'manager', child: Text('Manager')),
+                  DropdownMenuItem(
+                    value: 'owner',
+                    child: Text(
+                      'Owner',
+                      style: AppTheme.bodyText.copyWith(
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                    ),
+                  ),
+                DropdownMenuItem(
+                  value: 'staff',
+                  child: Text(
+                    'Staff',
+                    style: AppTheme.bodyText.copyWith(
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'manager',
+                  child: Text(
+                    'Manager',
+                    style: AppTheme.bodyText.copyWith(
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                ),
               ],
               onChanged: _selectedRole == 'owner'
                   ? null

@@ -6,7 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
+
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/consignor_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -16,7 +16,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
-import '../../core/widgets/app_text_field.dart';
+
 
 class AddConsignmentScreen extends ConsumerStatefulWidget {
   final BusinessModel business;
@@ -468,10 +468,13 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
           const SizedBox(height: AppSpacing.s12),
         ],
         if (_useExistingConsignor && _existingConsignors.isNotEmpty)
-          AppDropdown<int>(
+          DropdownButtonFormField<int>(
             initialValue: _selectedConsignor?.id,
-            labelText: 'Pilih Pihak Penitip',
-            prefixIcon: const Icon(Icons.person_outline_rounded),
+            decoration: const InputDecoration(
+              labelText: 'Pilih Pihak Penitip',
+              prefixIcon: Icon(Icons.person_outline_rounded),
+            ),
+            dropdownColor: AppTheme.surfaceColorTheme(context),
             items: _existingConsignors.map((c) {
               return DropdownMenuItem(value: c.id, child: Text(c.name));
             }).toList(),
@@ -488,23 +491,27 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             },
           )
         else ...[
-          AppTextFormField(
+          TextFormField(
             controller: _nameController,
             textInputAction: TextInputAction.next,
-            labelText: 'Nama Pihak Penitip *',
-            prefixIcon: const Icon(Icons.person_outline_rounded),
-            hintText: 'Nama pihak penitip',
+            decoration: const InputDecoration(
+              labelText: 'Nama Pihak Penitip *',
+              prefixIcon: Icon(Icons.person_outline_rounded),
+              hintText: 'Nama pihak penitip',
+            ),
             validator: (v) => v?.trim().isEmpty == true
                 ? 'Nama pihak penitip harus diisi'
                 : null,
           ),
           const SizedBox(height: AppSpacing.s12),
-          AppTextFormField(
+          TextFormField(
             controller: _phoneController,
             textInputAction: TextInputAction.next,
-            labelText: 'Telepon (opsional)',
-            prefixIcon: const Icon(Icons.phone_outlined),
-            hintText: 'Nomor telepon',
+            decoration: const InputDecoration(
+              labelText: 'Telepon (opsional)',
+              prefixIcon: Icon(Icons.phone_outlined),
+              hintText: 'Nomor telepon',
+            ),
             keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: AppSpacing.s12),
@@ -516,8 +523,6 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
               prefixIcon: Icon(Icons.notes_outlined),
               hintText: 'Catatan tentang pihak penitip',
               alignLabelWithHint: true,
-              isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
             maxLines: 2,
           ),
@@ -554,11 +559,13 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
               ],
             ),
             const SizedBox(height: AppSpacing.s8),
-            AppTextFormField(
+            TextFormField(
               controller: item.nameController,
               textInputAction: TextInputAction.next,
-              labelText: 'Nama Produk *',
-              hintText: 'Contoh: Baju Merah',
+              decoration: const InputDecoration(
+                labelText: 'Nama Produk *',
+                hintText: 'Contoh: Baju Merah',
+              ),
             ),
             const SizedBox(height: AppSpacing.s8),
             TextFormField(
@@ -568,8 +575,6 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 labelText: 'Deskripsi Produk (opsional)',
                 hintText: index == 0 ? 'Ukuran, warna, dll' : null,
                 alignLabelWithHint: true,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
               maxLines: 2,
             ),
@@ -583,8 +588,6 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Jumlah *',
                       suffixText: 'pcs',
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -605,8 +608,6 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Harga Sepakat *',
                       prefixText: 'Rp ',
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [
@@ -626,8 +627,6 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 labelText: 'Harga Jual (opsional)',
                 prefixText: 'Rp ',
                 hintText: 'Harga jual ke pelanggan',
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
               keyboardType: TextInputType.number,
               inputFormatters: [
@@ -682,15 +681,12 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
       children: [
         TextFormField(
           controller: _descriptionController,
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-            labelText: 'Deskripsi (opsional)',
-            prefixIcon: Icon(Icons.description_outlined),
-            hintText: 'Deskripsi titipan',
-            alignLabelWithHint: true,
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          ),
+          textInputAction: TextInputAction.next,            decoration: const InputDecoration(
+              labelText: 'Deskripsi (opsional)',
+              prefixIcon: Icon(Icons.description_outlined),
+              hintText: 'Deskripsi titipan',
+              alignLabelWithHint: true,
+            ),
           maxLines: 2,
         ),
       ],

@@ -73,7 +73,7 @@ class ErrorRetryWidget extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.s12,
+                    vertical: AppSpacing.s16,
                   ),
                 ),
               ),

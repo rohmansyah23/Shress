@@ -2,7 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../utils/format_helpers.dart';
-import 'app_dropdown.dart';
+
 import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';
 
@@ -35,7 +35,7 @@ class PeriodComparisonBadge extends StatelessWidget {
     final Color bgColor = arrowColor.withValues(alpha: isDark ? 0.15 : 0.1);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s8, vertical: AppSpacing.s4),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(AppRadius.s4),
@@ -50,7 +50,7 @@ class PeriodComparisonBadge extends StatelessWidget {
             size: 12,
             color: arrowColor,
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: AppSpacing.s2),
           Text(
             '${percent.toStringAsFixed(1)}%',
             style: TextStyle(
@@ -135,7 +135,7 @@ class CategoryBreakdownChart extends StatelessWidget {
                         children: List.generate(entries.length, (i) {
                           final pct = (entries[i].value / total) * 100;
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
+                            padding: const EdgeInsets.only(bottom: AppSpacing.s6),
                             child: Row(
                               children: [
                                 Container(
@@ -146,7 +146,7 @@ class CategoryBreakdownChart extends StatelessWidget {
                                     shape: BoxShape.circle,
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: AppSpacing.s6),
                                 Expanded(
                                   child: Text(
                                     entries[i].key,
@@ -250,15 +250,32 @@ class _TransactionSectionState extends State<TransactionSection> {
         Row(
           children: [
             Expanded(
-              child: AppDropdown<String>(
+              child: DropdownButtonFormField<String>(
                 initialValue: _typeFilter,
-                labelText: 'Tipe',
-                items: const [
-                  DropdownMenuItem(value: 'all', child: Text('Semua')),
-                  DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
+                isDense: true,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+                iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                dropdownColor: AppTheme.surfaceColorTheme(context),
+                items: [
+                  DropdownMenuItem(
+                    value: 'all',
+                    child: Text('Semua', style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceColorTheme(context))),
+                  ),
+                  DropdownMenuItem(
+                    value: 'income',
+                    child: Text('Pemasukan', style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceColorTheme(context))),
+                  ),
                   DropdownMenuItem(
                     value: 'expense',
-                    child: Text('Pengeluaran'),
+                    child: Text('Pengeluaran', style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceColorTheme(context))),
                   ),
                 ],
                 onChanged: (v) {
@@ -268,15 +285,41 @@ class _TransactionSectionState extends State<TransactionSection> {
             ),
             const SizedBox(width: AppSpacing.s12),
             Flexible(
-              child: AppDropdown<int?>(
+              child: DropdownButtonFormField<int?>(
                 initialValue: _limit,
-                labelText: 'Limit',
-                items: const [
-                  DropdownMenuItem(value: 10, child: Text('10')),
-                  DropdownMenuItem(value: 25, child: Text('25')),
-                  DropdownMenuItem(value: 50, child: Text('50')),
-                  DropdownMenuItem(value: 100, child: Text('100')),
-                  DropdownMenuItem(value: null, child: Text('Semua')),
+                isDense: true,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+                iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                dropdownColor: AppTheme.surfaceColorTheme(context),
+                items: [
+                  DropdownMenuItem(
+                    value: 10,
+                    child: Text('10', style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceColorTheme(context))),
+                  ),
+                  DropdownMenuItem(
+                    value: 25,
+                    child: Text('25', style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceColorTheme(context))),
+                  ),
+                  DropdownMenuItem(
+                    value: 50,
+                    child: Text('50', style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceColorTheme(context))),
+                  ),
+                  DropdownMenuItem(
+                    value: 100,
+                    child: Text('100', style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceColorTheme(context))),
+                  ),
+                  DropdownMenuItem(
+                    value: null,
+                    child: Text('Semua', style: TextStyle(fontSize: 13, color: AppTheme.onSurfaceColorTheme(context))),
+                  ),
                 ],
                 onChanged: (v) => setState(() => _limit = v),
               ),
@@ -321,7 +364,7 @@ class _TransactionTile extends StatelessWidget {
     final Color bgColor = isDark ? AppTheme.darkSurface : AppTheme.surface;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: AppSpacing.s6),
       elevation: 0,
       color: bgColor,
       shape: RoundedRectangleBorder(
@@ -334,7 +377,7 @@ class _TransactionTile extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s10),
         child: Row(
           children: [
             Container(
@@ -352,7 +395,7 @@ class _TransactionTile extends StatelessWidget {
                 color: amountColor,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppSpacing.s10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,7 +410,7 @@ class _TransactionTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.s4),
                   Text(
                     tx.date,
                     style: TextStyle(

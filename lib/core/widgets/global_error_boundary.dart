@@ -132,7 +132,7 @@ class AppErrorScreen extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.s32,
-                    vertical: AppSpacing.s14,
+                    vertical: AppSpacing.s16,
                   ),
                 ),
               ),

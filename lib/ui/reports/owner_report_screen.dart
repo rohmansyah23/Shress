@@ -9,7 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
+
 import '../../core/widgets/report_widgets.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/local/models/business_model.dart';
@@ -636,13 +636,54 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                         ),
                         const SizedBox(width: AppSpacing.s8),
                         Flexible(
-                          child: AppDropdown<String>(
+                          child: DropdownButtonFormField<String>(
                             initialValue: _categoryTypeFilter,
-                            labelText: 'Tipe',
-                            items: const [
-                              DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
-                              DropdownMenuItem(value: 'expense', child: Text('Pengeluaran')),
-                              DropdownMenuItem(value: 'all', child: Text('Semua')),
+                            isDense: true,
+                            isExpanded: true,
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: AppTheme.onSurfaceColorTheme(context),
+                            ),
+                            iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                            dropdownColor: AppTheme.surfaceColorTheme(context),
+                            items: [
+                              DropdownMenuItem(
+                                value: 'income',
+                                child: Text(
+                                  'Pemasukan',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppTheme.onSurfaceColorTheme(context),
+                                  ),
+                                ),
+                              ),
+                              DropdownMenuItem(
+                                value: 'expense',
+                                child: Text(
+                                  'Pengeluaran',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppTheme.onSurfaceColorTheme(context),
+                                  ),
+                                ),
+                              ),
+                              DropdownMenuItem(
+                                value: 'all',
+                                child: Text(
+                                  'Semua',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppTheme.onSurfaceColorTheme(context),
+                                  ),
+                                ),
+                              ),
                             ],
                             onChanged: (v) {
                               if (v != null) setState(() => _categoryTypeFilter = v);

@@ -5,7 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
+
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/finance_bar_chart.dart';
 import '../../data/local/models/business_model.dart';
@@ -250,9 +250,20 @@ class _ManagerDashboardScreenState
             Row(
               children: [
                 Expanded(
-                  child: AppDropdown<TrendFilter>(
+                  child: DropdownButtonFormField<TrendFilter>(
                     initialValue: _selectedTrendFilter,
-                    labelText: 'Periode Waktu',
+                    isDense: true,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                    iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                    dropdownColor: AppTheme.surfaceColorTheme(context),
                     items: TrendFilter.values
                         .map(
                           (f) => DropdownMenuItem(
@@ -260,7 +271,8 @@ class _ManagerDashboardScreenState
                             child: Text(
                               _trendFilterLabel(f),
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
                                 color: AppTheme.onSurfaceColorTheme(context),
                               ),
                             ),
@@ -275,9 +287,20 @@ class _ManagerDashboardScreenState
                 ),
                 const SizedBox(width: AppSpacing.s8),
                 Expanded(
-                  child: AppDropdown<_TrendTypeFilter>(
+                  child: DropdownButtonFormField<_TrendTypeFilter>(
                     initialValue: _selectedTypeFilter,
-                    labelText: 'Tipe Grafik',
+                    isDense: true,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                    iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                    dropdownColor: AppTheme.surfaceColorTheme(context),
                     items: _TrendTypeFilter.values
                         .map(
                           (f) => DropdownMenuItem(
@@ -285,7 +308,8 @@ class _ManagerDashboardScreenState
                             child: Text(
                               f.label,
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
                                 color: AppTheme.onSurfaceColorTheme(context),
                               ),
                             ),

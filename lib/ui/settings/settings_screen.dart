@@ -18,7 +18,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 import '../../core/theme/app_icon_size.dart';
-import '../../core/widgets/app_text_field.dart';
+
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -173,8 +173,22 @@ class SettingsScreen extends ConsumerWidget {
           Card(
             child: ListTile(
               leading: const Icon(Icons.lock_outlined),
-              title: const Text('Ubah Password'),
-              subtitle: const Text('Ganti password akun Anda'),
+              title: Text(
+                'Ubah Password',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
+              subtitle: Text(
+                'Ganti password akun Anda',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: AppTheme.onSurfaceVariantColorTheme(context),
+                ),
+              ),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () => _showChangePasswordDialog(context, ref),
             ),
@@ -191,8 +205,22 @@ class SettingsScreen extends ConsumerWidget {
                   ListTile(
                     leading: Icon(Icons.backup_rounded,
                         color: AppTheme.infoColorTheme(context)),
-                    title: const Text('Backup Data'),
-                    subtitle: const Text('Ekspor data ke JSON atau SQL'),
+                    title: Text(
+                      'Backup Data',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Ekspor data ke JSON atau SQL',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.onSurfaceVariantColorTheme(context),
+                      ),
+                    ),
                     trailing: PopupMenuButton<String>(
                       icon: const Icon(Icons.more_vert),
                       onSelected: (value) {
@@ -219,8 +247,22 @@ class SettingsScreen extends ConsumerWidget {
                   ListTile(
                     leading: Icon(Icons.storage_rounded,
                         color: AppTheme.warningColorTheme(context)),
-                    title: const Text('Backup Schema'),
-                    subtitle: const Text('Ekspor skema database ke file SQL'),
+                    title: Text(
+                      'Backup Schema',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Ekspor skema database ke file SQL',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.onSurfaceVariantColorTheme(context),
+                      ),
+                    ),
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () => _backupSchema(context),
                   ),
@@ -239,17 +281,42 @@ class SettingsScreen extends ConsumerWidget {
                 ListTile(
                   leading: Icon(Icons.info_outline,
                       color: AppTheme.primaryColorTheme(context)),
-                  title: const Text('Versi Aplikasi'),
+                  title: Text(
+                    'Versi Aplikasi',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
                   trailing: Text(
                     AppConstants.appVersion,
-                    style: AppTheme.caption,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
                   ),
                 ),
                 const Divider(height: 1, indent: 16, endIndent: 16),
                 ListTile(
                   leading: const Icon(Icons.cloud_outlined),
-                  title: const Text('Mode'),
-                  subtitle: const Text('Cloud (Online)'),
+                  title: Text(
+                    'Mode',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Cloud (Online)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
+                  ),
                   trailing: Container(
                     width: 10,
                     height: 10,
@@ -262,8 +329,22 @@ class SettingsScreen extends ConsumerWidget {
                 const Divider(height: 1, indent: 16, endIndent: 16),
                 ListTile(
                   leading: const Icon(Icons.bug_report_outlined),
-                  title: const Text('Laporkan Masalah'),
-                  subtitle: const Text('Hubungi pengembang'),
+                  title: Text(
+                    'Laporkan Masalah',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Hubungi pengembang',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
+                  ),
                   trailing:
                       const Icon(Icons.open_in_new_rounded, size: AppIconSize.s18),
                   onTap: () => _showComingSoon(context),
@@ -459,100 +540,170 @@ class SettingsScreen extends ConsumerWidget {
   void _showChangePasswordDialog(BuildContext context, WidgetRef ref) {
     final newPwdCtrl = TextEditingController();
     final confirmPwdCtrl = TextEditingController();
+    var obscureNewPwd = true;
+    var obscureConfirmPwd = true;
     var isSubmitting = false;
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
+        builder: (ctx, setDialogState) => Dialog(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.radiusSmall)),
-          title: const Text('Ubah Password'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppTextField(
-                controller: newPwdCtrl,
-                labelText: 'Password Baru',
-                prefixIcon: const Icon(Icons.lock_outlined),
-                obscureText: true,
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              AppTextField(
-                controller: confirmPwdCtrl,
-                labelText: 'Konfirmasi Password Baru',
-                prefixIcon: const Icon(Icons.lock_outline),
-                obscureText: true,
-              ),
-            ],
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          actions: [
-            TextButton(
-              onPressed:
-                  isSubmitting ? null : () => Navigator.pop(ctx),
-              child: const Text('Batal'),
-            ),
-            FilledButton(
-              onPressed: isSubmitting
-                  ? null
-                  : () async {
-                      if (newPwdCtrl.text != confirmPwdCtrl.text) {
-                        ErrorSnackbar.showMessage(
-                          ctx,
-                          'Password tidak cocok',
-                        );
-                        return;
-                      }
-                      if (newPwdCtrl.text.length < 6) {
-                        ErrorSnackbar.showMessage(
-                          ctx,
-                          'Password minimal 6 karakter',
-                        );
-                        return;
-                      }
-                      final user = ref.read(currentUserProvider);
-                      if (user == null) {
-                        ErrorSnackbar.showMessage(
-                          ctx,
-                          'User tidak ditemukan',
-                        );
-                        return;
-                      }
-                      setDialogState(() => isSubmitting = true);
-                      try {
-                        await ref.read(authRepositoryProvider).updateUserPassword(
-                          userId: user.userId,
-                          password: newPwdCtrl.text,
-                        );
-                        if (!ctx.mounted) return;
-                        Navigator.pop(ctx);
-                        ErrorSnackbar.showMessage(
-                          context,
-                          'Password berhasil diubah',
-                          isError: false,
-                        );
-                      } catch (e) {
-                        setDialogState(
-                            () => isSubmitting = false);
-                        ErrorSnackbar.show(
-                          ctx,
-                          ErrorHandler.classify(e),
-                        );
-                      }
-                    },
-              child: isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.s20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Ubah Password',
+                    style: AppTheme.title.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: AppSpacing.s4),
+                  Text(
+                    'Masukkan password baru minimal 6 karakter',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s16),
+                  TextFormField(
+                    controller: newPwdCtrl,
+                    obscureText: obscureNewPwd,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      labelText: 'Password Baru',
+                      labelStyle: const TextStyle(fontSize: 14),
+                      floatingLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      prefixIcon: const Icon(Icons.lock_outlined, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureNewPwd ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: AppTheme.onSurfaceVariantColorTheme(context),
+                        ),
+                        onPressed: () => setDialogState(() => obscureNewPwd = !obscureNewPwd),
                       ),
-                    )
-                  : const Text('Simpan'),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s12),
+                  TextFormField(
+                    controller: confirmPwdCtrl,
+                    obscureText: obscureConfirmPwd,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      labelText: 'Konfirmasi Password Baru',
+                      labelStyle: const TextStyle(fontSize: 14),
+                      floatingLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      prefixIcon: const Icon(Icons.lock_clock_outlined, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureConfirmPwd ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: AppTheme.onSurfaceVariantColorTheme(context),
+                        ),
+                        onPressed: () => setDialogState(() => obscureConfirmPwd = !obscureConfirmPwd),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 46,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppRadius.md),
+                              ),
+                            ),
+                            onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+                            child: const Text('Batal', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.s12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 46,
+                          child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppRadius.md),
+                              ),
+                            ),
+                            onPressed: isSubmitting
+                                ? null
+                                : () async {
+                                    if (newPwdCtrl.text != confirmPwdCtrl.text) {
+                                      ErrorSnackbar.showMessage(
+                                        ctx,
+                                        'Password tidak cocok',
+                                      );
+                                      return;
+                                    }
+                                    if (newPwdCtrl.text.length < 6) {
+                                      ErrorSnackbar.showMessage(
+                                        ctx,
+                                        'Password minimal 6 karakter',
+                                      );
+                                      return;
+                                    }
+                                    final user = ref.read(currentUserProvider);
+                                    if (user == null) {
+                                      ErrorSnackbar.showMessage(
+                                        ctx,
+                                        'User tidak ditemukan',
+                                      );
+                                      return;
+                                    }
+                                    setDialogState(() => isSubmitting = true);
+                                    try {
+                                      await ref.read(authRepositoryProvider).updateUserPassword(
+                                        userId: user.userId,
+                                        password: newPwdCtrl.text,
+                                      );
+                                      if (!ctx.mounted) return;
+                                      Navigator.pop(ctx);
+                                      ErrorSnackbar.showMessage(
+                                        context,
+                                        'Password berhasil diubah',
+                                        isError: false,
+                                      );
+                                    } catch (e) {
+                                      setDialogState(() => isSubmitting = false);
+                                      ErrorSnackbar.show(
+                                        ctx,
+                                        ErrorHandler.classify(e),
+                                      );
+                                    }
+                                  },
+                            child: isSubmitting
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Simpan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -627,6 +778,7 @@ class _FontSizeSegmentedButtonState extends State<_FontSizeSegmentedButton> {
                       context,
                       size: FontSize.small,
                       label: 'Kecil',
+                      iconSize: 14,
                       width: _localSize == FontSize.small
                           ? selectedWidth
                           : unselectedWidth,
@@ -637,6 +789,7 @@ class _FontSizeSegmentedButtonState extends State<_FontSizeSegmentedButton> {
                       context,
                       size: FontSize.medium,
                       label: 'Sedang',
+                      iconSize: 18,
                       width: _localSize == FontSize.medium
                           ? selectedWidth
                           : unselectedWidth,
@@ -647,6 +800,7 @@ class _FontSizeSegmentedButtonState extends State<_FontSizeSegmentedButton> {
                       context,
                       size: FontSize.large,
                       label: 'Besar',
+                      iconSize: 24,
                       width: _localSize == FontSize.large
                           ? selectedWidth
                           : unselectedWidth,
@@ -674,6 +828,7 @@ class _FontSizeSegmentedButtonState extends State<_FontSizeSegmentedButton> {
     BuildContext context, {
     required FontSize size,
     required String label,
+    required double iconSize,
     required double width,
     required bool isSelected,
   }) {
@@ -712,7 +867,7 @@ class _FontSizeSegmentedButtonState extends State<_FontSizeSegmentedButton> {
                 children: [
                   Icon(
                     Icons.text_fields_rounded,
-                    size: 20,
+                    size: iconSize,
                     color: isSelected ? selectedFgColor : unselectedFgColor,
                   ),
                   AnimatedSize(
@@ -745,11 +900,8 @@ class _FontSizeSegmentedButtonState extends State<_FontSizeSegmentedButton> {
   }
 }
 
-
-// ==================== Notification Reminder Card ====================
-
 class _NotificationReminderCard extends ConsumerStatefulWidget {
-  const _NotificationReminderCard();
+  const _NotificationReminderCard({super.key});
 
   @override
   ConsumerState<_NotificationReminderCard> createState() =>

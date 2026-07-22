@@ -7,8 +7,8 @@ import '../../core/theme/app_icon_size.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
-import '../../core/widgets/app_dropdown.dart';
-import '../../core/widgets/app_text_field.dart';
+
+
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/remote/supabase_service.dart';
@@ -66,17 +66,21 @@ class _OwnerBusinessesTabState extends ConsumerState<OwnerBusinessesTab> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AppTextField(
+            TextField(
               controller: nameCtrl,
-              labelText: 'Nama Bisnis',
-              hintText: 'Masukkan nama bisnis',
+              decoration: const InputDecoration(
+                labelText: 'Nama Bisnis',
+                hintText: 'Masukkan nama bisnis',
+              ),
             ),
             const SizedBox(height: AppSpacing.s12),
-            AppTextField(
+            TextField(
               controller: descCtrl,
-              labelText: 'Deskripsi',
-              hintText: 'Masukkan deskripsi',
               maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Deskripsi',
+                hintText: 'Masukkan deskripsi',
+              ),
             ),
           ],
         ),
@@ -152,14 +156,16 @@ class _OwnerBusinessesTabState extends ConsumerState<OwnerBusinessesTab> {
                 style: const TextStyle(fontSize: 13),
               ),
               const SizedBox(height: AppSpacing.s8),
-              AppTextField(
+              TextField(
                 controller: confirmController,
-                hintText: 'Nama bisnis',
                 onChanged: (val) {
                   setStateDialog(() {
                     isMatch = val.trim() == business.name;
                   });
                 },
+                decoration: const InputDecoration(
+                  hintText: 'Nama bisnis',
+                ),
               ),
             ],
           ),
@@ -518,32 +524,44 @@ class _OwnerBusinessesTabState extends ConsumerState<OwnerBusinessesTab> {
   }
 
   Widget _buildSearchBar() {
-    return AppTextField(
+    return TextField(
       controller: _searchController,
-      hintText: 'Cari nama bisnis...',
-      prefixIcon: const Icon(Icons.search_rounded),
-      suffixIcon: _searchQuery.isNotEmpty
-          ? IconButton(
-              icon: const Icon(Icons.clear_rounded),
-              onPressed: () {
-                _searchController.clear();
-                setState(() {
-                  _searchQuery = '';
-                });
-              },
-            )
-          : null,
       onChanged: (val) {
         setState(() {
           _searchQuery = val;
         });
-      },
+      },        decoration: InputDecoration(
+        hintText: 'Cari nama bisnis...',
+        prefixIcon: const Icon(Icons.search_rounded),
+        suffixIcon: _searchQuery.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear_rounded),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _searchQuery = '';
+                  });
+                },
+              )
+            : null,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
     );
   }
 
   Widget _buildSortDropdown() {
-    return AppDropdown<BusinessSortOption>(
+    return DropdownButtonFormField<BusinessSortOption>(
       initialValue: _sortOption,
+      isDense: true,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      style: TextStyle(
+        fontSize: 13,
+        color: AppTheme.onSurfaceColorTheme(context),
+      ),
+      dropdownColor: AppTheme.surfaceColorTheme(context),
       items: BusinessSortOption.values.map((option) {
         return DropdownMenuItem<BusinessSortOption>(
           value: option,
@@ -708,7 +726,7 @@ class _BusinessCardItem extends StatelessWidget {
                               color: AppTheme.onSurfaceVariantColorTheme(context),
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: AppSpacing.s2),
                           Row(
                             children: [
                               Container(

@@ -6,11 +6,11 @@ import '../../providers/auth_provider.dart';
 import '../owner/owner_shell.dart';
 import '../manager/manager_shell.dart';
 import 'forgot_password_screen.dart';
+import 'widgets/auth_text_field.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
-
 import '../../core/theme/app_icon_size.dart';
-import '../../core/widgets/app_text_field.dart';
+
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -143,22 +143,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                       ),
                       const SizedBox(height: AppSpacing.s24),
-                      Text(AppConstants.appName, style: AppTheme.heading1),
+                      Text(
+                        AppConstants.appName,
+                        style: AppTheme.heading1.copyWith(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: AppSpacing.s8),
                       Text(
-                        'Multi-tenant Financial Reports',
-                        style: AppTheme.caption,
+                        'Silakan masuk untuk mengelola laporan keuangan',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B),
+                          height: 1.4,
+                        ),
                       ),
-                      const SizedBox(height: AppSpacing.s48),
+                      const SizedBox(height: AppSpacing.s40),
 
                       // Error message
                       if (authState.errorMessage != null) ...[
                         Container(
-                          padding: const EdgeInsets.all(AppSpacing.s12),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           decoration: BoxDecoration(
                             color: AppTheme.danger.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.radiusSmall,
+                            borderRadius: BorderRadius.circular(AppRadius.lg),
+                            border: Border.all(
+                              color: AppTheme.danger.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -166,32 +177,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               Icon(
                                 Icons.error_outline,
                                 color: AppTheme.danger,
-                                size: AppIconSize.s20,
+                                size: 22,
                               ),
-                              const SizedBox(width: AppSpacing.s8),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   authState.errorMessage!,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: AppTheme.danger,
-                                    fontSize: 13,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.3,
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.s16),
+                        const SizedBox(height: AppSpacing.s20),
                       ],
 
                       // Email/Username
-                      AppTextFormField(
+                      AuthTextField(
                         controller: _identifierController,
                         labelText: 'Email / Username',
-                        prefixIcon: const Icon(Icons.person_outlined),
-                        keyboardType: TextInputType.text,
+                        hintText: 'Masukkan email atau username Anda',
+                        prefixIcon: Icons.person_outlined,
+                        keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
-                        textCapitalization: TextCapitalization.none,
                         autocorrect: false,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -200,26 +213,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           return null;
                         },
                       ),
-                      const SizedBox(height: AppSpacing.s16),
+                      const SizedBox(height: AppSpacing.s20),
 
                       // Password
-                      AppTextFormField(
+                      AuthTextField(
                         controller: _passwordController,
                         labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outlined),
+                        hintText: 'Masukkan password Anda',
+                        prefixIcon: Icons.lock_outlined,
+                        obscureText: _obscurePassword,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _handleLogin(),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
+                            size: 22,
+                            color: isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B),
                           ),
                           onPressed: () => setState(
                             () => _obscurePassword = !_obscurePassword,
                           ),
                         ),
-                        obscureText: _obscurePassword,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _handleLogin(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Password tidak boleh kosong';
@@ -230,13 +246,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           return null;
                         },
                       ),
-                      const SizedBox(height: AppSpacing.s24),
+                      const SizedBox(height: AppSpacing.s32),
 
                       // Login button
                       SizedBox(
-                        height: 52,
+                        height: 56,
                         child: FilledButton(
                           onPressed: _isLoading ? null : _handleLogin,
+                          style: FilledButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppRadius.lg),
+                            ),
+                          ),
                           child: _isLoading
                               ? SizedBox(
                                   width: 24,
@@ -251,11 +272,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.3,
                                   ),
                                 ),
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.s16),
+                      const SizedBox(height: AppSpacing.s20),
 
                       // Forgot password
                       Center(
@@ -270,8 +292,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           child: Text(
                             'Lupa Password?',
                             style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
                               color: isDark
                                   ? AppTheme.darkPrimary
                                   : AppTheme.primary,
