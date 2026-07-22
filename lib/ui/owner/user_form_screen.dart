@@ -129,7 +129,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit User' : 'Tambah User'),
+        title: Text(isEdit ? 'Edit Pengguna' : 'Tambah Pengguna'),
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _handleSave,
@@ -436,6 +436,7 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
               ),
               iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
               dropdownColor: AppTheme.surfaceColorTheme(context),
+              borderRadius: BorderRadius.circular(16),
               items: [
                 if (_selectedRole == 'owner')
                   DropdownMenuItem(

@@ -650,6 +650,7 @@ class _OwnerReportScreenState extends ConsumerState<OwnerReportScreen> {
                             ),
                             iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                             dropdownColor: AppTheme.surfaceColorTheme(context),
+                            borderRadius: BorderRadius.circular(16),
                             items: [
                               DropdownMenuItem(
                                 value: 'income',

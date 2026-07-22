@@ -4,6 +4,7 @@ import '../../core/constants/constants.dart';
 import '../../core/services/export_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
+import '../../core/widgets/recent_transaction_tile.dart';
 import '../../core/utils/error_handler.dart';
 import 'dart:async';
 import 'dart:io';
@@ -63,6 +64,7 @@ class TransactionHistoryScreen extends ConsumerStatefulWidget {
 class _TransactionHistoryScreenState
     extends ConsumerState<TransactionHistoryScreen> {
   final _scrollController = ScrollController();
+  Map<int, String> _categoriesMap = {};
   DateFilter _selectedFilter = DateFilter.all;
   TypeFilter _selectedType = TypeFilter.all;
   DateTime? _customStart;
@@ -76,7 +78,23 @@ class _TransactionHistoryScreenState
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    Future.microtask(() => _applyFilter());
+    Future.microtask(() {
+      _applyFilter();
+      _loadCategories();
+    });
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final cats = await SupabaseService.instance
+          .getCategoriesByBusiness(widget.business.businessId);
+      final map = <int, String>{
+        for (final c in cats) c.categoryId: c.name,
+      };
+      if (mounted) {
+        setState(() => _categoriesMap = map);
+      }
+    } catch (_) {}
   }
 
   @override
@@ -365,6 +383,7 @@ class _TransactionHistoryScreenState
                       ),
                       iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                       dropdownColor: AppTheme.surfaceColorTheme(context),
+                      borderRadius: BorderRadius.circular(16),
                       items: DateFilter.values.map((f) =>
                         DropdownMenuItem(
                           value: f,
@@ -405,6 +424,7 @@ class _TransactionHistoryScreenState
                       ),
                       iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                       dropdownColor: AppTheme.surfaceColorTheme(context),
+                      borderRadius: BorderRadius.circular(16),
                       items: TypeFilter.values.map((f) =>
                         DropdownMenuItem(
                           value: f,
@@ -521,7 +541,58 @@ class _TransactionHistoryScreenState
                   }
 
                   final tx = listState.items[index];
-                  final isIncome = tx.type == AppConstants.typeIncome;
+                  final catName = _categoriesMap[tx.categoryId];
+
+                  final popupMenu = canEdit
+                      ? PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            color: AppTheme.onSurfaceVariantColorTheme(context),
+                            size: AppIconSize.s20,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                          ),
+                          onSelected: (value) {
+                            switch (value) {
+                              case 'edit':
+                                _handleEdit(tx);
+                                break;
+                              case 'delete':
+                                _handleDelete(tx);
+                                break;
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem<String>(
+                              value: 'edit',
+                              child: ListTile(
+                                leading: Icon(Icons.edit_outlined,
+                                    color: AppTheme.onSurfaceColorTheme(context)),
+                                title: Text('Edit',
+                                    style: TextStyle(
+                                        color: AppTheme.onSurfaceColorTheme(context))),
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            PopupMenuItem<String>(
+                              value: 'delete',
+                              child: ListTile(
+                                leading: Icon(Icons.delete_outline_rounded,
+                                    color: AppTheme.lossColorTheme(context)),
+                                title: Text('Hapus',
+                                    style: TextStyle(
+                                        color: AppTheme.lossColorTheme(context))),
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ],
+                        )
+                      : null;
+
                   return Padding(
                     padding: EdgeInsets.only(
                       left: AppSpacing.s12,
@@ -529,106 +600,11 @@ class _TransactionHistoryScreenState
                       bottom: AppSpacing.s8,
                       top: index == 0 ? 4 : 0,
                     ),
-                    child: Card(
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                        onTap: () => _showTransactionDetail(tx),
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.s12),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 44, height: 44,
-                                decoration: BoxDecoration(
-                                  color: (isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context))
-                                      .withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                                ),
-                                child: Icon(
-                                  isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                                  color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.s12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt),
-                                      style: AppTheme.caption.copyWith(fontSize: 11),
-                                    ),
-                                    const SizedBox(height: AppSpacing.s4),
-                                    Text(
-                                      FormatHelpers.rupiah(tx.amount),
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: isIncome ? AppTheme.profitColorTheme(context) : AppTheme.lossColorTheme(context),
-                                      ),
-                                    ),
-                                    if (tx.description?.isNotEmpty == true)
-                                      Text(
-                                        tx.description!,
-                                        style: AppTheme.caption,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              if (canEdit)
-                                PopupMenuButton<String>(
-                                  icon: Icon(
-                                    Icons.more_vert_rounded,
-                                    color: AppTheme.onSurfaceVariantColorTheme(context),
-                                    size: AppIconSize.s20,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                                  ),
-                                  onSelected: (value) {
-                                    switch (value) {
-                                      case 'edit':
-                                        _handleEdit(tx);
-                                        break;
-                                      case 'delete':
-                                        _handleDelete(tx);
-                                        break;
-                                    }
-                                  },
-                                  itemBuilder: (context) => [
-                                    PopupMenuItem<String>(
-                                      value: 'edit',
-                                      child: ListTile(
-                                        leading: Icon(Icons.edit_outlined,
-                                            color: AppTheme.onSurfaceColorTheme(context)),
-                                        title: Text('Edit',
-                                            style: TextStyle(
-                                                color: AppTheme.onSurfaceColorTheme(context))),
-                                        dense: true,
-                                        contentPadding: EdgeInsets.zero,
-                                      ),
-                                    ),
-                                    const PopupMenuDivider(),
-                                    PopupMenuItem<String>(
-                                      value: 'delete',
-                                      child: ListTile(
-                                        leading: Icon(Icons.delete_outline_rounded,
-                                            color: AppTheme.lossColorTheme(context)),
-                                        title: Text('Hapus',
-                                            style: TextStyle(
-                                                color: AppTheme.lossColorTheme(context))),
-                                        dense: true,
-                                        contentPadding: EdgeInsets.zero,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
+                    child: RecentTransactionTile(
+                      transaction: tx,
+                      categoryName: catName,
+                      trailing: popupMenu,
+                      onTap: () => _showTransactionDetail(tx),
                     ),
                   );
                 },

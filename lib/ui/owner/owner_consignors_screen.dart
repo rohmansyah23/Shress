@@ -582,7 +582,14 @@ class _ConsignorCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(consignor.name, style: AppTheme.heading3),
+                    Text(
+                      consignor.name,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.s2),
                     Row(
                       children: [

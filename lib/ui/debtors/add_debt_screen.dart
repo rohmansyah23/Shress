@@ -42,6 +42,7 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
   final _descriptionController = TextEditingController();
   final _debtDateController = TextEditingController();
   final _dueDateController = TextEditingController();
+  final _amountFocusNode = FocusNode();
 
   DateTime _debtDate = DateTime.now();
   DateTime? _dueDate;
@@ -60,10 +61,28 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
     }
     _debtDateController.text = _formatDate(_debtDate);
     _amountController.addListener(_onAmountChanged);
+    _amountFocusNode.addListener(_onAmountFocusChanged);
+  }
+
+  void _onAmountFocusChanged() {
+    if (_amountFocusNode.hasFocus) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (_amountFocusNode.hasFocus && mounted && _amountFocusNode.context != null) {
+          Scrollable.ensureVisible(
+            _amountFocusNode.context!,
+            alignment: 0.15,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
+    _amountFocusNode.removeListener(_onAmountFocusChanged);
+    _amountFocusNode.dispose();
     _amountController.removeListener(_onAmountChanged);
     _nameController.dispose();
     _phoneController.dispose();
@@ -493,6 +512,8 @@ class _AddDebtScreenState extends ConsumerState<AddDebtScreen> {
               const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _amountController,
+                focusNode: _amountFocusNode,
+                scrollPadding: const EdgeInsets.only(bottom: 120),
                 keyboardType: TextInputType.number,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,

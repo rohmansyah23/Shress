@@ -901,7 +901,7 @@ class _FontSizeSegmentedButtonState extends State<_FontSizeSegmentedButton> {
 }
 
 class _NotificationReminderCard extends ConsumerStatefulWidget {
-  const _NotificationReminderCard({super.key});
+  const _NotificationReminderCard();
 
   @override
   ConsumerState<_NotificationReminderCard> createState() =>

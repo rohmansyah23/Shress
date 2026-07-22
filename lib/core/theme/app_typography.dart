@@ -46,63 +46,63 @@ class AppTypography {
   // HEADLINES (Material 3 mapping: headlineLarge/Small)
   // ═══════════════════════════════════════════════════════════════
 
-  /// 36pt / Bold / -0.8 tracking / 1.15 height
+  /// 22pt / Bold / -0.4 tracking / 1.2 height
   ///
-  /// Page-level headlines (e.g., "Selamat Datang").
+  /// Hero/Page-level headers.
   static TextStyle get headlineLarge => GoogleFonts.inter(
-        fontSize: 36,
+        fontSize: 22,
         fontWeight: FontWeight.bold,
-        letterSpacing: -0.8,
-        height: 1.15,
-      );
-
-  /// 28pt / SemiBold / -0.5 tracking / 1.2 height
-  ///
-  /// Section-level headlines.
-  static TextStyle get headlineMedium => GoogleFonts.inter(
-        fontSize: 28,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.5,
+        letterSpacing: -0.4,
         height: 1.2,
       );
 
-  /// 24pt / SemiBold / -0.3 tracking / 1.25 height
+  /// 18pt / SemiBold / -0.3 tracking / 1.25 height
   ///
-  /// Card titles, sub-section headlines.
-  static TextStyle get headlineSmall => GoogleFonts.inter(
-        fontSize: 24,
+  /// Modal headers, card group headlines.
+  static TextStyle get headlineMedium => GoogleFonts.inter(
+        fontSize: 18,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.3,
         height: 1.25,
+      );
+
+  /// 16pt / SemiBold / -0.2 tracking / 1.3 height
+  ///
+  /// Section-level headlines (Aksi Cepat, Menu Lainnya, Tren Keuangan).
+  static TextStyle get headlineSmall => GoogleFonts.inter(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.2,
+        height: 1.3,
       );
 
   // ═══════════════════════════════════════════════════════════════
   // TITLES
   // ═══════════════════════════════════════════════════════════════
 
-  /// 20pt / SemiBold / 1.3 height
+  /// 16pt / SemiBold / 1.3 height
   ///
   /// AppBar titles, prominent card titles.
   static TextStyle get titleLarge => GoogleFonts.inter(
-        fontSize: 20,
+        fontSize: 16,
         fontWeight: FontWeight.w600,
         height: 1.3,
       );
 
-  /// 16pt / Medium / 1.4 height
+  /// 14pt / Medium / 1.35 height
   ///
   /// List tile titles, medium emphasis text.
   static TextStyle get titleMedium => GoogleFonts.inter(
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: FontWeight.w500,
-        height: 1.4,
+        height: 1.35,
       );
 
-  /// 14pt / Medium / 1.4 height (alias, same as titleMedium substyle)
+  /// 13pt / Medium / 1.35 height
   ///
   /// Small titles, subheadings.
   static TextStyle get titleSmall => GoogleFonts.inter(
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: FontWeight.w500,
         height: 1.35,
       );

@@ -475,6 +475,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
               prefixIcon: Icon(Icons.person_outline_rounded),
             ),
             dropdownColor: AppTheme.surfaceColorTheme(context),
+            borderRadius: BorderRadius.circular(16),
             items: _existingConsignors.map((c) {
               return DropdownMenuItem(value: c.id, child: Text(c.name));
             }).toList(),
@@ -604,6 +605,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: item.priceController,
+                    scrollPadding: const EdgeInsets.only(bottom: 120),
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
                       labelText: 'Harga Sepakat *',
@@ -622,6 +624,7 @@ class _AddConsignmentScreenState extends ConsumerState<AddConsignmentScreen> {
             const SizedBox(height: AppSpacing.s12),
             TextFormField(
               controller: item.sellingPriceController,
+              scrollPadding: const EdgeInsets.only(bottom: 120),
               textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 labelText: 'Harga Jual (opsional)',

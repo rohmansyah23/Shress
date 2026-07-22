@@ -147,8 +147,8 @@ void main() {
       final linkResult = await admin
           .from('user_businesses')
           .select('id')
-          .eq('user_id', staffId!)
-          .eq('business_id', businessId!)
+          .eq('user_id', staffId)
+          .eq('business_id', businessId)
           .maybeSingle();
       if (linkResult == null) {
         await admin.from('user_businesses').insert({
@@ -165,7 +165,7 @@ void main() {
       var catResult = await admin
           .from('categories')
           .select('id, name, type')
-          .eq('business_id', businessId!)
+          .eq('business_id', businessId)
           .eq('name', 'Penjualan Harian')
           .maybeSingle();
 
@@ -505,7 +505,7 @@ void main() {
       final logsBeforeOwnerAction = await admin
           .from('owner_activity_logs')
           .select('id')
-          .eq('business_id', businessId!);
+          .eq('business_id', businessId);
       final logCountBefore = (logsBeforeOwnerAction as List).length;
       print('  Log count sebelum owner action: $logCountBefore');
 
@@ -574,7 +574,7 @@ void main() {
       final allLogs = await admin
           .from('owner_activity_logs')
           .select('id, action_type, table_name, details, title, body')
-          .eq('business_id', businessId!)
+          .eq('business_id', businessId)
           .order('created_at', ascending: false);
 
       final logList = allLogs as List;

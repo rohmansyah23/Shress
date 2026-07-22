@@ -349,7 +349,11 @@ class _DebtorCard extends StatelessWidget {
                   children: [
                     Text(
                       debtor.name,
-                      style: AppTheme.subtitle.copyWith(fontSize: 15),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
                     ),
                     if (debtor.phone != null && debtor.phone!.isNotEmpty)
                       Padding(
@@ -367,13 +371,14 @@ class _DebtorCard extends StatelessWidget {
                 children: [
                   Text(
                     'Sisa Hutang',
-                    style: AppTheme.caption.copyWith(fontSize: 10),
+                    style: AppTheme.caption.copyWith(fontSize: 11),
                   ),
                   const SizedBox(height: AppSpacing.s4),
                   Text(
                     FormatHelpers.rupiah(remainingAmount),
-                    style: AppTheme.subtitle.copyWith(
+                    style: TextStyle(
                       fontSize: 14,
+                      fontWeight: FontWeight.w700,
                       color: remainingAmount > 0
                           ? AppTheme.lossColorTheme(context)
                           : AppTheme.profitColorTheme(context),

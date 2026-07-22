@@ -51,6 +51,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
   final _amountController = TextEditingController();
   final _cogsController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _amountFocusNode = FocusNode();
+  final _cogsFocusNode = FocusNode();
 
   List<CategoryModel> _categories = [];
   CategoryModel? _selectedCategory;
@@ -74,10 +76,46 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
     // Add listeners for IDR formatting
     _amountController.addListener(_onAmountChanged);
     _cogsController.addListener(_onCogsChanged);
+    _amountFocusNode.addListener(_onAmountFocusChanged);
+    _cogsFocusNode.addListener(_onCogsFocusChanged);
+  }
+
+  void _onAmountFocusChanged() {
+    if (_amountFocusNode.hasFocus) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (_amountFocusNode.hasFocus && mounted && _amountFocusNode.context != null) {
+          Scrollable.ensureVisible(
+            _amountFocusNode.context!,
+            alignment: 0.15,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
+  }
+
+  void _onCogsFocusChanged() {
+    if (_cogsFocusNode.hasFocus) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (_cogsFocusNode.hasFocus && mounted && _cogsFocusNode.context != null) {
+          Scrollable.ensureVisible(
+            _cogsFocusNode.context!,
+            alignment: 0.15,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
+    _amountFocusNode.removeListener(_onAmountFocusChanged);
+    _cogsFocusNode.removeListener(_onCogsFocusChanged);
+    _amountFocusNode.dispose();
+    _cogsFocusNode.dispose();
     _amountController.removeListener(_onAmountChanged);
     _cogsController.removeListener(_onCogsChanged);
     _amountController.dispose();
@@ -300,8 +338,18 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
               padding: const EdgeInsets.fromLTRB(AppSpacing.s20, AppSpacing.s16, AppSpacing.s20, 0),
               child: Row(
                 children: [
-                  Text('Tambah Transaksi', style: AppTheme.heading2),
-                  const Spacer(),
+                  Expanded(
+                    child: Text(
+                      'Tambah Transaksi',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
                     onPressed: () => Navigator.pop(context),
@@ -441,6 +489,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       ),
                       iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                       dropdownColor: AppTheme.surfaceColorTheme(context),
+                      borderRadius: BorderRadius.circular(16),
                       items: _categories.map((cat) {
                         return DropdownMenuItem(
                           value: cat,
@@ -486,6 +535,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                     const SizedBox(height: AppSpacing.s8),
                     TextFormField(
                       controller: _amountController,
+                      focusNode: _amountFocusNode,
+                      scrollPadding: const EdgeInsets.only(bottom: 120),
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
@@ -524,6 +575,8 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                                 const SizedBox(height: AppSpacing.s8),
                                 TextFormField(
                                   controller: _cogsController,
+                                  focusNode: _cogsFocusNode,
+                                  scrollPadding: const EdgeInsets.only(bottom: 120),
                                   keyboardType: TextInputType.number,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
@@ -557,6 +610,7 @@ class _TransactionSheetState extends ConsumerState<TransactionSheet> {
                       ),
                       iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                       dropdownColor: AppTheme.surfaceColorTheme(context),
+                      borderRadius: BorderRadius.circular(16),
                       items: [
                         DropdownMenuItem(
                           value: AppConstants.paymentCash,

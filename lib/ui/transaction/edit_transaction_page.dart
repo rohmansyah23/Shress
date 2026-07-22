@@ -36,6 +36,8 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
   final _cogsController = TextEditingController();
   final _descController = TextEditingController();
   final _dateTextController = TextEditingController();
+  final _amountFocusNode = FocusNode();
+  final _cogsFocusNode = FocusNode();
   bool _isSaving = false;
   bool _isFormattingAmount = false;
   bool _isFormattingCogs = false;
@@ -63,11 +65,47 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
     _amountController.addListener(_onAmountChanged);
     _cogsController.addListener(_onCogsChanged);
+    _amountFocusNode.addListener(_onAmountFocusChanged);
+    _cogsFocusNode.addListener(_onCogsFocusChanged);
     _loadCategories();
+  }
+
+  void _onAmountFocusChanged() {
+    if (_amountFocusNode.hasFocus) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (_amountFocusNode.hasFocus && mounted && _amountFocusNode.context != null) {
+          Scrollable.ensureVisible(
+            _amountFocusNode.context!,
+            alignment: 0.15,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
+  }
+
+  void _onCogsFocusChanged() {
+    if (_cogsFocusNode.hasFocus) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (_cogsFocusNode.hasFocus && mounted && _cogsFocusNode.context != null) {
+          Scrollable.ensureVisible(
+            _cogsFocusNode.context!,
+            alignment: 0.15,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
+    _amountFocusNode.removeListener(_onAmountFocusChanged);
+    _cogsFocusNode.removeListener(_onCogsFocusChanged);
+    _amountFocusNode.dispose();
+    _cogsFocusNode.dispose();
     _amountController.removeListener(_onAmountChanged);
     _cogsController.removeListener(_onCogsChanged);
     _amountController.dispose();
@@ -331,6 +369,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 ),
                 iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                 dropdownColor: AppTheme.surfaceColorTheme(context),
+                borderRadius: BorderRadius.circular(16),
                 items: _categories.map((cat) {
                   return DropdownMenuItem(
                     value: cat,
@@ -382,6 +421,8 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
               const SizedBox(height: AppSpacing.s8),
               TextFormField(
                 controller: _amountController,
+                focusNode: _amountFocusNode,
+                scrollPadding: const EdgeInsets.only(bottom: 120),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: const InputDecoration(
@@ -415,6 +456,8 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 const SizedBox(height: AppSpacing.s8),
                 TextFormField(
                   controller: _cogsController,
+                  focusNode: _cogsFocusNode,
+                  scrollPadding: const EdgeInsets.only(bottom: 120),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: const InputDecoration(

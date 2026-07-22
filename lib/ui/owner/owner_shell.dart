@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../providers/auth_provider.dart';
 import 'owner_dashboard_tab.dart';
@@ -37,7 +38,39 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
     }
   }
 
+  Widget _buildAppBarTitle(dynamic user) {
+    if (_selectedIndex == 0) {
+      final name = user?.displayName ?? user?.username ?? 'Owner';
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Halo, $name 👋',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.onSurfaceColorTheme(context),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            'Pemilik Usaha (Owner)',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w400,
+              color: AppTheme.onSurfaceVariantColorTheme(context),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      );
+    }
 
+    return Text(_appBarTitle);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +118,7 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_appBarTitle),
+        title: _buildAppBarTitle(user),
         actions: _selectedIndex == 0
             ? [
                 IconButton(

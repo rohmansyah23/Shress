@@ -7,8 +7,10 @@ import '../../core/utils/format_helpers.dart';
 import '../../core/widgets/error_widgets.dart';
 
 import '../../core/widgets/shared_widgets.dart';
+import '../../core/widgets/recent_transaction_tile.dart';
 import '../../core/widgets/finance_bar_chart.dart';
 import '../../data/local/models/business_model.dart';
+import '../../data/local/models/category_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
 import '../../providers/business_providers.dart';
@@ -57,6 +59,7 @@ class ManagerDashboardScreen extends ConsumerStatefulWidget {
 class _ManagerDashboardScreenState
     extends ConsumerState<ManagerDashboardScreen> {
   List<TransactionModel> _recentTransactions = [];
+  Map<int, String> _categoriesMap = {};
   bool _recentLoading = true;
   TrendFilter _selectedTrendFilter = TrendFilter.daily;
   _TrendTypeFilter _selectedTypeFilter = _TrendTypeFilter.netProfit;
@@ -79,12 +82,25 @@ class _ManagerDashboardScreenState
   Future<void> _loadRecentTransactions() async {
     setState(() => _recentLoading = true);
     try {
-      final allTx = await SupabaseService.instance.getTransactionsByBusiness(
-        widget.selectedBusiness.businessId,
-      );
+      final results = await Future.wait([
+        SupabaseService.instance.getTransactionsByBusiness(
+          widget.selectedBusiness.businessId,
+        ),
+        SupabaseService.instance.getCategoriesByBusiness(
+          widget.selectedBusiness.businessId,
+        ),
+      ]);
+      final allTx = results[0] as List<TransactionModel>;
+      final categories = results[1] as List<CategoryModel>;
+
+      final catMap = <int, String>{
+        for (final c in categories) c.categoryId: c.name,
+      };
+
       if (mounted) {
         setState(() {
           _recentTransactions = allTx.take(5).toList();
+          _categoriesMap = catMap;
           _recentLoading = false;
         });
       }
@@ -168,7 +184,14 @@ class _ManagerDashboardScreenState
           const SizedBox(height: AppSpacing.s12),
           _buildNetProfitCard(netProfit, isProfit),
           const SizedBox(height: AppSpacing.s12),
-          Text('Aksi Cepat', style: AppTheme.heading3),
+          Text(
+            'Aksi Cepat',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.onSurfaceColorTheme(context),
+            ),
+          ),
           const SizedBox(height: AppSpacing.s12),
           Row(
             children: [
@@ -245,7 +268,14 @@ class _ManagerDashboardScreenState
           const SizedBox(height: AppSpacing.s12),
           if (isManager) ...[
             // === Trend Chart ===
-            Text('Tren Keuangan', style: AppTheme.heading3),
+            Text(
+              'Tren Keuangan',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
             const SizedBox(height: AppSpacing.s8),
             Row(
               children: [
@@ -264,6 +294,7 @@ class _ManagerDashboardScreenState
                     ),
                     iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                     dropdownColor: AppTheme.surfaceColorTheme(context),
+                    borderRadius: BorderRadius.circular(16),
                     items: TrendFilter.values
                         .map(
                           (f) => DropdownMenuItem(
@@ -301,6 +332,7 @@ class _ManagerDashboardScreenState
                     ),
                     iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                     dropdownColor: AppTheme.surfaceColorTheme(context),
+                    borderRadius: BorderRadius.circular(16),
                     items: _TrendTypeFilter.values
                         .map(
                           (f) => DropdownMenuItem(
@@ -399,7 +431,29 @@ class _ManagerDashboardScreenState
           ],
           _buildDebtConsignmentSummary(widget.selectedBusiness.businessId),
           const SizedBox(height: AppSpacing.s12),
-          Text('Transaksi Terbaru', style: AppTheme.heading3),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Transaksi Terbaru',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
+              if (_recentTransactions.isNotEmpty && widget.onNavigateToRiwayat != null)
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  onPressed: widget.onNavigateToRiwayat,
+                  child: const Text('Lihat Semua', style: TextStyle(fontSize: 12)),
+                ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.s12),
           if (_recentLoading)
             ...List.generate(
@@ -419,11 +473,12 @@ class _ManagerDashboardScreenState
                         color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.4),
                       ),
                       const SizedBox(height: AppSpacing.s12),
-                      const Text(
+                      Text(
                         'Belum ada transaksi',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
+                          color: AppTheme.onSurfaceColorTheme(context),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.s4),
@@ -440,85 +495,109 @@ class _ManagerDashboardScreenState
           else
             ...List.generate(_recentTransactions.length, (i) {
               final tx = _recentTransactions[i];
-              final isIncome = tx.type == AppConstants.typeIncome;
+              final catName = _categoriesMap[tx.categoryId];
               return FadeInEntrance(
                 delay: Duration(milliseconds: i * 50),
                 child: Padding(
                   padding: EdgeInsets.only(
                     bottom: i < _recentTransactions.length - 1 ? 8 : 0,
                   ),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.s12),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color:
-                                  (isIncome
-                                          ? AppTheme.profitColorTheme(context)
-                                          : AppTheme.lossColorTheme(context))
-                                      .withValues(alpha: 0.12),                               borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                            ),
-                            child: Icon(
-                              isIncome
-                                  ? Icons.trending_up_rounded
-                                  : Icons.trending_down_rounded,
-                              color: isIncome
-                                  ? AppTheme.profitColorTheme(context)
-                                  : AppTheme.lossColorTheme(context),
-                              size: AppIconSize.s20,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.s12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt),
-                                  style: AppTheme.caption.copyWith(
-                                    fontSize: 11,
-                                  ),
-                                ),
-                                if (tx.description?.isNotEmpty == true)
-                                  Text(
-                                    tx.description!,
-                                    style: AppTheme.caption,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            FormatHelpers.rupiah(tx.amount),
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: isIncome
-                                  ? AppTheme.profitColorTheme(context)
-                                  : AppTheme.lossColorTheme(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  child: RecentTransactionTile(
+                    transaction: tx,
+                    categoryName: catName,
+                    onTap: () => _showTransactionDetail(tx),
                   ),
                 ),
               );
             }),
           const SizedBox(height: AppSpacing.s8),
-          if (_recentTransactions.length >= 5)
-            Center(
-              child: TextButton.icon(
-                icon: const Icon(Icons.history_rounded, size: AppIconSize.s18),
-                label: const Text('Lihat Semua'),
-                onPressed: widget.onNavigateToRiwayat ?? () {},
+        ],
+      ),
+    );
+  }
+
+  void _showTransactionDetail(TransactionModel tx) {
+    final catName = _categoriesMap[tx.categoryId] ?? 'Kategori';
+    final isIncome = tx.type == AppConstants.typeIncome;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              isIncome
+                  ? Icons.trending_up_rounded
+                  : Icons.trending_down_rounded,
+              color: isIncome
+                  ? AppTheme.profitColorTheme(context)
+                  : AppTheme.lossColorTheme(context),
+            ),
+            const SizedBox(width: AppSpacing.s8),
+            Text(
+              isIncome ? 'Uang Masuk' : 'Uang Keluar',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
               ),
             ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _detailRow('Tanggal', FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt)),
+            _detailRow('Kategori', catName),
+            _detailRow('Jumlah', FormatHelpers.rupiah(tx.amount)),
+            if (isIncome && tx.cogs > 0)
+              _detailRow('HPP', FormatHelpers.rupiah(tx.cogs)),
+            _detailRow('Metode Bayar', tx.paymentMethod == AppConstants.paymentQris ? 'QRIS' : 'Tunai'),
+            if (tx.description?.isNotEmpty == true)
+              _detailRow('Deskripsi', tx.description!),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.onSurfaceVariantColorTheme(context),
+              ),
+            ),
+          ),
+          const Text(': '),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -134,8 +134,8 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
-        title: const Text('Hapus User'),
-        content: Text('Yakin ingin menghapus user "${user.username}"?'),
+        title: const Text('Hapus Pengguna'),
+        content: Text('Yakin ingin menghapus pengguna "${user.username}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -188,8 +188,7 @@ class _UserManagementPanelState extends ConsumerState<UserManagementPanel> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Management'),
-
+        title: const Text('Kelola Pengguna'),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddUser,
@@ -379,7 +378,7 @@ class _UserCard extends ConsumerWidget {
                             ? user.displayName!
                             : user.username,
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.onSurfaceColorTheme(context),
                         ),
@@ -387,7 +386,7 @@ class _UserCard extends ConsumerWidget {
                       if (user.displayName?.isNotEmpty == true)
                         Text(
                           '@${user.username}',
-                          style: AppTheme.caption.copyWith(fontSize: 12),
+                          style: AppTheme.caption.copyWith(fontSize: 11),
                         ),
                       const SizedBox(height: AppSpacing.s4),
                       AppBadge.role(user.role),
@@ -418,7 +417,7 @@ class _UserCard extends ConsumerWidget {
                       value: 'edit',
                       child: ListTile(
                         leading: Icon(Icons.edit_outlined),
-                        title: Text('Edit User'),
+                        title: Text('Edit Pengguna'),
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -429,7 +428,7 @@ class _UserCard extends ConsumerWidget {
                       child: ListTile(
                         leading: Icon(Icons.delete_outline_rounded,
                             color: AppTheme.lossColorTheme(context)),
-                        title: Text('Hapus User',
+                        title: Text('Hapus Pengguna',
                             style: TextStyle(
                                 color: AppTheme.lossColorTheme(context))),
                         dense: true,
@@ -454,6 +453,8 @@ class _UserCard extends ConsumerWidget {
                     child: DropdownButton<String>(
                       value: user.role,
                       isDense: true,
+                      borderRadius: BorderRadius.circular(16),
+                      dropdownColor: AppTheme.surfaceColorTheme(context),
                       icon: const Icon(Icons.swap_horiz_rounded, size: AppIconSize.s18),
                       style: TextStyle(
                           fontSize: 13,

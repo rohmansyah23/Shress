@@ -275,12 +275,19 @@ class _ConsignorsScreenState extends ConsumerState<ConsignorsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(consignor.name, style: AppTheme.heading3),
+                    Text(
+                      consignor.name,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                    ),
                     if (consignor.phone != null &&
                         consignor.phone!.isNotEmpty)
                       Text(
                         consignor.phone!,
-                        style: AppTheme.caption.copyWith(fontSize: 12),
+                        style: AppTheme.caption.copyWith(fontSize: 11),
                       ),
                   ],
                 ),

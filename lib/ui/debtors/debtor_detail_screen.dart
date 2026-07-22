@@ -125,6 +125,7 @@ class _DebtorDetailScreenState extends ConsumerState<DebtorDetailScreen> {
             children: [
               TextField(
                 controller: amountController,
+                scrollPadding: const EdgeInsets.only(bottom: 120),
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'Jumlah (Rp)',
@@ -713,6 +714,7 @@ class _DebtPaymentSheetState extends ConsumerState<_DebtPaymentSheet> {
             children: [
               TextField(
                 controller: amountController,
+                scrollPadding: const EdgeInsets.only(bottom: 120),
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'Jumlah (Rp)',

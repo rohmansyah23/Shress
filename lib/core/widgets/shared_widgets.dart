@@ -176,23 +176,36 @@ class PfEmptyState extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.08),
+                color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(AppTheme.radiusXL),
               ),
               child: Icon(
                 icon,
                 size: 36,
-                color: AppTheme.primaryColorTheme(context).withValues(alpha: 0.5),
+                color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: AppTheme.s20),
-            Text(title, textAlign: TextAlign.center, style: AppTheme.title),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
             if (subtitle != null) ...[
               const SizedBox(height: AppTheme.s8),
               Text(
                 subtitle!,
                 textAlign: TextAlign.center,
-                style: AppTheme.caption.copyWith(height: 1.5),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: AppTheme.onSurfaceVariantColorTheme(context),
+                  height: 1.4,
+                ),
               ),
             ],
             if (actionLabel != null && onAction != null) ...[
@@ -974,7 +987,7 @@ class PfBottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 72,
+          height: 64,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -1042,7 +1055,7 @@ class PfBottomNav extends StatelessWidget {
   }
 }
 
-/// Single navigation item with animated icon container.
+/// Single navigation item with icon-only active pill, adaptive icon scaling & active indicator dot.
 class _PfNavItem extends StatelessWidget {
   final IconData icon;
   final IconData activeIcon;
@@ -1064,42 +1077,50 @@ class _PfNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Adaptive icon scaling for accessibility font scaling
+    final textScaler = MediaQuery.textScalerOf(context);
+    final scaleFactor = textScaler.scale(1.0).clamp(0.85, 1.35);
+    final baseIconSize = isSelected ? 26.0 : 23.0;
+    final adaptiveIconSize = baseIconSize * scaleFactor;
+
     return Expanded(
       child: InkWell(
         onTap: onTap,
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: isSelected ? 36 : 20,
-              height: isSelected ? 36 : 20,
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeInOut,
+              width: isSelected ? 46 : 36,
+              height: isSelected ? 38 : 34,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? activeColor.withValues(alpha: 0.1)
+                    ? activeColor.withValues(alpha: 0.12)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               ),
-              child: Icon(
-                isSelected ? activeIcon : icon,
-                color: isSelected ? activeColor : inactiveColor,
-                size: 22,
+              child: Center(
+                child: Icon(
+                  isSelected ? activeIcon : icon,
+                  color: isSelected ? activeColor : inactiveColor,
+                  size: adaptiveIconSize,
+                ),
               ),
             ),
-            const SizedBox(height: AppTheme.s2),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: AppTheme.labelSmall.copyWith(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? activeColor : inactiveColor,
+            const SizedBox(height: 3),
+            // Active Indicator Dot
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: isSelected ? 4 : 0,
+              height: isSelected ? 4 : 0,
+              decoration: BoxDecoration(
+                color: isSelected ? activeColor : Colors.transparent,
+                shape: BoxShape.circle,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              child: Text(label),
             ),
           ],
         ),
@@ -1130,21 +1151,24 @@ class _PfCenterActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final buttonColor = isDark ? AppTheme.darkPrimary : AppTheme.primary;
+    final textScaler = MediaQuery.textScalerOf(context);
+    final scaleFactor = textScaler.scale(1.0).clamp(0.85, 1.35);
+    final adaptiveIconSize = 24.0 * scaleFactor;
 
     return Expanded(
       child: InkWell(
         onTap: onPressed,
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 gradient: LinearGradient(
                   colors: [
                     isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08),
@@ -1159,20 +1183,14 @@ class _PfCenterActionButton extends StatelessWidget {
                     ? [
                         BoxShadow(
                           color: buttonColor.withValues(alpha: 0.25),
-                          blurRadius: 4,
+                          blurRadius: 6,
                           offset: const Offset(0, 2),
-                        ),
-                        BoxShadow(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          blurRadius: 2,
-                          spreadRadius: -1,
-                          offset: const Offset(0, 1),
                         ),
                       ]
                     : [
                         BoxShadow(
                           color: buttonColor.withValues(alpha: 0.18),
-                          blurRadius: 4,
+                          blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -1181,19 +1199,8 @@ class _PfCenterActionButton extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: Colors.white,
-                  size: 22,
+                  size: adaptiveIconSize,
                 ),
-              ),
-            ),
-            const SizedBox(height: AppTheme.s4),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTheme.labelSmall.copyWith(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? activeColor : inactiveColor,
               ),
             ),
           ],

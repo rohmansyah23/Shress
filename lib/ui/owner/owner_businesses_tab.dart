@@ -562,6 +562,7 @@ class _OwnerBusinessesTabState extends ConsumerState<OwnerBusinessesTab> {
         color: AppTheme.onSurfaceColorTheme(context),
       ),
       dropdownColor: AppTheme.surfaceColorTheme(context),
+      borderRadius: BorderRadius.circular(16),
       items: BusinessSortOption.values.map((option) {
         return DropdownMenuItem<BusinessSortOption>(
           value: option,
@@ -698,7 +699,11 @@ class _BusinessCardItem extends StatelessWidget {
                         Expanded(
                           child: Text(
                             business.name,
-                            style: AppTheme.heading3,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.onSurfaceColorTheme(context),
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

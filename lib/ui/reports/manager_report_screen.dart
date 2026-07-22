@@ -564,6 +564,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
                               ),
                               iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                               dropdownColor: AppTheme.surfaceColorTheme(context),
+                              borderRadius: BorderRadius.circular(16),
                               items: [
                                 DropdownMenuItem(
                                   value: 'income',

@@ -4,6 +4,7 @@ import '../../core/constants/constants.dart';
 import '../../core/services/export_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
+import '../../core/widgets/recent_transaction_tile.dart';
 import '../../core/utils/error_handler.dart';
 import 'dart:async';
 import 'dart:io';
@@ -65,6 +66,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
   final _scrollController = ScrollController();
   List<BusinessModel> _businesses = [];
   List<int> _allBusinessIds = [];
+  Map<int, String> _categoriesMap = {};
   bool _filterAllBusinesses = true;
   int? _selectedBusinessId;
 
@@ -135,10 +137,21 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
         user.role,
       );
 
+      final catMap = <int, String>{};
+      for (final b in businesses) {
+        try {
+          final cats = await SupabaseService.instance.getCategoriesByBusiness(b.businessId);
+          for (final c in cats) {
+            catMap[c.categoryId] = c.name;
+          }
+        } catch (_) {}
+      }
+
       if (!mounted) return;
       setState(() {
         _businesses = businesses;
         _allBusinessIds = businesses.map((b) => b.businessId).toList();
+        _categoriesMap = catMap;
       });
       _applyFilter();
     } catch (e) {
@@ -466,6 +479,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                       ),
                       iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                       dropdownColor: AppTheme.surfaceColorTheme(context),
+                      borderRadius: BorderRadius.circular(16),
                       items: OwnerDateFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -508,6 +522,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                       ),
                       iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                       dropdownColor: AppTheme.surfaceColorTheme(context),
+                      borderRadius: BorderRadius.circular(16),
                       items: OwnerTypeFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -645,195 +660,81 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
                           }
 
                           final tx = listState.items[index];
-                          final isIncome = tx.type == AppConstants.typeIncome;
-                          return Card(
-                            child: InkWell(
-                              onTap: () => _showTransactionDetail(tx),
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.radiusLarge,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(AppSpacing.s12),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        color:
-                                            (isIncome
-                                                    ? AppTheme.profitColorTheme(
-                                                        context,
-                                                      )
-                                                    : AppTheme.lossColorTheme(
-                                                        context,
-                                                      ))
-                                                .withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(
-                                          AppRadius.radiusSmall,
+                          final bizName = _findBusinessName(tx.businessId);
+                          final catName = _categoriesMap[tx.categoryId];
+
+                          final popupMenu = canEdit
+                              ? PopupMenuButton<String>(
+                                  icon: Icon(
+                                    Icons.more_vert_rounded,
+                                    color: AppTheme.onSurfaceVariantColorTheme(context),
+                                    size: AppIconSize.s20,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.radiusSmall,
+                                    ),
+                                  ),
+                                  onSelected: (value) {
+                                    switch (value) {
+                                      case 'edit':
+                                        _handleEdit(tx);
+                                        break;
+                                      case 'delete':
+                                        _handleDelete(tx);
+                                        break;
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    PopupMenuItem<String>(
+                                      value: 'edit',
+                                      child: ListTile(
+                                        leading: Icon(
+                                          Icons.edit_outlined,
+                                          color: AppTheme.onSurfaceColorTheme(context),
                                         ),
-                                      ),
-                                      child: Icon(
-                                        isIncome
-                                            ? Icons.trending_up_rounded
-                                            : Icons.trending_down_rounded,
-                                        color: isIncome
-                                            ? AppTheme.profitColorTheme(context)
-                                            : AppTheme.lossColorTheme(context),
+                                        title: Text(
+                                          'Edit',
+                                          style: TextStyle(
+                                            color: AppTheme.onSurfaceColorTheme(context),
+                                          ),
+                                        ),
+                                        dense: true,
+                                        contentPadding: EdgeInsets.zero,
                                       ),
                                     ),
-                                    const SizedBox(width: AppSpacing.s12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Builder(
-                                            builder: (context) {
-                                              return Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal:
-                                                          AppSpacing.s12,
-                                                      vertical: AppSpacing.s4,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.transparent,
-                                                  border: Border.all(
-                                                    color: AppTheme
-                                                        .outlineVariantColorTheme(
-                                                      context,
-                                                    ),
-                                                    width: 1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        AppRadius.s6,
-                                                      ),
-                                                ),
-                                                child: Text(
-                                                  _findBusinessName(
-                                                    tx.businessId,
-                                                  ),
-                                                  style: TextStyle(
-                                                    fontSize: 9,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: AppTheme
-                                                        .onSurfaceColorTheme(
-                                                      context,
-                                                    ),
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              );
-                                            },
+                                    const PopupMenuDivider(),
+                                    PopupMenuItem<String>(
+                                      value: 'delete',
+                                      child: ListTile(
+                                        leading: Icon(
+                                          Icons.delete_outline_rounded,
+                                          color: AppTheme.lossColorTheme(
+                                            context,
                                           ),
-                                          const SizedBox(height: AppSpacing.s4),
-                                          Text(
-                                            FormatHelpers.displayDateWithTime(
-                                              tx.transactionDate,
-                                              tx.createdAt,
-                                            ),
-                                            style: AppTheme.caption.copyWith(
-                                              fontSize: 11,
+                                        ),
+                                        title: Text(
+                                          'Hapus',
+                                          style: TextStyle(
+                                            color: AppTheme.lossColorTheme(
+                                              context,
                                             ),
                                           ),
-                                          const SizedBox(height: AppSpacing.s4),
-                                          Text(
-                                            FormatHelpers.rupiah(tx.amount),
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
-                                              color: isIncome
-                                                  ? AppTheme.profitColorTheme(
-                                                      context,
-                                                    )
-                                                  : AppTheme.lossColorTheme(
-                                                      context,
-                                                    ),
-                                            ),
-                                          ),
-                                          if (tx.description?.isNotEmpty ==
-                                              true)
-                                            Text(
-                                              tx.description!,
-                                              style: AppTheme.caption,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                        ],
+                                        ),
+                                        dense: true,
+                                        contentPadding: EdgeInsets.zero,
                                       ),
                                     ),
-                                    if (canEdit)
-                                      PopupMenuButton<String>(
-                                        icon: Icon(
-                                          Icons.more_vert_rounded,
-                                          color: AppTheme.onSurfaceVariantColorTheme(context),
-                                          size: AppIconSize.s20,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            AppRadius.radiusSmall,
-                                          ),
-                                        ),
-                                        onSelected: (value) {
-                                          switch (value) {
-                                            case 'edit':
-                                              _handleEdit(tx);
-                                              break;
-                                            case 'delete':
-                                              _handleDelete(tx);
-                                              break;
-                                          }
-                                        },
-                                        itemBuilder: (context) => [
-                                          PopupMenuItem<String>(
-                                            value: 'edit',
-                                            child: ListTile(
-                                              leading: Icon(
-                                                Icons.edit_outlined,
-                                                color: AppTheme.onSurfaceColorTheme(context),
-                                              ),
-                                              title: Text(
-                                                'Edit',
-                                                style: TextStyle(
-                                                  color: AppTheme.onSurfaceColorTheme(context),
-                                                ),
-                                              ),
-                                              dense: true,
-                                              contentPadding: EdgeInsets.zero,
-                                            ),
-                                          ),
-                                          const PopupMenuDivider(),
-                                          PopupMenuItem<String>(
-                                            value: 'delete',
-                                            child: ListTile(
-                                              leading: Icon(
-                                                Icons.delete_outline_rounded,
-                                                color: AppTheme.lossColorTheme(
-                                                  context,
-                                                ),
-                                              ),
-                                              title: Text(
-                                                'Hapus',
-                                                style: TextStyle(
-                                                  color:
-                                                      AppTheme.lossColorTheme(
-                                                        context,
-                                                      ),
-                                                ),
-                                              ),
-                                              dense: true,
-                                              contentPadding: EdgeInsets.zero,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                   ],
-                                ),
-                              ),
-                            ),
+                                )
+                              : null;
+
+                          return RecentTransactionTile(
+                            transaction: tx,
+                            businessName: bizName,
+                            categoryName: catName,
+                            trailing: popupMenu,
+                            onTap: () => _showTransactionDetail(tx),
                           );
                         },
                       ),

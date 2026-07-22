@@ -824,19 +824,29 @@ class AppTheme {
 
       // ── Dropdown ────────────────────────────────────────────
       dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStateProperty.all(surface),
+          surfaceTintColor: WidgetStateProperty.all(Colors.transparent),
+          elevation: WidgetStateProperty.all(6),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radiusMedium),
+            ),
+          ),
+        ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            borderRadius: BorderRadius.circular(radiusMedium),
             borderSide: const BorderSide(color: outlineVariant, width: 1),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            borderRadius: BorderRadius.circular(radiusMedium),
             borderSide: const BorderSide(color: outlineVariant, width: 1),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            borderRadius: BorderRadius.circular(radiusMedium),
             borderSide: const BorderSide(color: outline, width: 1.5),
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -849,7 +859,7 @@ class AppTheme {
       // ── Menu / Popup ────────────────────────────────────────
       popupMenuTheme: PopupMenuThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderRadius: BorderRadius.circular(radiusMedium),
         ),
         elevation: 6,
         color: surface,
@@ -1418,19 +1428,29 @@ class AppTheme {
 
       // ── Dropdown ────────────────────────────────────────────
       dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStateProperty.all(darkCard),
+          surfaceTintColor: WidgetStateProperty.all(Colors.transparent),
+          elevation: WidgetStateProperty.all(6),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radiusMedium),
+            ),
+          ),
+        ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: _darkSurface,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            borderRadius: BorderRadius.circular(radiusMedium),
             borderSide: const BorderSide(color: _darkOutlineVariant, width: 1),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            borderRadius: BorderRadius.circular(radiusMedium),
             borderSide: const BorderSide(color: _darkOutlineVariant, width: 1),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            borderRadius: BorderRadius.circular(radiusMedium),
             borderSide: const BorderSide(color: _darkOutline, width: 1.5),
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -1443,7 +1463,7 @@ class AppTheme {
       // ── Menu / Popup ────────────────────────────────────────
       popupMenuTheme: PopupMenuThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderRadius: BorderRadius.circular(radiusMedium),
         ),
         elevation: 4,
         color: darkCard,

@@ -52,6 +52,41 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
     }
   }
 
+  Widget _buildAppBarTitle(dynamic user) {
+    if (_selectedIndex == 0) {
+      final name = user?.displayName ?? user?.username ?? 'Pengguna';
+      final bizName = _selectedBusiness?.name ?? AppConstants.appName;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Halo, $name 👋',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.onSurfaceColorTheme(context),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            bizName,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w400,
+              color: AppTheme.onSurfaceVariantColorTheme(context),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      );
+    }
+
+    return Text(_appBarTitle);
+  }
+
   Future<void> _loadBusinesses() async {
     final user = ref.read(currentUserProvider);
     if (user == null) return;
@@ -238,7 +273,7 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
               onNavigateToRiwayat: () => setState(() => _selectedIndex = 1),
             )
           : _buildEmptyPlaceholder(
-              'Pilih usaha untuk memulai',
+              'Pilih usaha untuk melihat dashboard',
               key: const ValueKey('empty_dashboard'),
             ),
       _selectedBusiness != null
@@ -267,7 +302,7 @@ class _ManagerShellState extends ConsumerState<ManagerShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_appBarTitle),
+        title: _buildAppBarTitle(user),
         actions: _selectedIndex == 0
             ? [
                 IconButton(

@@ -8,6 +8,7 @@ import '../../core/widgets/error_widgets.dart';
 
 
 import '../../core/widgets/shared_widgets.dart';
+import '../../core/widgets/recent_transaction_tile.dart';
 import '../../core/widgets/finance_bar_chart.dart';
 import '../../data/local/models/business_model.dart';
 import '../../data/local/models/transaction_model.dart';
@@ -50,6 +51,22 @@ final recentTransactionsProvider = FutureProvider.family<List<TransactionModel>,
   );
 });
 
+final ownerCategoriesMapProvider = FutureProvider.family<Map<int, String>, String>((ref, businessIdsKey) async {
+  ref.watch(transactionRefreshProvider);
+  if (businessIdsKey.isEmpty) return {};
+  final businessIds = businessIdsKey.split(',').map(int.parse).toList();
+  final map = <int, String>{};
+  for (final id in businessIds) {
+    try {
+      final cats = await SupabaseService.instance.getCategoriesByBusiness(id);
+      for (final c in cats) {
+        map[c.categoryId] = c.name;
+      }
+    } catch (_) {}
+  }
+  return map;
+});
+
 class OwnerDashboardTab extends ConsumerStatefulWidget {
   final dynamic user;
   final bool showAppBar;
@@ -85,6 +102,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
           )),
         );
         final recentTransactionsAsync = ref.watch(recentTransactionsProvider(idsKey));
+        final categoriesMap = ref.watch(ownerCategoriesMapProvider(idsKey)).value ?? {};
 
         return RefreshIndicator(
           onRefresh: () async {
@@ -99,23 +117,19 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.s16),
             children: [
-              Text(
-                'Halo, ${widget.user.displayName ?? widget.user.username}',
-                style: AppTheme.heading2,
-              ),
-              const SizedBox(height: AppSpacing.s4),
-              Text(
-                'Owner • ${businesses.length} bisnis',
-                style: AppTheme.caption,
-              ),
-              const SizedBox(height: AppSpacing.s12),
-
               _buildTotalNetProfit(businesses),
               const SizedBox(height: AppSpacing.s12),
               _buildFinanceOtherSummary(businesses),
               const SizedBox(height: AppSpacing.s16),
 
-              Text('Menu Lainnya', style: AppTheme.heading3),
+              Text(
+                'Menu Lainnya',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
               const SizedBox(height: AppSpacing.s12),
               Row(
                 children: [
@@ -251,6 +265,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       ),
                       iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                       dropdownColor: AppTheme.surfaceColorTheme(context),
+                      borderRadius: BorderRadius.circular(16),
                       items: TrendFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -288,6 +303,7 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                       ),
                       iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
                       dropdownColor: AppTheme.surfaceColorTheme(context),
+                      borderRadius: BorderRadius.circular(16),
                       items: TrendTypeFilter.values
                           .map(
                             (f) => DropdownMenuItem(
@@ -387,9 +403,18 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                 ),
               ),
               const SizedBox(height: AppSpacing.s24),
-              Text(
-                'Transaksi Terbaru',
-                style: AppTheme.heading3,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Transaksi Terbaru',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.s12),
               recentTransactionsAsync.when(
@@ -407,11 +432,12 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                                 color: AppTheme.onSurfaceVariantColorTheme(context).withValues(alpha: 0.4),
                               ),
                               const SizedBox(height: AppSpacing.s12),
-                              const Text(
+                              Text(
                                 'Belum ada transaksi',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
+                                  color: AppTheme.onSurfaceColorTheme(context),
                                 ),
                               ),
                             ],
@@ -424,7 +450,6 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                   return Column(
                     children: List.generate(recentTransactions.length, (i) {
                       final tx = recentTransactions[i];
-                      final isIncome = tx.type == AppConstants.typeIncome;
                       final bizName = businesses.firstWhere(
                         (b) => b.businessId == tx.businessId,
                         orElse: () => BusinessModel(
@@ -437,77 +462,11 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                         padding: EdgeInsets.only(
                           bottom: i < recentTransactions.length - 1 ? 8.0 : 0.0,
                         ),
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.s12),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: (isIncome
-                                            ? AppTheme.profitColorTheme(context)
-                                            : AppTheme.lossColorTheme(context))
-                                        .withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                                  ),
-                                  child: Icon(
-                                    isIncome
-                                        ? Icons.trending_up_rounded
-                                        : Icons.trending_down_rounded,
-                                    color: isIncome
-                                        ? AppTheme.profitColorTheme(context)
-                                        : AppTheme.lossColorTheme(context),
-                                    size: AppIconSize.s20,
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.s12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        bizName,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      const SizedBox(height: AppSpacing.s2),
-                                      Text(
-                                        FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt),
-                                        style: AppTheme.caption.copyWith(
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                      if (tx.description?.isNotEmpty == true) ...[
-                                        const SizedBox(height: AppSpacing.s2),
-                                        Text(
-                                          tx.description!,
-                                          style: AppTheme.caption,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  FormatHelpers.rupiah(tx.amount),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: isIncome
-                                        ? AppTheme.profitColorTheme(context)
-                                        : AppTheme.lossColorTheme(context),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
+                        child: RecentTransactionTile(
+                          transaction: tx,
+                          categoryName: categoriesMap[tx.categoryId],
+                          businessName: bizName,
+                          onTap: () => _showTransactionDetail(tx),
                         ),
                       );
                     }),
@@ -519,13 +478,10 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     child: CircularProgressIndicator(),
                   ),
                 ),
-                error: (err, _) => Center(
+                error: (error, _) => Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.s12),
-                    child: Text(
-                      'Gagal memuat transaksi',
-                      style: TextStyle(color: AppTheme.lossColorTheme(context)),
-                    ),
+                    padding: const EdgeInsets.all(AppSpacing.s16),
+                    child: Text('Gagal memuat transaksi', style: AppTheme.caption),
                   ),
                 ),
               ),
@@ -598,7 +554,97 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
     );
   }
 
-  // Removed unused _buildEmptyBusinesses helper method.
+  void _showTransactionDetail(TransactionModel tx) async {
+    final businessId = tx.businessId;
+    final catName = await SupabaseService.instance.getCategoryName(
+      businessId,
+      tx.categoryId,
+    );
+    if (!mounted) return;
+    final isIncome = tx.type == AppConstants.typeIncome;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              isIncome
+                  ? Icons.trending_up_rounded
+                  : Icons.trending_down_rounded,
+              color: isIncome
+                  ? AppTheme.profitColorTheme(context)
+                  : AppTheme.lossColorTheme(context),
+            ),
+            const SizedBox(width: AppSpacing.s8),
+            Text(
+              isIncome ? 'Uang Masuk' : 'Uang Keluar',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _detailRow('Tanggal', FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt)),
+            _detailRow('Kategori', catName),
+            _detailRow('Jumlah', FormatHelpers.rupiah(tx.amount)),
+            if (isIncome && tx.cogs > 0)
+              _detailRow('HPP', FormatHelpers.rupiah(tx.cogs)),
+            _detailRow('Metode Bayar', tx.paymentMethod == AppConstants.paymentQris ? 'QRIS' : 'Tunai'),
+            if (tx.description?.isNotEmpty == true)
+              _detailRow('Deskripsi', tx.description!),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.onSurfaceVariantColorTheme(context),
+              ),
+            ),
+          ),
+          const Text(': '),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.onSurfaceColorTheme(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _pickBusinessAndAdd(
     BuildContext context,
