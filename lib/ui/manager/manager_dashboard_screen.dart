@@ -271,56 +271,62 @@ class _ManagerDashboardScreenState
 
               return Column(
                 children: [
-                  Row(
-                    children: [
-                      for (int i = 0; i < firstRow.length; i++) ...[
-                        if (i > 0) const SizedBox(width: AppSpacing.s10),
-                        Expanded(
-                          child: QuickActionButton(
-                            icon: firstRow[i].icon,
-                            label: firstRow[i].label,
-                            color: firstRow[i].color,
-                            onTap: firstRow[i].onTap,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.s10),
-                  Row(
-                    children: [
-                      for (int i = 0; i < secondRow.length; i++) ...[
-                        if (i > 0) const SizedBox(width: AppSpacing.s10),
-                        Expanded(
-                          child: QuickActionButton(
-                            icon: secondRow[i].icon,
-                            label: secondRow[i].label,
-                            color: secondRow[i].color,
-                            onTap: secondRow[i].onTap,
-                          ),
-                        ),
-                      ],
-                      if (showMore) ...[
-                        const SizedBox(width: AppSpacing.s10),
-                        Expanded(
-                          child: QuickActionButton(
-                            icon: Icons.grid_view_rounded,
-                            label: 'Lihat Semua',
-                            color: AppTheme.primaryColorTheme(context),
-                            onTap: () => showAllActionsBottomSheet(
-                              context,
-                              title: 'Aksi Cepat',
-                              items: actions,
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (int i = 0; i < firstRow.length; i++) ...[
+                          if (i > 0) const SizedBox(width: AppSpacing.s10),
+                          Expanded(
+                            child: QuickActionButton(
+                              icon: firstRow[i].icon,
+                              label: firstRow[i].label,
+                              color: firstRow[i].color,
+                              onTap: firstRow[i].onTap,
                             ),
                           ),
-                        ),
-                      ] else if (secondRow.length < 3) ...[
-                        for (int k = 0; k < 3 - secondRow.length; k++) ...[
-                          const SizedBox(width: AppSpacing.s10),
-                          const Expanded(child: SizedBox()),
                         ],
                       ],
-                    ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s10),
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (int i = 0; i < secondRow.length; i++) ...[
+                          if (i > 0) const SizedBox(width: AppSpacing.s10),
+                          Expanded(
+                            child: QuickActionButton(
+                              icon: secondRow[i].icon,
+                              label: secondRow[i].label,
+                              color: secondRow[i].color,
+                              onTap: secondRow[i].onTap,
+                            ),
+                          ),
+                        ],
+                        if (showMore) ...[
+                          const SizedBox(width: AppSpacing.s10),
+                          Expanded(
+                            child: QuickActionButton(
+                              icon: Icons.grid_view_rounded,
+                              label: 'Lihat Semua',
+                              color: AppTheme.primaryColorTheme(context),
+                              onTap: () => showAllActionsBottomSheet(
+                                context,
+                                title: 'Aksi Cepat',
+                                items: actions,
+                              ),
+                            ),
+                          ),
+                        ] else if (secondRow.length < 3) ...[
+                          for (int k = 0; k < 3 - secondRow.length; k++) ...[
+                            const SizedBox(width: AppSpacing.s10),
+                            const Expanded(child: SizedBox()),
+                          ],
+                        ],
+                      ],
+                    ),
                   ),
                 ],
               );

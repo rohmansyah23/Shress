@@ -43,6 +43,10 @@ class PfButton extends StatelessWidget {
         break;
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final disabledBg = isDark ? const Color(0xFF2E2E2E) : const Color(0xFFE2E8F0);
+    final disabledFg = isDark ? const Color(0xFF8E8E93) : const Color(0xFF94A3B8);
+
     final btn = FilledButton.icon(
       onPressed: isLoading ? null : onPressed,
       icon: isLoading
@@ -64,6 +68,8 @@ class PfButton extends StatelessWidget {
         ),
         backgroundColor: bgOverride,
         foregroundColor: fgOverride,
+        disabledBackgroundColor: disabledBg,
+        disabledForegroundColor: disabledFg,
       ),
     );
 

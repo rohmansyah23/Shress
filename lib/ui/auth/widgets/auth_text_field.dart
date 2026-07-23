@@ -76,7 +76,7 @@ class AuthTextField extends StatelessWidget {
         ),
         prefixIconConstraints: const BoxConstraints(
           minWidth: 52,
-          minHeight: 52,
+          minHeight: 56,
         ),
         suffixIcon: suffixIcon != null
             ? Padding(
@@ -86,7 +86,7 @@ class AuthTextField extends StatelessWidget {
             : null,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
-          vertical: 18,
+          vertical: 16,
         ),
         filled: true,
         fillColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,

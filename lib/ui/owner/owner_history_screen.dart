@@ -1168,7 +1168,7 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
       await service.shareFile(file, text: 'Export Riwayat Transaksi');
     } catch (e) {
       scaffold.clearSnackBars();
-      if (context.mounted) {
+      if (mounted) {
         ErrorSnackbar.showError(context, 'Gagal export: ${e.toString()}');
       }
     }

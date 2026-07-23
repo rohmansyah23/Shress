@@ -204,70 +204,76 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
 
                   return Column(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: QuickActionButton(
-                              icon: allOwnerActions[0].icon,
-                              label: allOwnerActions[0].label,
-                              color: allOwnerActions[0].color,
-                              onTap: allOwnerActions[0].onTap,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.s10),
-                          Expanded(
-                            child: QuickActionButton(
-                              icon: allOwnerActions[1].icon,
-                              label: allOwnerActions[1].label,
-                              color: allOwnerActions[1].color,
-                              onTap: allOwnerActions[1].onTap,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.s10),
-                          Expanded(
-                            child: QuickActionButton(
-                              icon: allOwnerActions[2].icon,
-                              label: allOwnerActions[2].label,
-                              color: allOwnerActions[2].color,
-                              onTap: allOwnerActions[2].onTap,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.s10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: QuickActionButton(
-                              icon: allOwnerActions[3].icon,
-                              label: allOwnerActions[3].label,
-                              color: allOwnerActions[3].color,
-                              onTap: allOwnerActions[3].onTap,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.s10),
-                          Expanded(
-                            child: QuickActionButton(
-                              icon: allOwnerActions[4].icon,
-                              label: allOwnerActions[4].label,
-                              color: allOwnerActions[4].color,
-                              onTap: allOwnerActions[4].onTap,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.s10),
-                          Expanded(
-                            child: QuickActionButton(
-                              icon: Icons.grid_view_rounded,
-                              label: 'Lihat Semua',
-                              color: AppTheme.primaryColorTheme(context),
-                              onTap: () => showAllActionsBottomSheet(
-                                context,
-                                title: 'Menu Lainnya',
-                                items: allOwnerActions,
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: QuickActionButton(
+                                icon: allOwnerActions[0].icon,
+                                label: allOwnerActions[0].label,
+                                color: allOwnerActions[0].color,
+                                onTap: allOwnerActions[0].onTap,
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: AppSpacing.s10),
+                            Expanded(
+                              child: QuickActionButton(
+                                icon: allOwnerActions[1].icon,
+                                label: allOwnerActions[1].label,
+                                color: allOwnerActions[1].color,
+                                onTap: allOwnerActions[1].onTap,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.s10),
+                            Expanded(
+                              child: QuickActionButton(
+                                icon: allOwnerActions[2].icon,
+                                label: allOwnerActions[2].label,
+                                color: allOwnerActions[2].color,
+                                onTap: allOwnerActions[2].onTap,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.s10),
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: QuickActionButton(
+                                icon: allOwnerActions[3].icon,
+                                label: allOwnerActions[3].label,
+                                color: allOwnerActions[3].color,
+                                onTap: allOwnerActions[3].onTap,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.s10),
+                            Expanded(
+                              child: QuickActionButton(
+                                icon: allOwnerActions[4].icon,
+                                label: allOwnerActions[4].label,
+                                color: allOwnerActions[4].color,
+                                onTap: allOwnerActions[4].onTap,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.s10),
+                            Expanded(
+                              child: QuickActionButton(
+                                icon: Icons.grid_view_rounded,
+                                label: 'Lihat Semua',
+                                color: AppTheme.primaryColorTheme(context),
+                                onTap: () => showAllActionsBottomSheet(
+                                  context,
+                                  title: 'Menu Lainnya',
+                                  items: allOwnerActions,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   );

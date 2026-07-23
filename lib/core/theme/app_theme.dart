@@ -1167,8 +1167,8 @@ class AppTheme {
           textStyle: buttonText.copyWith(color: darkOnPrimary),
           backgroundColor: darkPrimary,
           foregroundColor: darkOnPrimary,
-          disabledBackgroundColor: _darkTextDisabled,
-          disabledForegroundColor: _darkTextDisabled,
+          disabledBackgroundColor: const Color(0xFF2E2E2E),
+          disabledForegroundColor: const Color(0xFF8E8E93),
         ),
       ),
 

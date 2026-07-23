@@ -271,7 +271,7 @@ class _ManagerReportScreenState extends ConsumerState<ManagerReportScreen> {
       await service.shareFile(file, text: 'Export Laporan');
     } catch (e) {
       scaffold.clearSnackBars();
-      if (context.mounted) {
+      if (mounted) {
         ErrorSnackbar.showError(context, 'Gagal export: ${e.toString()}');
       }
     }
