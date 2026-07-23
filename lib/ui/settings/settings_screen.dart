@@ -120,7 +120,9 @@ class SettingsScreen extends ConsumerWidget {
                         : (themeMode == ThemeMode.dark
                             ? 'Tampilan gelap aktif'
                             : 'Tampilan terang aktif'),
-                    style: AppTheme.caption,
+                    style: AppTheme.caption.copyWith(
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.s20),
                   Row(
@@ -153,7 +155,9 @@ class SettingsScreen extends ConsumerWidget {
                         : (fontSize == FontSize.large
                             ? 'Ukuran teks besar aktif'
                             : 'Ukuran teks sedang aktif'),
-                    style: AppTheme.caption,
+                    style: AppTheme.caption.copyWith(
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
                   ),
                 ],
               ),
@@ -1058,7 +1062,9 @@ class _NotificationReminderCardState
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   Text('Waktu pengingat',
-                      style: AppTheme.caption),
+                      style: AppTheme.caption.copyWith(
+                        color: AppTheme.onSurfaceVariantColorTheme(context),
+                      )),
                   const Spacer(),
                   TextButton.icon(
                     icon: Text(

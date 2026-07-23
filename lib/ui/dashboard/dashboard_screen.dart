@@ -353,7 +353,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       Expanded(
                         child: QuickActionButton(
                           icon: Icons.trending_up_rounded,
-                          label: 'Uang\nMasuk',
+                          label: 'Uang Masuk',
                           color: AppTheme.profitColorTheme(context),
                           onTap: () => TransactionSheet.show(
                             context,
@@ -362,11 +362,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.s12),
+                      const SizedBox(width: AppSpacing.s10),
                       Expanded(
                         child: QuickActionButton(
                           icon: Icons.trending_down_rounded,
-                          label: 'Uang\nKeluar',
+                          label: 'Uang Keluar',
                           color: AppTheme.lossColorTheme(context),
                           onTap: () => TransactionSheet.show(
                             context,
@@ -375,11 +375,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.s12),
+                      const SizedBox(width: AppSpacing.s10),
                       Expanded(
                         child: QuickActionButton(
                           icon: Icons.history_rounded,
-                          label: 'Riwayat\nTransaksi',
+                          label: 'Riwayat Transaksi',
                           color: AppTheme.infoColorTheme(context),
                           onTap: () {
                             if (widget.onNavigateToRiwayat != null) {

@@ -257,23 +257,42 @@ class NetProfitCard extends StatelessWidget {
 
   Widget _buildRow(BuildContext context) {
     final pc = isProfit ? profitColor(context) : lossColor(context);
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        gradient: LinearGradient(
+          colors: [
+            pc.withValues(alpha: 0.12),
+            pc.withValues(alpha: 0.04),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: pc.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s20),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.s20,
+          vertical: AppTheme.s16,
+        ),
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: pc.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                color: pc.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 isProfit
                     ? Icons.trending_up_rounded
                     : Icons.trending_down_rounded,
                 color: pc,
+                size: 22,
               ),
             ),
             const SizedBox(width: AppTheme.s16),
@@ -283,12 +302,20 @@ class NetProfitCard extends StatelessWidget {
                 children: [
                   Text(
                     title ?? 'Laba / Rugi Bersih',
-                    style: AppTheme.labelSmall.copyWith(fontSize: 12),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
                   ),
                   const SizedBox(height: AppTheme.s4),
                   AdaptiveAmountText(
                     amount: netProfit,
-                    style: AppTheme.amountMedium.copyWith(color: pc),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: pc,
+                    ),
                   ),
                 ],
               ),
@@ -302,16 +329,42 @@ class NetProfitCard extends StatelessWidget {
 
   Widget _buildColumn(BuildContext context) {
     final pc = isProfit ? profitColor(context) : lossColor(context);
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        gradient: LinearGradient(
+          colors: [
+            pc.withValues(alpha: 0.12),
+            pc.withValues(alpha: 0.04),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        border: Border.all(
+          color: pc.withValues(alpha: 0.25),
+          width: 1,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppTheme.s20),
         child: Column(
           children: [
-            Text(title ?? 'Laba / Rugi Bersih', style: AppTheme.labelSmall),
+            Text(
+              title ?? 'Laba / Rugi Bersih',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.onSurfaceVariantColorTheme(context),
+              ),
+            ),
             const SizedBox(height: AppTheme.s8),
             AdaptiveAmountText(
               amount: netProfit,
-              style: AppTheme.amountLarge.copyWith(color: pc),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: pc,
+              ),
             ),
             const SizedBox(height: AppTheme.s8),
             _buildBadge(context),
@@ -323,14 +376,22 @@ class NetProfitCard extends StatelessWidget {
 
   Widget _buildAccentBar(BuildContext context) {
     final pc = isProfit ? profitColor(context) : lossColor(context);
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        color: AppTheme.surfaceColorTheme(context),
+        border: Border.all(
+          color: AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.35),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s20),
+        padding: const EdgeInsets.all(AppTheme.s16),
         child: Row(
           children: [
             Container(
-              width: 6,
-              height: 60,
+              width: 5,
+              height: 52,
               decoration: BoxDecoration(
                 color: pc,
                 borderRadius: BorderRadius.circular(AppTheme.s4),
@@ -343,12 +404,20 @@ class NetProfitCard extends StatelessWidget {
                 children: [
                   Text(
                     title ?? 'Laba / Rugi Bersih',
-                    style: AppTheme.labelSmall.copyWith(fontSize: 12),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                    ),
                   ),
                   const SizedBox(height: AppTheme.s4),
                   AdaptiveAmountText(
                     amount: netProfit,
-                    style: AppTheme.amountMedium.copyWith(color: pc),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: pc,
+                    ),
                   ),
                 ],
               ),
@@ -369,17 +438,22 @@ class NetProfitCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppTheme.s12,
-        vertical: AppTheme.s8,
+        vertical: 6,
       ),
       decoration: BoxDecoration(
-        color: pc.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+        color: pc.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: pc.withValues(alpha: 0.25),
+          width: 1,
+        ),
       ),
       child: Text(
         isProfit ? 'LABA' : 'RUGI',
-        style: AppTheme.labelSmall.copyWith(
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.8,
           color: pc,
         ),
       ),
@@ -408,21 +482,45 @@ class SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColorTheme(context),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        border: Border.all(
+          color: AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.35),
+          width: 1,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, size: 18, color: color),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 16,
+                    color: color,
+                  ),
+                ),
                 const SizedBox(width: AppTheme.s8),
                 if (trailing != null)
                   Expanded(
                     child: Text(
                       title,
-                      style: AppTheme.labelSmall,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   )
@@ -430,7 +528,11 @@ class SummaryCard extends StatelessWidget {
                   Flexible(
                     child: Text(
                       title,
-                      style: AppTheme.labelSmall,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -441,10 +543,14 @@ class SummaryCard extends StatelessWidget {
                 ],
               ],
             ),
-            const SizedBox(height: AppTheme.s12),
+            const SizedBox(height: 10),
             AdaptiveAmountText(
               amount: amount,
-              style: AppTheme.amountMedium.copyWith(color: color),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
             ),
           ],
         ),
@@ -470,36 +576,57 @@ class QuickActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Strip manual \n linebreaks for fluid modern layout
+    final cleanLabel = label.replaceAll('\n', ' ');
+
     return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      color: AppTheme.surfaceColorTheme(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        side: BorderSide(
+          color: AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.35),
+          width: 1,
+        ),
+      ),
       child: InkWell(
         onTap: onTap,
-
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         child: Container(
-          height: 90,
           padding: const EdgeInsets.symmetric(
             vertical: AppTheme.s12,
             horizontal: AppTheme.s8,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 28, color: color),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  icon,
+                  size: 22,
+                  color: color,
+                ),
+              ),
               const SizedBox(height: AppTheme.s8),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTheme.caption.copyWith(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      height: 1.2,
-                      color: AppTheme.onSurfaceColorTheme(context),
-                    ),
-                  ),
+              Text(
+                cleanLabel,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  height: 1.2,
+                  color: AppTheme.onSurfaceColorTheme(context),
                 ),
               ),
             ],
@@ -508,6 +635,104 @@ class QuickActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Quick Action Item Model & All Actions Bottom Sheet ───────
+class QuickActionItem {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const QuickActionItem({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+}
+
+void showAllActionsBottomSheet(
+  BuildContext context, {
+  required String title,
+  required List<QuickActionItem> items,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: AppTheme.surfaceColorTheme(context),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (ctx) => Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppTheme.s20,
+        AppTheme.s12,
+        AppTheme.s20,
+        AppTheme.s24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppTheme.onSurfaceVariantColorTheme(context)
+                    .withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppTheme.s16),
+          Row(
+            children: [
+              Icon(
+                Icons.grid_view_rounded,
+                color: AppTheme.primaryColorTheme(context),
+                size: 22,
+              ),
+              const SizedBox(width: AppTheme.s8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.onSurfaceColorTheme(context),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.s20),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: items.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 1.0,
+            ),
+            itemBuilder: (ctx, i) {
+              final item = items[i];
+              return QuickActionButton(
+                icon: item.icon,
+                label: item.label,
+                color: item.color,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  item.onTap();
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 // ── Transaction Card ──────────────────────────────────────────
@@ -987,56 +1212,15 @@ class PfBottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 64,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              if (showCenterAddButton) ...[
-                // First two items (indices 0, 1)
-                for (int i = 0; i < 2; i++)
-                  _PfNavItem(
-                    icon: items[i].icon,
-                    activeIcon: items[i].activeIcon,
-                    label: items[i].label,
-                    isSelected: selectedIndex == i,
-                    activeColor: activeColor,
-                    inactiveColor: inactiveColor,
-                    onTap: () => onItemSelected(i),
-                  ),
-                // Center add button
-                if (onAddPressed != null)
-                  _PfCenterActionButton(
-                    icon: Icons.add_rounded,
-                    label: 'Tambah',
-                    onPressed: onAddPressed!,
-                    isSelected: false,
-                    activeColor: activeColor,
-                    inactiveColor: inactiveColor,
-                  ),
-                // Last two items (indices 2, 3)
-                for (int i = 2; i < 4; i++)
-                  _PfNavItem(
-                    icon: items[i].icon,
-                    activeIcon: items[i].activeIcon,
-                    label: items[i].label,
-                    isSelected: selectedIndex == (i + 1),
-                    activeColor: activeColor,
-                    inactiveColor: inactiveColor,
-                    onTap: () => onItemSelected(i + 1),
-                  ),
-              ] else ...[
-                // Render 5 items for Owner, with the middle item (index 2) as a floating gradient button
-                for (int i = 0; i < items.length; i++)
-                  if (i == 2)
-                    _PfCenterActionButton(
-                      icon: items[i].icon,
-                      label: items[i].label,
-                      onPressed: () => onItemSelected(i),
-                      isSelected: selectedIndex == i,
-                      activeColor: activeColor,
-                      inactiveColor: inactiveColor,
-                    )
-                  else
+          height: 76,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                if (showCenterAddButton) ...[
+                  // First two items (indices 0, 1)
+                  for (int i = 0; i < 2; i++)
                     _PfNavItem(
                       icon: items[i].icon,
                       activeIcon: items[i].activeIcon,
@@ -1046,8 +1230,52 @@ class PfBottomNav extends StatelessWidget {
                       inactiveColor: inactiveColor,
                       onTap: () => onItemSelected(i),
                     ),
+                  // Center add button
+                  if (onAddPressed != null)
+                    _PfCenterActionButton(
+                      icon: Icons.add_rounded,
+                      label: 'Tambah',
+                      onPressed: onAddPressed!,
+                      isSelected: false,
+                      activeColor: activeColor,
+                      inactiveColor: inactiveColor,
+                    ),
+                  // Last two items (indices 2, 3)
+                  for (int i = 2; i < 4; i++)
+                    _PfNavItem(
+                      icon: items[i].icon,
+                      activeIcon: items[i].activeIcon,
+                      label: items[i].label,
+                      isSelected: selectedIndex == (i + 1),
+                      activeColor: activeColor,
+                      inactiveColor: inactiveColor,
+                      onTap: () => onItemSelected(i + 1),
+                    ),
+                ] else ...[
+                  // Render 5 items for Owner, with the middle item (index 2) as a floating gradient button
+                  for (int i = 0; i < items.length; i++)
+                    if (i == 2)
+                      _PfCenterActionButton(
+                        icon: items[i].icon,
+                        label: items[i].label,
+                        onPressed: () => onItemSelected(i),
+                        isSelected: selectedIndex == i,
+                        activeColor: activeColor,
+                        inactiveColor: inactiveColor,
+                      )
+                    else
+                      _PfNavItem(
+                        icon: items[i].icon,
+                        activeIcon: items[i].activeIcon,
+                        label: items[i].label,
+                        isSelected: selectedIndex == i,
+                        activeColor: activeColor,
+                        inactiveColor: inactiveColor,
+                        onTap: () => onItemSelected(i),
+                      ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -1055,7 +1283,7 @@ class PfBottomNav extends StatelessWidget {
   }
 }
 
-/// Single navigation item with icon-only active pill, adaptive icon scaling & active indicator dot.
+/// Single navigation item with icon active pill container & clear text label.
 class _PfNavItem extends StatelessWidget {
   final IconData icon;
   final IconData activeIcon;
@@ -1077,10 +1305,9 @@ class _PfNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Adaptive icon scaling for accessibility font scaling
     final textScaler = MediaQuery.textScalerOf(context);
     final scaleFactor = textScaler.scale(1.0).clamp(0.85, 1.35);
-    final baseIconSize = isSelected ? 26.0 : 23.0;
+    final baseIconSize = isSelected ? 24.0 : 22.0;
     final adaptiveIconSize = baseIconSize * scaleFactor;
 
     return Expanded(
@@ -1095,13 +1322,13 @@ class _PfNavItem extends StatelessWidget {
             AnimatedContainer(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeInOut,
-              width: isSelected ? 46 : 36,
-              height: isSelected ? 38 : 34,
+              width: isSelected ? 52 : 38,
+              height: 34,
               decoration: BoxDecoration(
                 color: isSelected
                     ? activeColor.withValues(alpha: 0.12)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
                 child: Icon(
@@ -1111,15 +1338,16 @@ class _PfNavItem extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 3),
-            // Active Indicator Dot
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              width: isSelected ? 4 : 0,
-              height: isSelected ? 4 : 0,
-              decoration: BoxDecoration(
-                color: isSelected ? activeColor : Colors.transparent,
-                shape: BoxShape.circle,
+            const SizedBox(height: 4),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: isSelected ? 12.0 : 11.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? activeColor : inactiveColor,
+                letterSpacing: -0.1,
               ),
             ),
           ],
@@ -1129,7 +1357,7 @@ class _PfNavItem extends StatelessWidget {
   }
 }
 
-/// Gradient action button with shadow, placed in the center of the nav.
+/// Prominent gradient action button placed in the center of the nav with clear text label.
 class _PfCenterActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -1165,10 +1393,10 @@ class _PfCenterActionButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 42,
-              height: 42,
+              width: 46,
+              height: 36,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                borderRadius: BorderRadius.circular(14),
                 gradient: LinearGradient(
                   colors: [
                     isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08),
@@ -1182,14 +1410,14 @@ class _PfCenterActionButton extends StatelessWidget {
                 boxShadow: isDark
                     ? [
                         BoxShadow(
-                          color: buttonColor.withValues(alpha: 0.25),
+                          color: buttonColor.withValues(alpha: 0.28),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
                       ]
                     : [
                         BoxShadow(
-                          color: buttonColor.withValues(alpha: 0.18),
+                          color: buttonColor.withValues(alpha: 0.22),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -1201,6 +1429,18 @@ class _PfCenterActionButton extends StatelessWidget {
                   color: Colors.white,
                   size: adaptiveIconSize,
                 ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: isSelected ? 12.0 : 11.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected ? activeColor : inactiveColor,
+                letterSpacing: -0.1,
               ),
             ),
           ],

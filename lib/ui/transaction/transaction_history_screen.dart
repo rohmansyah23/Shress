@@ -5,7 +5,6 @@ import '../../core/services/export_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../core/widgets/recent_transaction_tile.dart';
-import '../../core/utils/error_handler.dart';
 import 'dart:async';
 import 'dart:io';
 import '../../core/utils/format_helpers.dart';
@@ -74,6 +73,321 @@ class _TransactionHistoryScreenState
   String _searchQuery = '';
   Timer? _debounceTimer;
 
+  // Selection mode state
+  bool _isSelectionMode = false;
+  final Set<int> _selectedIds = {};
+  OverlayEntry? _selectionOverlayEntry;
+
+  void _showSelectionOverlay() {
+    if (_selectionOverlayEntry != null) {
+      _selectionOverlayEntry!.markNeedsBuild();
+      return;
+    }
+    _selectionOverlayEntry = OverlayEntry(
+      builder: (context) {
+        final user = ref.watch(currentUserProvider);
+        final canEdit = user != null &&
+            (user.role == AppConstants.roleManager ||
+                user.role == AppConstants.roleStaff ||
+                user.role == AppConstants.roleOwner);
+
+        final listState =
+            ref.watch(transactionListProvider(widget.business.businessId));
+        final items = listState.items;
+        final allSelected = items.isNotEmpty &&
+            _selectedIds.length ==
+                items.where((e) => e.transactionId != null).length;
+        final topPadding = MediaQuery.of(context).padding.top;
+
+        return Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Material(
+            elevation: 4,
+            color: AppTheme.surfaceColorTheme(context),
+            child: Container(
+              height: kToolbarHeight + topPadding,
+              padding: EdgeInsets.only(
+                top: topPadding,
+                left: AppSpacing.s4,
+                right: AppSpacing.s4,
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: _exitSelectionMode,
+                  ),
+                  const SizedBox(width: AppSpacing.s8),
+                  Expanded(
+                    child: Text(
+                      '${_selectedIds.length} dipilih',
+                      style: TextStyle(
+                        color: AppTheme.onSurfaceColorTheme(context),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: allSelected ? 'Batalkan Semua' : 'Pilih Semua',
+                    icon: Icon(
+                      allSelected
+                          ? Icons.deselect_rounded
+                          : Icons.select_all_rounded,
+                      color: AppTheme.onSurfaceColorTheme(context),
+                    ),
+                    onPressed: () => _selectAll(items),
+                  ),
+                  if (canEdit && _selectedIds.length == 1)
+                    IconButton(
+                      tooltip: 'Edit Transaksi',
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        color: AppTheme.onSurfaceColorTheme(context),
+                      ),
+                      onPressed: () => _editSelected(items),
+                    ),
+                  if (canEdit)
+                    IconButton(
+                      tooltip: 'Hapus Terpilih',
+                      icon: Icon(
+                        Icons.delete_rounded,
+                        color: AppTheme.lossColorTheme(context),
+                      ),
+                      onPressed: () => _deleteSelected(items),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    Overlay.of(context).insert(_selectionOverlayEntry!);
+  }
+
+  void _removeSelectionOverlay() {
+    _selectionOverlayEntry?.remove();
+    _selectionOverlayEntry = null;
+  }
+
+  void _enterSelectionMode(int txId) {
+    setState(() {
+      _isSelectionMode = true;
+      _selectedIds.clear();
+      _selectedIds.add(txId);
+    });
+    _showSelectionOverlay();
+  }
+
+  void _exitSelectionMode() {
+    setState(() {
+      _isSelectionMode = false;
+      _selectedIds.clear();
+    });
+    _removeSelectionOverlay();
+  }
+
+  void _toggleSelection(int txId) {
+    setState(() {
+      if (_selectedIds.contains(txId)) {
+        _selectedIds.remove(txId);
+        if (_selectedIds.isEmpty) {
+          _isSelectionMode = false;
+        }
+      } else {
+        _selectedIds.add(txId);
+      }
+    });
+    if (_isSelectionMode) {
+      _showSelectionOverlay();
+    } else {
+      _removeSelectionOverlay();
+    }
+  }
+
+  void _selectAll(List<TransactionModel> items) {
+    setState(() {
+      final validIds = items
+          .map((e) => e.transactionId)
+          .whereType<int>()
+          .toList();
+      if (_selectedIds.length == validIds.length) {
+        _selectedIds.clear();
+        _isSelectionMode = false;
+      } else {
+        _selectedIds.addAll(validIds);
+      }
+    });
+    if (_isSelectionMode) {
+      _showSelectionOverlay();
+    } else {
+      _removeSelectionOverlay();
+    }
+  }
+
+  void _editSelected(List<TransactionModel> items) {
+    if (_selectedIds.length != 1) return;
+    final txId = _selectedIds.first;
+    final tx = items.firstWhere(
+      (element) => element.transactionId == txId,
+      orElse: () => items.first,
+    );
+    _exitSelectionMode();
+    _handleEdit(tx);
+  }
+
+  Future<void> _deleteSelected(List<TransactionModel> items) async {
+    final count = _selectedIds.length;
+    if (count == 0) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        String input = '';
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final isConfirmed = input.trim().toUpperCase() == 'HAPUS';
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: AppTheme.lossColorTheme(context),
+                  ),
+                  const SizedBox(width: AppSpacing.s8),
+                  const Expanded(
+                    child: Text('Konfirmasi Hapus'),
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.s10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.lossColorTheme(context)
+                            .withValues(alpha: 0.1),
+                        borderRadius:
+                            BorderRadius.circular(AppRadius.radiusSmall),
+                        border: Border.all(
+                          color: AppTheme.lossColorTheme(context)
+                              .withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline_rounded,
+                            size: AppIconSize.s18,
+                            color: AppTheme.lossColorTheme(context),
+                          ),
+                          const SizedBox(width: AppSpacing.s8),
+                          Expanded(
+                            child: Text(
+                              'Tindakan ini permanen dan mempengaruhi laporan keuangan!',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.lossColorTheme(context),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+                    Text(
+                      count == 1
+                          ? 'Yakin ingin menghapus 1 transaksi ini?'
+                          : 'Yakin ingin menghapus $count transaksi terpilih?',
+                      style: TextStyle(
+                        color: AppTheme.onSurfaceColorTheme(context),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s16),
+                    Text(
+                      'Ketik "HAPUS" pada kolom di bawah ini untuk mengonfirmasi:',
+                      style: TextStyle(
+                        color: AppTheme.onSurfaceVariantColorTheme(context),
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s8),
+                    TextField(
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        hintText: 'Ketik HAPUS disini...',
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.s12,
+                          vertical: AppSpacing.s10,
+                        ),
+                      ),
+                      onChanged: (val) {
+                        setDialogState(() {
+                          input = val;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Batal'),
+                ),
+                PfButton(
+                  label: 'Hapus',
+                  variant: PfButtonVariant.danger,
+                  isExpanded: false,
+                  onPressed: isConfirmed
+                      ? () => Navigator.pop(ctx, true)
+                      : null,
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      int successCount = 0;
+      final idsToDelete = _selectedIds.toList();
+      for (final txId in idsToDelete) {
+        try {
+          final res = await deleteTransaction(transactionId: txId);
+          if (res.success) {
+            successCount++;
+          }
+        } catch (_) {}
+      }
+
+      if (!mounted) return;
+      ref.read(transactionListProvider(widget.business.businessId).notifier).refresh();
+      triggerTransactionRefresh(ref);
+      _exitSelectionMode();
+
+      if (successCount > 0) {
+        ErrorSnackbar.showSuccess(
+            context, 'Berhasil menghapus $successCount transaksi');
+      } else {
+        ErrorSnackbar.showError(context, 'Gagal menghapus transaksi');
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -99,6 +413,7 @@ class _TransactionHistoryScreenState
 
   @override
   void dispose() {
+    _removeSelectionOverlay();
     _scrollController.dispose();
     _searchController.dispose();
     _debounceTimer?.cancel();
@@ -204,54 +519,6 @@ class _TransactionHistoryScreenState
     );
     if (result == true) {
       ref.read(transactionListProvider(widget.business.businessId).notifier).refresh();
-    }
-  }
-
-  Future<void> _handleDelete(TransactionModel tx) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.radiusMedium)),
-        title: const Text('Hapus Transaksi'),
-        content: Text(
-          'Yakin ingin menghapus transaksi ${FormatHelpers.rupiah(tx.amount)} tanggal ${FormatHelpers.displayDateWithTime(tx.transactionDate, tx.createdAt)}?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
-          PfButton(
-            label: 'Hapus',
-            variant: PfButtonVariant.danger,
-            isExpanded: false,
-            onPressed: () => Navigator.pop(ctx, true),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && tx.transactionId != null) {
-      try {
-        final result = await deleteTransaction(
-          transactionId: tx.transactionId!,
-        );
-        if (!mounted) return;
-        if (result.success) {
-          ref.read(transactionListProvider(widget.business.businessId).notifier).refresh();
-          triggerTransactionRefresh(ref);
-          if (!mounted) return;
-          ErrorSnackbar.showSuccess(
-              context, result.message ?? 'Berhasil dihapus');
-        } else {
-          if (!mounted) return;
-          ErrorSnackbar.showError(
-              context, result.message ?? 'Gagal menghapus');
-        }
-      } catch (e) {
-        if (!mounted) return;
-        ErrorSnackbar.show(context, ErrorHandler.classify(e));
-      }
     }
   }
 
@@ -542,56 +809,8 @@ class _TransactionHistoryScreenState
 
                   final tx = listState.items[index];
                   final catName = _categoriesMap[tx.categoryId];
-
-                  final popupMenu = canEdit
-                      ? PopupMenuButton<String>(
-                          icon: Icon(
-                            Icons.more_vert_rounded,
-                            color: AppTheme.onSurfaceVariantColorTheme(context),
-                            size: AppIconSize.s20,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
-                          ),
-                          onSelected: (value) {
-                            switch (value) {
-                              case 'edit':
-                                _handleEdit(tx);
-                                break;
-                              case 'delete':
-                                _handleDelete(tx);
-                                break;
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem<String>(
-                              value: 'edit',
-                              child: ListTile(
-                                leading: Icon(Icons.edit_outlined,
-                                    color: AppTheme.onSurfaceColorTheme(context)),
-                                title: Text('Edit',
-                                    style: TextStyle(
-                                        color: AppTheme.onSurfaceColorTheme(context))),
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                            ),
-                            const PopupMenuDivider(),
-                            PopupMenuItem<String>(
-                              value: 'delete',
-                              child: ListTile(
-                                leading: Icon(Icons.delete_outline_rounded,
-                                    color: AppTheme.lossColorTheme(context)),
-                                title: Text('Hapus',
-                                    style: TextStyle(
-                                        color: AppTheme.lossColorTheme(context))),
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                            ),
-                          ],
-                        )
-                      : null;
+                  final isSelected = tx.transactionId != null &&
+                      _selectedIds.contains(tx.transactionId);
 
                   return Padding(
                     padding: EdgeInsets.only(
@@ -603,8 +822,25 @@ class _TransactionHistoryScreenState
                     child: RecentTransactionTile(
                       transaction: tx,
                       categoryName: catName,
-                      trailing: popupMenu,
-                      onTap: () => _showTransactionDetail(tx),
+                      isSelectionMode: _isSelectionMode,
+                      isSelected: isSelected,
+                      onLongPress: () {
+                        if (!canEdit || tx.transactionId == null) return;
+                        if (!_isSelectionMode) {
+                          _enterSelectionMode(tx.transactionId!);
+                        } else {
+                          _toggleSelection(tx.transactionId!);
+                        }
+                      },
+                      onTap: () {
+                        if (_isSelectionMode) {
+                          if (tx.transactionId != null) {
+                            _toggleSelection(tx.transactionId!);
+                          }
+                        } else {
+                          _showTransactionDetail(tx);
+                        }
+                      },
                     ),
                   );
                 },
@@ -615,16 +851,18 @@ class _TransactionHistoryScreenState
       ),
     );
 
-    if (!widget.showAppBar) return body;
+    if (widget.showAppBar) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.isOwnerView
+              ? 'Riwayat - ${widget.business.name}'
+              : 'Riwayat Transaksi'),
+        ),
+        body: body,
+      );
+    }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isOwnerView
-            ? 'Riwayat - ${widget.business.name}'
-            : 'Riwayat Transaksi'),
-      ),
-      body: body,
-    );
+    return body;
   }
 
   void _showTransactionDetail(TransactionModel tx) async {

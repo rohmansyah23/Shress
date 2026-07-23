@@ -131,117 +131,147 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                 ),
               ),
               const SizedBox(height: AppSpacing.s12),
-              Row(
-                children: [
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.add_circle_rounded,
-                      label: 'Tambah\nTransaksi',
-                      color: AppTheme.infoColorTheme(context),
-                      onTap: () {
-                        _pickBusinessAndAdd(context, businesses);
-                      },
+              Builder(
+                builder: (context) {
+                  final allOwnerActions = [
+                    QuickActionItem(
+                      icon: Icons.add_circle_outline_rounded,
+                      label: 'Tambah Transaksi',
+                      color: AppTheme.primaryColorTheme(context),
+                      onTap: () => _pickBusinessAndAdd(context, businesses),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: QuickActionButton(
+                    QuickActionItem(
                       icon: Icons.receipt_long_rounded,
-                      label: 'Piutang',
+                      label: 'Piutang & Hutang',
                       color: AppTheme.warningColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => OwnerDebtorsScreen(businesses: businesses),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => OwnerDebtorsScreen(businesses: businesses),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: QuickActionButton(
+                    QuickActionItem(
                       icon: Icons.inventory_2_rounded,
-                      label: 'Titipan',
+                      label: 'Titipan Barang',
                       color: AppTheme.consignmentColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => OwnerConsignorsScreen(businesses: businesses),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => OwnerConsignorsScreen(businesses: businesses),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              Row(
-                children: [
-                  Expanded(
-                    child: QuickActionButton(
+                    QuickActionItem(
                       icon: Icons.category_rounded,
-                      label: 'Kelola\nKategori',
+                      label: 'Kelola Kategori',
                       color: AppTheme.warningColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => OwnerCategoryManagementScreen(businesses: businesses),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => OwnerCategoryManagementScreen(businesses: businesses),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.people_rounded,
-                      label: 'Kelola\nUser',
+                    QuickActionItem(
+                      icon: Icons.people_alt_rounded,
+                      label: 'Kelola User',
                       color: AppTheme.infoColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const UserManagementPanel(),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const UserManagementPanel(),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: QuickActionButton(
-                      icon: Icons.notifications_active_outlined,
-                      label: 'Kirim\nPesan',
+                    QuickActionItem(
+                      icon: Icons.send_rounded,
+                      label: 'Kirim Pesan',
                       color: AppTheme.lossColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SendNotificationScreen(),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SendNotificationScreen(),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              Row(
-                children: [
-                  Expanded(
-                    child: QuickActionButton(
+                    QuickActionItem(
                       icon: Icons.settings_rounded,
                       label: 'Pengaturan',
-                      color: AppTheme.infoColorTheme(context),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SettingsScreen(),
-                          ),
-                        );
-                      },
+                      color: AppTheme.onSurfaceVariantColorTheme(context),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ];
+
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: QuickActionButton(
+                              icon: allOwnerActions[0].icon,
+                              label: allOwnerActions[0].label,
+                              color: allOwnerActions[0].color,
+                              onTap: allOwnerActions[0].onTap,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.s10),
+                          Expanded(
+                            child: QuickActionButton(
+                              icon: allOwnerActions[1].icon,
+                              label: allOwnerActions[1].label,
+                              color: allOwnerActions[1].color,
+                              onTap: allOwnerActions[1].onTap,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.s10),
+                          Expanded(
+                            child: QuickActionButton(
+                              icon: allOwnerActions[2].icon,
+                              label: allOwnerActions[2].label,
+                              color: allOwnerActions[2].color,
+                              onTap: allOwnerActions[2].onTap,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.s10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: QuickActionButton(
+                              icon: allOwnerActions[3].icon,
+                              label: allOwnerActions[3].label,
+                              color: allOwnerActions[3].color,
+                              onTap: allOwnerActions[3].onTap,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.s10),
+                          Expanded(
+                            child: QuickActionButton(
+                              icon: allOwnerActions[4].icon,
+                              label: allOwnerActions[4].label,
+                              color: allOwnerActions[4].color,
+                              onTap: allOwnerActions[4].onTap,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.s10),
+                          Expanded(
+                            child: QuickActionButton(
+                              icon: Icons.grid_view_rounded,
+                              label: 'Lihat Semua',
+                              color: AppTheme.primaryColorTheme(context),
+                              onTap: () => showAllActionsBottomSheet(
+                                context,
+                                title: 'Menu Lainnya',
+                                items: allOwnerActions,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: AppSpacing.s20),
 
@@ -722,9 +752,20 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               final totalOwed =
                   (snapshot.data?['totalOwed'] as num?)?.toDouble() ?? 0;
               final activeCount = (snapshot.data?['activeCount'] as int?) ?? 0;
-              return Card(
+              final warnColor = AppTheme.warningColorTheme(context);
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceColorTheme(context),
+                  borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
+                  border: Border.all(
+                    color: AppTheme.outlineVariantColorTheme(context)
+                        .withValues(alpha: 0.35),
+                    width: 1,
+                  ),
+                ),
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                  borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -733,41 +774,57 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.s16),
+                    padding: const EdgeInsets.all(AppSpacing.s14),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.receipt_long_rounded,
-                              size: AppIconSize.s18,
-                              color: AppTheme.warningColorTheme(context),
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: warnColor.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.receipt_long_rounded,
+                                size: 16,
+                                color: warnColor,
+                              ),
                             ),
                             const SizedBox(width: AppSpacing.s8),
                             Flexible(
                               child: Text(
                                 'Piutang Aktif',
-                                style: AppTheme.labelSmall,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.onSurfaceColorTheme(context),
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppSpacing.s8),
+                        const SizedBox(height: AppSpacing.s10),
                         Text(
                           FormatHelpers.rupiah(totalOwed),
-                          style: AppTheme.amountMedium.copyWith(
-                            color: AppTheme.warningColorTheme(context),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: warnColor,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: AppSpacing.s4),
+                        const SizedBox(height: 2),
                         Text(
                           '$activeCount hutang aktif',
-                          style: AppTheme.labelSmall.copyWith(
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
                             color: AppTheme.onSurfaceVariantColorTheme(context),
                           ),
                           maxLines: 1,
@@ -802,9 +859,20 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
               final totalOwed =
                   (snapshot.data?['totalOwed'] as num?)?.toDouble() ?? 0;
               final activeCount = (snapshot.data?['activeCount'] as int?) ?? 0;
-              return Card(
+              final consColor = AppTheme.consignmentColorTheme(context);
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceColorTheme(context),
+                  borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
+                  border: Border.all(
+                    color: AppTheme.outlineVariantColorTheme(context)
+                        .withValues(alpha: 0.35),
+                    width: 1,
+                  ),
+                ),
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+                  borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -813,41 +881,57 @@ class _OwnerDashboardTabState extends ConsumerState<OwnerDashboardTab> {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.s16),
+                    padding: const EdgeInsets.all(AppSpacing.s14),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.inventory_2_rounded,
-                              size: AppIconSize.s18,
-                              color: AppTheme.consignmentColorTheme(context),
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: consColor.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.inventory_2_rounded,
+                                size: 16,
+                                color: consColor,
+                              ),
                             ),
                             const SizedBox(width: AppSpacing.s8),
                             Flexible(
                               child: Text(
                                 'Titipan Aktif',
-                                style: AppTheme.labelSmall,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.onSurfaceColorTheme(context),
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppSpacing.s8),
+                        const SizedBox(height: AppSpacing.s10),
                         Text(
                           FormatHelpers.rupiah(totalOwed),
-                          style: AppTheme.amountMedium.copyWith(
-                            color: AppTheme.consignmentColorTheme(context),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: consColor,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: AppSpacing.s4),
+                        const SizedBox(height: 2),
                         Text(
                           '$activeCount titipan aktif',
-                          style: AppTheme.labelSmall.copyWith(
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
                             color: AppTheme.onSurfaceVariantColorTheme(context),
                           ),
                           maxLines: 1,

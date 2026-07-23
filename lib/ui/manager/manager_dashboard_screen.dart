@@ -17,6 +17,7 @@ import '../../providers/business_providers.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../transaction/transaction_sheet.dart';
+import '../transaction/transaction_history_screen.dart';
 import '../debtors/debtors_screen.dart';
 import '../consignments/consignors_screen.dart';
 import '../../core/theme/app_spacing.dart';
@@ -193,12 +194,12 @@ class _ManagerDashboardScreenState
             ),
           ),
           const SizedBox(height: AppSpacing.s12),
-          Row(
-            children: [
-              Expanded(
-                child: QuickActionButton(
+          Builder(
+            builder: (context) {
+              final actions = [
+                QuickActionItem(
                   icon: Icons.trending_up_rounded,
-                  label: 'Uang\nMasuk',
+                  label: 'Uang Masuk',
                   color: AppTheme.profitColorTheme(context),
                   onTap: () => TransactionSheet.show(
                     context,
@@ -206,12 +207,9 @@ class _ManagerDashboardScreenState
                     startAsIncome: true,
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.s10),
-              Expanded(
-                child: QuickActionButton(
+                QuickActionItem(
                   icon: Icons.trending_down_rounded,
-                  label: 'Uang\nKeluar',
+                  label: 'Uang Keluar',
                   color: AppTheme.lossColorTheme(context),
                   onTap: () => TransactionSheet.show(
                     context,
@@ -219,26 +217,16 @@ class _ManagerDashboardScreenState
                     startAsIncome: false,
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.s10),
-              Expanded(
-                child: QuickActionButton(
+                QuickActionItem(
                   icon: Icons.qr_code_rounded,
                   label: 'QRIS',
                   color: AppTheme.infoColorTheme(context),
                   onTap: widget.onShowQris,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.s12),
-          Row(
-            children: [
-              Expanded(
-                child: QuickActionButton(
+                QuickActionItem(
                   icon: Icons.receipt_long_rounded,
-                  label: 'Hutang',
-                  color: AppTheme.warningColor,
+                  label: 'Piutang & Hutang',
+                  color: AppTheme.warningColorTheme(context),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) =>
@@ -246,13 +234,10 @@ class _ManagerDashboardScreenState
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.s10),
-              Expanded(
-                child: QuickActionButton(
+                QuickActionItem(
                   icon: Icons.inventory_2_rounded,
-                  label: 'Titipan',
-                  color: AppTheme.secondaryColor,
+                  label: 'Titipan Barang',
+                  color: AppTheme.consignmentColorTheme(context),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) =>
@@ -260,12 +245,88 @@ class _ManagerDashboardScreenState
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.s10),
-              const Expanded(child: SizedBox()),
-            ],
+                QuickActionItem(
+                  icon: Icons.history_rounded,
+                  label: 'Riwayat',
+                  color: AppTheme.primaryColorTheme(context),
+                  onTap: () {
+                    if (widget.onNavigateToRiwayat != null) {
+                      widget.onNavigateToRiwayat!();
+                    } else {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => TransactionHistoryScreen(
+                            business: widget.selectedBusiness,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ];
+
+              final showMore = actions.length > 6;
+              final firstRow = actions.sublist(0, 3);
+              final secondRow = showMore ? actions.sublist(3, 5) : actions.sublist(3);
+
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      for (int i = 0; i < firstRow.length; i++) ...[
+                        if (i > 0) const SizedBox(width: AppSpacing.s10),
+                        Expanded(
+                          child: QuickActionButton(
+                            icon: firstRow[i].icon,
+                            label: firstRow[i].label,
+                            color: firstRow[i].color,
+                            onTap: firstRow[i].onTap,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.s10),
+                  Row(
+                    children: [
+                      for (int i = 0; i < secondRow.length; i++) ...[
+                        if (i > 0) const SizedBox(width: AppSpacing.s10),
+                        Expanded(
+                          child: QuickActionButton(
+                            icon: secondRow[i].icon,
+                            label: secondRow[i].label,
+                            color: secondRow[i].color,
+                            onTap: secondRow[i].onTap,
+                          ),
+                        ),
+                      ],
+                      if (showMore) ...[
+                        const SizedBox(width: AppSpacing.s10),
+                        Expanded(
+                          child: QuickActionButton(
+                            icon: Icons.grid_view_rounded,
+                            label: 'Lihat Semua',
+                            color: AppTheme.primaryColorTheme(context),
+                            onTap: () => showAllActionsBottomSheet(
+                              context,
+                              title: 'Aksi Cepat',
+                              items: actions,
+                            ),
+                          ),
+                        ),
+                      ] else if (secondRow.length < 3) ...[
+                        for (int k = 0; k < 3 - secondRow.length; k++) ...[
+                          const SizedBox(width: AppSpacing.s10),
+                          const Expanded(child: SizedBox()),
+                        ],
+                      ],
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: AppSpacing.s12),
+          const SizedBox(height: AppSpacing.s16),
           if (isManager) ...[
             // === Trend Chart ===
             Text(
@@ -431,28 +492,13 @@ class _ManagerDashboardScreenState
           ],
           _buildDebtConsignmentSummary(widget.selectedBusiness.businessId),
           const SizedBox(height: AppSpacing.s12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Transaksi Terbaru',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.onSurfaceColorTheme(context),
-                ),
-              ),
-              if (_recentTransactions.isNotEmpty && widget.onNavigateToRiwayat != null)
-                TextButton(
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  onPressed: widget.onNavigateToRiwayat,
-                  child: const Text('Lihat Semua', style: TextStyle(fontSize: 12)),
-                ),
-            ],
+          Text(
+            'Transaksi Terbaru',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.onSurfaceColorTheme(context),
+            ),
           ),
           const SizedBox(height: AppSpacing.s12),
           if (_recentLoading)
@@ -492,7 +538,7 @@ class _ManagerDashboardScreenState
                 ),
               ),
             )
-          else
+          else ...[
             ...List.generate(_recentTransactions.length, (i) {
               final tx = _recentTransactions[i];
               final catName = _categoriesMap[tx.categoryId];
@@ -510,6 +556,17 @@ class _ManagerDashboardScreenState
                 ),
               );
             }),
+            if (widget.onNavigateToRiwayat != null) ...[
+              const SizedBox(height: AppSpacing.s8),
+              Center(
+                child: TextButton.icon(
+                  icon: const Icon(Icons.history_rounded, size: 18),
+                  label: const Text('Lihat Semua'),
+                  onPressed: widget.onNavigateToRiwayat,
+                ),
+              ),
+            ],
+          ],
           const SizedBox(height: AppSpacing.s8),
         ],
       ),
@@ -607,6 +664,17 @@ class _ManagerDashboardScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = isDark ? AppTheme.accentColorTheme(context) : AppTheme.profitColorTheme(context);
     return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      elevation: 0,
+      color: AppTheme.surfaceColorTheme(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
+        side: BorderSide(
+          color: AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.35),
+          width: 1,
+        ),
+      ),
       child: InkWell(
         onTap: widget.businesses.length > 1 ? widget.onSwitchBusiness : null,
         splashColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(
@@ -617,7 +685,7 @@ class _ManagerDashboardScreenState
         hoverColor: (isDark ? AppTheme.accent : AppTheme.primary).withValues(
           alpha: isDark ? 0.06 : 0.02,
         ),
-        borderRadius: BorderRadius.circular(AppRadius.radiusSmall),
+        borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s16),
           child: Row(

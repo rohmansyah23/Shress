@@ -14,6 +14,9 @@ class RecentTransactionTile extends StatelessWidget {
   final String? businessName;
   final Widget? trailing;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final bool isSelectionMode;
+  final bool isSelected;
 
   const RecentTransactionTile({
     super.key,
@@ -22,6 +25,9 @@ class RecentTransactionTile extends StatelessWidget {
     this.businessName,
     this.trailing,
     this.onTap,
+    this.onLongPress,
+    this.isSelectionMode = false,
+    this.isSelected = false,
   });
 
   @override
@@ -64,15 +70,21 @@ class RecentTransactionTile extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
+      color: isSelected
+          ? AppTheme.primaryColorTheme(context).withValues(alpha: 0.08)
+          : AppTheme.surfaceColorTheme(context),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.radiusMedium),
         side: BorderSide(
-          color: AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.3),
-          width: 1,
+          color: isSelected
+              ? AppTheme.primaryColorTheme(context)
+              : AppTheme.outlineVariantColorTheme(context).withValues(alpha: 0.3),
+          width: isSelected ? 2 : 1,
         ),
       ),
       child: InkWell(
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.s12,
@@ -80,6 +92,20 @@ class RecentTransactionTile extends StatelessWidget {
           ),
           child: Row(
             children: [
+              // Checkbox indicator when in selection mode
+              if (isSelectionMode) ...[
+                Icon(
+                  isSelected
+                      ? Icons.check_circle_rounded
+                      : Icons.radio_button_unchecked_rounded,
+                  size: AppIconSize.s22,
+                  color: isSelected
+                      ? AppTheme.primaryColorTheme(context)
+                      : AppTheme.onSurfaceVariantColorTheme(context),
+                ),
+                const SizedBox(width: AppSpacing.s10),
+              ],
+
               // Avatar Icon Container
               Container(
                 width: 38,
