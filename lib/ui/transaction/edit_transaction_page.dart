@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/error_handler.dart';
@@ -9,6 +10,7 @@ import '../../data/local/models/business_model.dart';
 import '../../data/local/models/category_model.dart';
 import '../../data/local/models/transaction_model.dart';
 import '../../data/remote/supabase_service.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
@@ -16,21 +18,23 @@ import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_icon_size.dart';
 import '../../core/utils/format_helpers.dart';
 
-class EditTransactionPage extends StatefulWidget {
+class EditTransactionPage extends ConsumerStatefulWidget {
   final TransactionModel transaction;
   final BusinessModel business;
+  final List<BusinessModel>? allBusinesses;
 
   const EditTransactionPage({
     super.key,
     required this.transaction,
     required this.business,
+    this.allBusinesses,
   });
 
   @override
-  State<EditTransactionPage> createState() => _EditTransactionPageState();
+  ConsumerState<EditTransactionPage> createState() => _EditTransactionPageState();
 }
 
-class _EditTransactionPageState extends State<EditTransactionPage> {
+class _EditTransactionPageState extends ConsumerState<EditTransactionPage> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _cogsController = TextEditingController();
@@ -46,9 +50,20 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
   CategoryModel? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
 
+  BusinessModel? _selectedBusiness;
+  List<BusinessModel> _allBusinesses = [];
+  bool _isOwner = false;
+
   @override
   void initState() {
     super.initState();
+
+    final user = ref.read(currentUserProvider);
+    _isOwner = user?.role == AppConstants.roleOwner;
+
+    _selectedBusiness = widget.business;
+    _allBusinesses = widget.allBusinesses ?? [];
+
     _amountController.text = _formatRupiah(widget.transaction.amount.toInt());
     _cogsController.text = _formatRupiah(widget.transaction.cogs.toInt());
     _descController.text = widget.transaction.description ?? '';
@@ -115,11 +130,12 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     super.dispose();
   }
 
-  Future<void> _loadCategories() async {
+  Future<void> _loadCategories({int? businessId}) async {
     try {
+      final targetBusinessId = businessId ?? widget.business.businessId;
       final isIncome = widget.transaction.type == AppConstants.typeIncome;
       final categories = await SupabaseService.instance.getCategoriesByType(
-        widget.business.businessId,
+        targetBusinessId,
         isIncome ? AppConstants.typeIncome : AppConstants.typeExpense,
       );
       if (mounted) {
@@ -242,6 +258,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
     final result = await updateTransaction(
       transactionId: widget.transaction.transactionId!,
+      businessId: _isOwner ? _selectedBusiness?.businessId : null,
       categoryId: _selectedCategory!.categoryId,
       amount: amount,
       cogs: isIncome ? cogs : null,
@@ -337,7 +354,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                         ),
                         const SizedBox(height: AppSpacing.s2),
                         Text(
-                          widget.business.name,
+                          _selectedBusiness?.name ?? widget.business.name,
                           style: AppTheme.caption,
                         ),
                       ],
@@ -346,6 +363,52 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 ),
               ),
               const SizedBox(height: AppSpacing.s24),
+
+              if (_isOwner && _allBusinesses.length > 1) ...[
+                Text(
+                  'Bisnis',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.onSurfaceColorTheme(context),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s8),
+                DropdownButtonFormField<BusinessModel>(
+                  initialValue: _selectedBusiness,
+                  isDense: true,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    prefixIcon: Icon(Icons.store_outlined),
+                  ),
+                  style: AppTheme.bodyText.copyWith(
+                    color: AppTheme.onSurfaceColorTheme(context),
+                  ),
+                  iconEnabledColor: AppTheme.onSurfaceColorTheme(context),
+                  dropdownColor: AppTheme.surfaceColorTheme(context),
+                  borderRadius: BorderRadius.circular(16),
+                  items: _allBusinesses.map((biz) {
+                    return DropdownMenuItem(
+                      value: biz,
+                      child: Text(
+                        biz.name,
+                        style: AppTheme.bodyText.copyWith(
+                          color: AppTheme.onSurfaceColorTheme(context),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value == null || value.businessId == _selectedBusiness?.businessId) return;
+                    setState(() => _selectedBusiness = value);
+                    _loadCategories(businessId: value.businessId);
+                  },
+                  validator: (value) =>
+                      value == null ? 'Pilih bisnis' : null,
+                ),
+                const SizedBox(height: AppSpacing.s20),
+              ],
 
               Text(
                 'Kategori',

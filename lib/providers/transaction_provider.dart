@@ -64,6 +64,7 @@ Future<TransactionSaveResult> saveTransaction({
 /// Update an existing transaction on Supabase (cloud-only)
 Future<TransactionSaveResult> updateTransaction({
   required int transactionId,
+  int? businessId,
   int? categoryId,
   String? type,
   double? amount,
@@ -75,6 +76,7 @@ Future<TransactionSaveResult> updateTransaction({
   try {
     await SupabaseService.instance.updateTransaction(
       transactionId: transactionId,
+      businessId: businessId,
       categoryId: categoryId,
       type: type,
       amount: amount,

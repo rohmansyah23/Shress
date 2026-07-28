@@ -588,7 +588,11 @@ class _OwnerHistoryScreenState extends ConsumerState<OwnerHistoryScreen> {
     if (biz == null) return;
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => EditTransactionPage(transaction: tx, business: biz),
+        builder: (_) => EditTransactionPage(
+          transaction: tx,
+          business: biz,
+          allBusinesses: _businesses,
+        ),
       ),
     );
     if (result == true) {

@@ -513,6 +513,7 @@ class SupabaseService {
 
   Future<void> updateTransaction({
     required int transactionId,
+    int? businessId,
     int? categoryId,
     String? type,
     double? amount,
@@ -523,6 +524,7 @@ class SupabaseService {
   }) async {
     return ErrorHandler.guard(() async {
       final Map<String, dynamic> updates = {};
+      if (businessId != null) updates['business_id'] = businessId;
       if (categoryId != null) updates['category_id'] = categoryId;
       if (type != null) updates['type'] = type;
       if (amount != null) updates['amount'] = amount;
