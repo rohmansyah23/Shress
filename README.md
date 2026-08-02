@@ -164,6 +164,7 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 
 #### 📱 Push Notifications
 * **Firebase Cloud Messaging (FCM)**: Owner-to-staff push notifications via Supabase Edge Functions.
+* **Scheduled Reminders (pg_cron)**: Automatic daily recap reminders at 17.00/18.00/19.00 WIB to all active staff & managers — reminding them to submit the daily closing report by 20.00 WIB.
 * **Activity Logs**: Auto-generated CUD (Create/Update/Delete) logs for transactions, debts, and consignments.
 * **Token Lifecycle**: Auto-registration on login, refresh on token change, deactivation on logout.
 * **Foreground Handling**: Push notifications displayed as local notifications when app is open.
@@ -419,8 +420,10 @@ flutter run
 
 1. Create a new project on [Supabase](https://supabase.com)
 2. Run the initial migration SQL from `supabase/migrations/20260718000000_initial_schema.sql`
-3. Apply subsequent migrations in order
+3. Apply subsequent migrations in order (the migration `20260802000000_add_recap_reminder_cron.sql` schedules the daily recap reminders via pg_cron at 17.00/18.00/19.00 WIB)
 4. Copy your Project URL and Anon Key to `.env`
+5. Deploy Edge Functions: `supabase functions deploy`
+6. Set the `JWT_SECRET` and `FIREBASE_SERVICE_ACCOUNT` environment variables for the deployed functions
 
 ### Firebase Setup
 
@@ -637,7 +640,7 @@ Go to Settings → Backup. You can export data as JSON, SQL, CSV, or Excel files
 As an Owner, go to the Businesses tab → Create Business. Fill in the business name, description, and optionally upload a QRIS image.
 
 ### How do push notifications work?
-Owners can send push notifications to staff/manager users. Additionally, CUD (Create/Update/Delete) operations on transactions, debts, and consignments automatically generate activity log notifications.
+Owners can send push notifications to staff/manager users. Additionally, CUD (Create/Update/Delete) operations on transactions, debts, and consignments automatically generate activity log notifications. A scheduled reminder (pg_cron) also fires automatically at 17.00, 18.00, and 19.00 WIB to all active staff & managers, with a 20.00 WIB final deadline for the daily closing report.
 
 ### What databases/tables does Sheress use?
 Sheress uses PostgreSQL via Supabase with tables for: `users`, `businesses`, `user_businesses`, `categories`, `transactions`, `debtors`, `debts`, `debt_payments`, `consignors`, `consignments`, `consignment_items`, `consignment_settlements`, `push_tokens`, `owner_activity_logs`, and `owner_notifications`.

@@ -25,7 +25,7 @@ class _NotificationPreset {
   static const List<_NotificationPreset> presets = [
     _NotificationPreset(
       title: 'Laporan Tutup Toko',
-      body: 'Jangan lupa lakukan rekonsiliasi kas dan upload laporan penjualan hari ini setelah toko tutup ya. Batas akhir jam 22.00 WIB.',
+      body: 'Jangan lupa lakukan rekonsiliasi kas dan upload laporan penjualan hari ini setelah toko tutup ya. Batas akhir jam 20.00 WIB.',
       icon: Icons.assignment_rounded,
     ),
     _NotificationPreset(
