@@ -55,7 +55,7 @@ A production-grade, offline-aware Flutter application that empowers business own
 | 🌙 **Theming** | Dynamic Dark & Light Mode |
 | 📊 **Charts** | fl_chart (Interactive Visualizations) |
 | 💳 **Payments** | Dynamic QRIS Integration |
-| 🔔 **Notifications** | Local Reminders + FCM Push |
+| 🔔 **Notifications** | FCM Push (Owner/Staff/Manager) + Auto CUD Alerts + Daily Recap (17/18/19 WIB) |
 | 📶 **Offline Status**| Network Connectivity Overlay |
 | 🏪 **Multi-Tenancy** | Role-Based Access Control (RBAC) |
 | 🐛 **Monitoring** | Sentry Crash Reporting |
@@ -163,9 +163,12 @@ Sheress provides a **cloud-first**, **role-based** financial platform that unifi
 * **SVG Rendering**: High-quality SVG display via `flutter_svg`.
 
 #### 📱 Push Notifications
-* **Firebase Cloud Messaging (FCM)**: Owner-to-staff push notifications via Supabase Edge Functions.
-* **Scheduled Reminders (pg_cron)**: Automatic daily recap reminders at 17.00/18.00/19.00 WIB to all active staff & managers — reminding them to submit the daily closing report by 20.00 WIB.
-* **Activity Logs**: Auto-generated CUD (Create/Update/Delete) logs for transactions, debts, and consignments.
+Sheress uses **three Supabase Edge Functions** to deliver real-time Firebase Cloud Messaging (FCM) notifications:
+
+* **Auto Owner Alerts** (`notify-owner-cud`): Database triggers fire on every INSERT/UPDATE/DELETE of transactions, debts, and consignments, then push a real-time notification to **all active owners** of the business (excluding the actor via self-action protection). Invalid tokens are auto-deactivated.
+* **Owner → Staff/Manager** (`send-owner-notification`): Owners broadcast notifications to all staff & managers, a specific role, or selected users. Messages are persisted in the `owner_notifications` table.
+* **Daily Recap Reminders** (`send-recap-reminder` + pg_cron): Automatic reminders at **17.00/18.00/19.00 WIB** to all active staff & managers, reminding them to submit the daily closing report by **20.00 WIB**. A test override via `_app_config['recap_reminder_test_user_ids']` allows targeting specific users during development.
+* **Activity Logs**: Auto-generated CUD (Create/Update/Delete) logs for transactions, debts, and consignments in `owner_activity_logs`.
 * **Token Lifecycle**: Auto-registration on login, refresh on token change, deactivation on logout.
 * **Foreground Handling**: Push notifications displayed as local notifications when app is open.
 
@@ -229,6 +232,34 @@ graph TD
     Remote -.-> Core
     UI -.-> Core
 ```
+
+### 🔔 Notification Pipeline
+
+```mermaid
+graph LR
+    subgraph Database ["🗄️ Database Triggers"]
+        T["transactions / debts / consignments"]
+        Cron["pg_cron (17/18/19 WIB)"]
+        T -->|net.http_post| EF1["notify-owner-cud"]
+        Cron -->|net.http_post| EF3["send-recap-reminder"]
+        T -.-> Logs["owner_activity_logs"]
+    end
+
+    subgraph Edge ["☁️ Supabase Edge Functions"]
+        EF1["notify-owner-cud"] --> FCM["🔥 Firebase Cloud Messaging"]
+        EF2["send-owner-notification"] --> FCM
+        EF3["send-recap-reminder"] --> FCM
+        EF1 -.-> OT["Owner Notifications"]
+        EF2 -.-> OT["owner_notifications"]
+    end
+
+    FCM --> Devices["📱 Android Apps"]
+```
+
+* **Trigger → Webhook**: DB triggers and `pg_cron` call the edge functions via `net.http_post`, authenticated with an `X-Webhook-Signature` header (derived from `JWT_SECRET`).
+* **FCM Delivery**: Edge functions exchange the Firebase service account for an OAuth access token, then send high-priority push messages to active `push_tokens`.
+* **Self-Action Protection**: `notify-owner-cud` skips the actor who triggered the change, notifying only other active owners.
+* **Config**: `_app_config` stores the Supabase anon key (`supabase_anon_key`) and the recap test override (`recap_reminder_test_user_ids`).
 
 ---
 
@@ -422,7 +453,7 @@ flutter run
 2. Run the initial migration SQL from `supabase/migrations/20260718000000_initial_schema.sql`
 3. Apply subsequent migrations in order (the migration `20260802000000_add_recap_reminder_cron.sql` schedules the daily recap reminders via pg_cron at 17.00/18.00/19.00 WIB)
 4. Copy your Project URL and Anon Key to `.env`
-5. Deploy Edge Functions: `supabase functions deploy`
+5. Deploy all three Edge Functions: `supabase functions deploy notify-owner-cud send-owner-notification send-recap-reminder`
 6. Set the `JWT_SECRET` and `FIREBASE_SERVICE_ACCOUNT` environment variables for the deployed functions
 
 ### Firebase Setup
