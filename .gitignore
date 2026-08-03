@@ -50,5 +50,9 @@ app.*.map.json
 # Database backups (should not be in version control)
 backup-database/
 
+# Sensitive database dumps & planning docs (never pushed to GitHub)
+/docs/
+/backup/
+
 # Dev scripts & local tooling
 a-dev/
